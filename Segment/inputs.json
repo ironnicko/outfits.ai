@@ -1,0 +1,53 @@
+{"data" : [{
+"id" : "1",
+"type" : "Upper-clothing",
+"color" : "black",
+"style" : "formal"
+}, 
+{
+"id" : "2",
+"type" : "Pants",
+"color" : "white",
+"style" : "casual, jeans"
+}, 
+{
+"id" : "3",
+"type" : "left-shoe",
+"color" : "black",
+"style" : "formal",
+"pair_id" : "4"
+}, 
+{
+"id" : "4",
+"type" : "right-shoe",
+"color" : "black",
+"style" : "formal",
+"pair_id" : "3"
+}, 
+{
+"id" : "5",
+"type" : "Upper-clothing",
+"color" : "blue",
+"style" : "casual"
+}, 
+{
+"id" : "6",
+"type" : "Pants",
+"color" : "black",
+"style" : "casual, joggers"
+}, 
+{
+"id" : "7",
+"type" : "left-shoe",
+"color" : "red",
+"style" : "formal",
+"pair_id" : "8"
+}, 
+{
+"id" : "8",
+"type" : "right-shoe",
+"color" : "red",
+"style" : "formal",
+"pair_id" : "7"
+}] 
+}
