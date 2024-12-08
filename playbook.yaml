@@ -1,0 +1,63 @@
+---
+- name: Setup
+  hosts: aws_ec2
+  become: true
+  tasks:
+    - name: Update system packages
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add the current user to the docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Download Docker Compose binary
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v2.22.0/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+        dest: /usr/local/bin/docker-compose
+        mode: "0755"
+
+    - name: Create a symlink for docker-compose
+      file:
+        src: /usr/local/bin/docker-compose
+        dest: /usr/bin/docker-compose
+        state: link
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+
+    - debug:
+        msg: "Docker version is: {{ docker_version.stdout }}"
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+      register: compose_version
+
+    - debug:
+        msg: "Docker Compose version is: {{ compose_version.stdout }}"
+
+    - name: Copy ENV file
+      copy:
+        src: ./.env
+        dest: /home/ec2-user
+    - name: Copy Compose file
+      copy:
+        src: ./compose.yaml
+        dest: /home/ec2-user
+    - name: Start Application
+      command: docker-compose up

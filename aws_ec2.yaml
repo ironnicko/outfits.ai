@@ -1,0 +1,11 @@
+plugin: amazon.aws.aws_ec2
+regions: # update with the regions used in your AWS account
+  - us-east-1
+keyed_groups:
+  # each prefix below becomes a dynamic inventory list used by Ansible
+  - key: tags
+    prefix: tag
+  - key: instance_type
+    prefix: instance_type
+  - key: placement.region
+    prefix: aws_region

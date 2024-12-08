@@ -23,8 +23,6 @@ services:
         condition: service_healthy
     links:
       - postgres
-
-
   postgres:
     image: postgres:latest
     container_name: postgres
