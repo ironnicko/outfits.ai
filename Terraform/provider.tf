@@ -14,10 +14,3 @@ provider "aws" {
   shared_credentials_files = ["/Users/nikhilivannan/.aws/credentials"]
 
 }
-
-resource "aws_s3_bucket" "outfits-bucket"{
-    bucket="outfits.ai-bucket"
-    tags = {
-        Name = "outfits.ai"
-    }
-}

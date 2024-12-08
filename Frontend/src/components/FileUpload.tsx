@@ -3,6 +3,9 @@ import axios from 'axios';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
 
+const api = axios.create({
+  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
+});
 
 const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -43,8 +46,8 @@ const FileUpload: React.FC = () => {
     formData.append('file', file);
 
     try {
-      const res = await axios.post(
-        import.meta.env.VITE_URL_PREFIX+'/api/v1/clothing/add-clothing',
+      const res = await api.post(
+        '/api/v1/clothing/add-clothing',
         formData,
         {
           headers: {

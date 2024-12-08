@@ -4,6 +4,10 @@ import axios from 'axios';
 
 import { useAuthStore, AuthState } from '../store/authStore';
 
+const api = axios.create({
+  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
+});
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,14 +23,14 @@ const Login: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(import.meta.env.VITE_URL_PREFIX+'/api/v1/user/login', {
+      const res = await api.post('/api/v1/user/login', {
         email,
         password,
       });
 
 
       setTokenState(res.data.token);
-      navigate('/upload'); // Redirect to upload page
+      navigate('/closet'); // Redirect to upload page
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');

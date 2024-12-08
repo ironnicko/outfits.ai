@@ -1,23 +1,21 @@
 package main
 
 import (
-	config "outfits/config"
-	"log"
 	"os"
+	config "outfits/config"
 
 	"outfits/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load(".fiber.env")
+	// err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
+	// if err != nil {
+	// 	log.Fatalf("Error loading .env file")
+	// }
 
 	config.ConnectDb()
 	app := fiber.New()

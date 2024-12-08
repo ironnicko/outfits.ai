@@ -5,7 +5,9 @@ import { useAuthStore, AuthState } from '../store/authStore';
 import { clearTokenLocal, getTokenLocal } from '../utils/auth';
 import axios from 'axios';
 
-
+const api = axios.create({
+  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
+});
 
 const LogoutButton: React.FC= () => {
 
@@ -17,8 +19,8 @@ const LogoutButton: React.FC= () => {
   const handleLogout = () => {
     clearTokenLocal();
     clearToken();
-    axios.post(
-      import.meta.env.VITE_URL_PREFIX+'/api/v1/user/logout',
+    api.post(
+  '/api/v1/user/logout',
       {token : token},
       {
         headers: {
