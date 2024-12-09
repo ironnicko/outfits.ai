@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"os"
 	configs "outfits/config"
 	"outfits/models"
@@ -114,7 +115,8 @@ func CreateClothing(c *fiber.Ctx) error {
 	writer.Close()
 
 	// Send the POST request to the FastAPI server
-	url := os.Getenv("SEGMENT_URL") + "/upload"
+	url := os.Getenv("PUBLIC_IP") + ":8001/upload"
+	fmt.Println(url)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		db.Delete(&models.Clothing{}, clothing.ID)

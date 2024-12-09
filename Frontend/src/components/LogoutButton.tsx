@@ -1,13 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { api } from '../utils/api'
 import { useAuthStore, AuthState } from '../store/authStore';
 import { clearTokenLocal, getTokenLocal } from '../utils/auth';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
-});
 
 const LogoutButton: React.FC= () => {
 

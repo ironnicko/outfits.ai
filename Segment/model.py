@@ -8,7 +8,7 @@ labels = ["Hat", "Upper-clothes", "Skirt", "Pants",
           "Dress", "Belt", "Left-shoe", "Right-shoe", "Scarf"]
 
 # Initialize segmentation pipeline
-segmenter = pipeline(model="mattmdjaga/segformer_b2_clothes", device=0)
+segmenter = pipeline(model="mattmdjaga/segformer_b2_clothes")
 
 
 def segment_clothing(img, clothes=None):

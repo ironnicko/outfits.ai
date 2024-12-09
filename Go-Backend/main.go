@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	config "outfits/config"
@@ -13,16 +14,20 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
+	prod := os.Getenv("PRODUCTION")
+	fmt.Println(prod)
+	if prod != "prod" {
+		err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatalf("Error loading .env file")
+		if err != nil {
+			log.Fatalf("Error loading .env file")
+		}
 	}
 
 	config.ConnectDb()
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000, http://54.164.84.100:3000",
+		AllowOrigins:     os.Getenv("PUBLIC_IP") + ":3000",
 		AllowCredentials: true,
 	}))
 	app.Get("/", func(c *fiber.Ctx) error {

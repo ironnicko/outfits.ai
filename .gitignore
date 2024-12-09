@@ -7,6 +7,8 @@ __pycache__/
 
 # C extensions
 *.so
+*variables.tf
+*u2net.onnx
 
 # Distribution / packaging
 .Python

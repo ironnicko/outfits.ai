@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
-});
+import { api } from '../utils/api'
 
 const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);

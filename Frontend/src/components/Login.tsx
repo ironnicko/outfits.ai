@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
+import { api } from '../utils/api'
 import { useAuthStore, AuthState } from '../store/authStore';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
-});
-
 const Login: React.FC = () => {
+
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

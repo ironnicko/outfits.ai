@@ -83,4 +83,17 @@ resource "aws_instance" "my_vm" {
     Name = "outfits.ai"
   }
 
+  provisioner "remote-exec" {
+    inline = ["echo 'wait until SSH is ready'"]
+    connection {
+      type        = "ssh"
+      user        = var.ssh_user
+      private_key = file(var.private_key_path)
+      host = aws_instance.my_vm.public_ip
+    }
+  }
+  provisioner "local-exec"{
+    command = "ansible-playbook -i aws_ec2.yaml -u ec2-user --private-key ${var.private_key_path} playbook.yaml"
+  }
+
 }

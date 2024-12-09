@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../utils/api'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_URL_PREFIX || "http://localhost:8000",
-});
+
 
 const CreateAccount: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,7 +16,7 @@ const CreateAccount: React.FC = () => {
         handleCreateAccount();
   };
 
-  console.log(import.meta.env.BASE_URL)
+
   const handleCreateAccount = async () => {
     try {
       await api.post('/api/v1/user', {
