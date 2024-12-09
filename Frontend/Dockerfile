@@ -1,35 +1,21 @@
-
-FROM node:latest AS build-stage
+FROM node:latest AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn run build
+RUN yarn build
 
-
-FROM nginx:latest
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-COPY --from=build-stage /app/dist/ /usr/share/nginx/html
-
-
-WORKDIR /app
-RUN chown -R nginx:nginx /app && chmod -R 755 /app && \
-    chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d
-RUN touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
-
-USER nginx
-
+RUN yarn global add serve
 
 EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+
+ENTRYPOINT ["/entrypoint.sh"]

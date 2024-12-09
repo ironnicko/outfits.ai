@@ -74,7 +74,7 @@ resource "aws_security_group" "main" {
 resource "aws_instance" "my_vm" {
   ami = "ami-055e62b4ea2fe95fd"
 
-  instance_type          = "t4g.nano"
+  instance_type          = "t4g.large"
   key_name               = "vockey"
   vpc_security_group_ids = [aws_security_group.main.id]
 

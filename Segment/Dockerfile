@@ -19,7 +19,7 @@ ENV NUMBA_DISABLE_CACHING=1
 # Set permissions (if necessary)
 RUN chown -R nobody:nogroup /app/.cache && chmod -R a+w /app/.cache
 
-COPY u2net.onnx /home/.u2net/u2net.onnx
+# COPY u2net.onnx /home/.u2net/u2net.onnx
 
 # Keeps Python from buffering stdout and stderr to avoid situations where
 # the application crashes without emitting any logs due to buffering.
@@ -30,6 +30,7 @@ WORKDIR /app
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
+
 RUN adduser \
     --disabled-password \
     --gecos "" \

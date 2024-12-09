@@ -2,6 +2,11 @@
 - name: Setup
   hosts: tag_Name_outfits_ai
   become: true
+  gather_facts: yes
+  vars_files:
+    - aws_credentials.yml
+  vars:
+    env_file_path: "/home/ec2-user/.env"
   tasks:
     - name: Update system packages
       yum:
@@ -37,20 +42,6 @@
         dest: /usr/bin/docker-compose
         state: link
 
-    - name: Verify Docker installation
-      command: docker --version
-      register: docker_version
-
-    - debug:
-        msg: "Docker version is: {{ docker_version.stdout }}"
-
-    - name: Verify Docker Compose installation
-      command: docker-compose --version
-      register: compose_version
-
-    - debug:
-        msg: "Docker Compose version is: {{ compose_version.stdout }}"
-
     - name: Copy ENV file
       copy:
         src: ../.env
@@ -61,8 +52,15 @@
         src: ../compose.yaml
         dest: /home/ec2-user/compose.yaml
 
-    - name: Check for Updates
-      command: docker-compose pull 
+    - name: Copy Script file
+      copy:
+        src: ../ip.sh
+        dest: /home/ec2-user/
 
+    - name: Run the Script
+      command: sh ip.sh
+
+    - name: Check for Latest Update
+      command: sudo docker-compose pull
     - name: Start Applications
-      command: docker-compose up -d
+      command: sudo docker-compose --env-file ./.env up -d

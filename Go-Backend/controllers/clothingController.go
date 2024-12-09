@@ -115,7 +115,7 @@ func CreateClothing(c *fiber.Ctx) error {
 	writer.Close()
 
 	// Send the POST request to the FastAPI server
-	url := os.Getenv("PUBLIC_IP") + ":8001/upload"
+	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
 	fmt.Println(url)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {

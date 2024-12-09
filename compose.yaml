@@ -11,7 +11,6 @@ services:
     networks:
       - outfits-ai-network
 
-      
   frontend:
     image: ironnicko1413/outfits.ai-frontend:latest
     build:
@@ -19,6 +18,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./.env
+    environment:
+      - VITE_PUBLIC_IP=${VITE_PUBLIC_IP}
     ports:
       - "3000:3000"
     networks:
@@ -33,16 +34,16 @@ services:
       - ./.env
     environment:
       - PRODUCTION=prod
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - SESSION=${SESSION}
     networks:
       - outfits-ai-network
     depends_on:
       postgres:
         condition: service_healthy
-
     ports:
-      - 8000:8000
-
-
+      - "8000:8000"
     links:
       - postgres
 
@@ -67,3 +68,4 @@ volumes:
 
 networks:
   outfits-ai-network:
+      driver: bridge
