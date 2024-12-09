@@ -51,35 +51,6 @@
     - debug:
         msg: "Docker Compose version is: {{ compose_version.stdout }}"
 
-    - name: Get public IP address
-      command: curl -s http://api.ipify.org
-      register: public_ip_response
-
-    - name: Set public IP as environment variable
-      lineinfile:
-        path: /etc/profile.d/public_ip.sh
-        line: "export PUBLIC_IP={{ public_ip_response.stdout }}"
-        state: present
-        create: yes
-
-    - name: Ensure the script is executable
-      file:
-        path: /etc/profile.d/public_ip.sh
-        mode: "0755"
-
-    - name: Load the new environment variable
-      shell: source /etc/profile.d/public_ip.sh
-      args:
-        executable: /bin/bash
-
-    - name: Verify the environment variable
-      shell: echo $PUBLIC_IP
-      register: verify_public_ip
-
-    - name: Display the public IP
-      debug:
-        var: verify_public_ip.stdout
-
     - name: Copy ENV file
       copy:
         src: ../.env
@@ -90,5 +61,8 @@
         src: ../compose.yaml
         dest: /home/ec2-user/compose.yaml
 
-    - name: Start Application
-      command: docker-compose pull & docker-compose up -d
+    - name: Check for Updates
+      command: docker-compose pull 
+
+    - name: Start Applications
+      command: docker-compose up -d
