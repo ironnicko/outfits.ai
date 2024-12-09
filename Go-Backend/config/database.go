@@ -24,6 +24,7 @@ func ConnectDb() {
 	dbname := " dbname=" + os.Getenv("DB_NAME")
 	passw := " password=" + os.Getenv("DB_PASSWORD")
 	host := " host=" + os.Getenv("DB_HOST")
+	// host := " host=localhost"
 	timezone := " TimeZone=" + os.Getenv("TIMEZONE")
 	dsn := host + passw + dbname + port + user + timezone + " sslmode=disable"
 

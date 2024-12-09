@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	configs "outfits/config"
 	"outfits/models"
@@ -11,7 +12,6 @@ import (
 	"bytes"
 	"io"
 	"mime/multipart"
-	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
