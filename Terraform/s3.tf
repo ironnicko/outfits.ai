@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "outfits-ai" {
-  bucket = "outfits.ai-bucket"
+  bucket = var.bucket_name
 }
 
 resource "aws_s3_bucket_ownership_controls" "outfits-ai" {
