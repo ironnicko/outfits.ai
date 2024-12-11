@@ -30,6 +30,7 @@ func CreateClothing(c *fiber.Ctx) error {
 	}
 
 	clothing.UserID = user.ID
+	clothing.ClothingType = c.FormValue("type")
 
 	validate := validator.New()
 
@@ -110,6 +111,11 @@ func CreateClothing(c *fiber.Ctx) error {
 		db.Delete(&models.Clothing{}, clothing.ID)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to write user_ID"})
 	}
+	err = writer.WriteField("type", clothing.ClothingType)
+	if err != nil {
+		db.Delete(&models.Clothing{}, clothing.ID)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to write user_ID"})
+	}
 
 	// Close the writer to finalize the multipart form
 	writer.Close()
@@ -145,7 +151,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		})
 	}
 
-	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, strCID + ".png"}, "/")
+	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
 	db.Save(&clothing)
 
@@ -153,13 +159,22 @@ func CreateClothing(c *fiber.Ctx) error {
 
 }
 
-func CreateResponseClothing(clothing models.Clothing) models.Clothing {
-	return models.Clothing{
+type GetClothing struct {
+	Color string
+	Style string
+	Type  string
+	URL   string
+	ID    uint
+}
 
-		ClothingColor: clothing.ClothingColor,
-		ClothingStyle: clothing.ClothingStyle,
-		ClothingType:  clothing.ClothingType,
-		UserID:        clothing.UserID}
+func CreateResponseClothing(clothing models.Clothing) GetClothing {
+	response := GetClothing{}
+	response.Color = clothing.ClothingColor
+	response.Style = clothing.ClothingStyle
+	response.Type = clothing.ClothingType
+	response.URL = clothing.ClothingURL
+	response.ID = clothing.ID
+	return response
 }
 
 func GetClothings(c *fiber.Ctx) error {
@@ -167,7 +182,7 @@ func GetClothings(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.User)
 	clothings := []models.Clothing{}
 	db.Where("user_id = ?", user.ID).Find(&clothings)
-	responseClothings := []models.Clothing{}
+	responseClothings := []GetClothing{}
 	for _, clothing := range clothings {
 		responseClothing := CreateResponseClothing(clothing)
 		responseClothings = append(responseClothings, responseClothing)

@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
-import FileUpload from './components/FileUpload';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './components/LandingPage';
 import CreateAccount from './components/CreateAccount';
 import Navbar from './components/Navbar';
+import ClosetView from "./components/ClosetView"
 
 const App: React.FC = () => {
   return (
@@ -20,7 +20,7 @@ const App: React.FC = () => {
             path="/closet"
             element={
               <ProtectedRoute>
-                <FileUpload />
+                <ClosetView />
               </ProtectedRoute>
             }
           />

@@ -17,7 +17,7 @@ func main() {
 	prod := os.Getenv("PRODUCTION")
 	fmt.Println(prod)
 	if prod != "prod" {
-		err := godotenv.Load("/Users/nikhilivannan/Programs/outfits.ai/.env")
+		err := godotenv.Load("/Users/nikhilivannan/Programs/outfits.ai/Go-Backend/.env")
 
 		if err != nil {
 			log.Fatalf("Error loading .env file")

@@ -26,12 +26,14 @@ async def upload_file(
     file: UploadFile = File(...),
     user_ID: str = Form(...),
     clothing_ID: str = Form(...),
+    type: str = Form(...)
 
 ):
     try:
 
         meta_data = {'uid': user_ID,
-                     'cid': clothing_ID, }
+                     'cid': clothing_ID,
+                     'type': type}
         file_content = await file.read()
 
         # remove_bg(file_content, meta_data)
