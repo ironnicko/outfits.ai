@@ -106,14 +106,9 @@ const FileUpload: React.FC = () => {
                       {
                       [
                           { label: "None", onClick: () => setType("Select The Type of Your Clothing") },
-                          { label: "Upper-clothes", onClick: () => setType("Upper-clothes") },
-                          { label: "Pants", onClick: () => setType("Pants") },
-                          { label: "Hat", onClick: () => setType("Hat") },
-                          { label: "Skirt", onClick: () => setType("Skirt") },
-                          { label: "Dress", onClick: () => setType("Dress") },
-                          { label: "Belt", onClick: () => setType("Belt") },
-                          { label: "Shoes", onClick: () => setType("Shoes") },
-                          { label: "Scarf", onClick: () => setType("Scarf") },
+                          { label: "Upper", onClick: () => setType("upper") },
+                          { label: "Lower", onClick: () => setType("lower") },
+                          { label: "Full-Body", onClick: () => setType("full") },
                       ].map((item, index) => (
                           <a
                           key={index}

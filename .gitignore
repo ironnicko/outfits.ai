@@ -3,7 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .DS_Store
-
+*u2net*
+silueta.onnx
 
 # C extensions
 *.so
