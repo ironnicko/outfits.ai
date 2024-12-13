@@ -25,6 +25,8 @@ Backend
 ![Fiber](https://img.shields.io/badge/Fiber-black?logo=go)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-black?logo=postgresql)
 ![FastAPI](https://img.shields.io/badge/FastAPI-black?logo=fastapi)
+![Python](https://img.shields.io/badge/Python-black?logo=python)
+![Onnx](https://img.shields.io/badge/Onnx-black?logo=python)
 
 Infrastructure
 ![AWS](https://img.shields.io/badge/AWS-black?logo=amazon)
@@ -39,8 +41,12 @@ Infrastructure
 - Node.js (v16+)
 - Go (v1.18+)
 - Docker
-- PostgreSQL
 - AWS CLI
+- Python 3.9.21
+- Pipenv
+- Yarn
+- Terraform
+- Ansible
 
 #### Make sure to configure ".env" and "variables.tf"
 
@@ -53,7 +59,7 @@ git clone https://github.com/ironnicko/outfits.ai
 ## Install frontend dependencies
 
 ```
-cd Frontend
+cd ./Frontend
 yarn install
 ```
 
@@ -63,10 +69,10 @@ yarn install
 cd ./Go-Backend
 go mod download
 
-cd ./Segment
+cd ../Segment
 pipenv --python 3.9.21
 pipenv shell
-pipenv install -r requirements.txt
+pipenv sync
 ```
 
 ## Start AWS
@@ -85,6 +91,33 @@ terraform apply --auto-approve
 docker-compose up --build
 ```
 
+## To run locally:
+
+- ## Backend:
+
+  ```
+  cd ./Go-Backend
+  go run .
+  ```
+  ### Make sure to set VITE_PUBLIC_IP=http://localhost in .env
+
+- ## Segment:
+
+  ```
+  cd ./Segment
+  python3 main.py
+  ```
+  ### Download <a href="https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_cloth_seg.onnx">u2net_cloth_seg.onnx</a> and place it in Segment directory
+
+
+- ## Frontend:
+
+  ```
+  cd ./Frontend
+  yarn install
+  yarn run dev
+  ```
+
 ## 🌐 Architecture
 
 ```
@@ -98,7 +131,10 @@ outfits.ai/
 │ ├── terraform/
 │ └── ansible/
 │
-└── Segment/ # Python FastAPI Service
+├── Segment/ # Python FastAPI Service
+│ ├── Model/u2net_cloth_seg
+│ └── s3_upload
+│
 └── [To Do]Recommendation/ # Python FastAPI Service
 ```
 
@@ -122,16 +158,18 @@ BUCKET_NAME=
 ACCESS_KEY=
 SECRET_KEY=
 SESSION=
-VITE_PUBLIC_IP=http://localhost
 ```
 
 #### Optional:
 
 ```
+VITE_PUBLIC_IP=
 POSTGRES_PASSWORD=
 POSTGRES_USER=
 POSTGRES_DB=
 ```
+
+#### VITE_PUBLIC_IP will be necessary when running locally
 
 ### variables.tf:
 
