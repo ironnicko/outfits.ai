@@ -48,7 +48,7 @@ services:
       - postgres
 
   postgres:
-    image: postgres:latest
+    image: pgvector/pgvector:pg17
     container_name: postgres
     env_file:
       - ./.env
