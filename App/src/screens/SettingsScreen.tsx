@@ -6,10 +6,13 @@ import SafeScreen from '../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RootStackParamList} from '../navigation/types';
+import { clearTokenLocal, clearUsernameLocal, getTokenLocal, getUsernameLocal } from '../utils/auth';
+import { AuthState, useAuthStore } from '../store/authStore';
+import { api } from '../utils/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const SettingItem = ({icon, title, onPress}) => (
+const SettingItem = ({icon, title, onPress} : any) => (
   <Pressable style={styles.settingItem} onPress={onPress}>
     <View style={styles.settingContent}>
       <Icon name={icon} size={24} color="#4A6741" />
@@ -21,9 +24,12 @@ const SettingItem = ({icon, title, onPress}) => (
   </Pressable>
 );
 
-const SettingsScreen = () => {
+const SettingsScreen =  () => {
   const navigation = useNavigation<NavigationProp>();
-
+  const clearToken = useAuthStore((state: AuthState) => state.clearToken);
+  const clearUsername = useAuthStore((state: AuthState) => state.clearUsername);
+  const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
+  const username = useAuthStore((state: AuthState) => state.username) || getUsernameLocal();
   const handleLogout = () => {
     Alert.alert(
       'Sign Out',
@@ -36,7 +42,20 @@ const SettingsScreen = () => {
         {
           text: 'Sign Out',
           onPress: () => {
-            // Add any cleanup logic here (e.g., clearing tokens, user data, etc.)
+            clearUsernameLocal();
+            clearUsername();
+            clearTokenLocal();
+            clearToken();
+            api.post(
+          '/api/v1/user/logout',
+              {token : token},
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+        
+                },
+              }
+            );
             navigation.reset({
               index: 0,
               routes: [{name: 'Login'}],
@@ -64,7 +83,7 @@ const SettingsScreen = () => {
             Signed in as
           </Text>
           <Text variant="headlineSmall" style={styles.email}>
-            amazingavya@gmail.com
+            { username }
           </Text>
         </View>
 

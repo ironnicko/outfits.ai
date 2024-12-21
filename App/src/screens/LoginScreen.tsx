@@ -1,11 +1,13 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, Pressable} from 'react-native';
-import {Text, TextInput, Button} from 'react-native-paper';
+import React, { useState } from 'react';
+import { StyleSheet, View, Pressable } from 'react-native';
+import { Text, TextInput, Button } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '../navigation/types';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
+import { api } from '../utils/api';
+import { AuthState, useAuthStore } from '../store/authStore';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -15,31 +17,56 @@ const LoginScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const navigation = useNavigation<NavigationProp>();
 
-  const handleSignIn = () => {
-    // We'll add authentication logic later
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'MainTabs'}],
-    });
+  const setTokenState = useAuthStore((state: AuthState) => state.setToken);
+  const setUsernameState = useAuthStore((state: AuthState) => state.setUsername);
+
+  const handleSignIn = async () => {
+    try {
+      var res: any = await api.post('/api/v1/user/login', {
+        email,
+        password,
+      });
+
+      setTokenState(res.data.token);
+      const username = (await api.get('/api/v1/user/user-info', {
+        headers:{
+          Authorization: `Bearer ${res.data.token}`
+        }
+      })).data;
+      setUsernameState(username.result.username);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      });
+    } catch (err: any) {
+      console.error(err);
+      // Handle errors (e.g., show a message to the user)
+    }
   };
 
-  const handleSocialSignIn = (provider: 'google' | 'apple') => {
-    // We'll add social auth logic later
-    navigation.reset({
-      index: 0,
-      routes: [{name: 'MainTabs'}],
-    });
+  const handleSocialSignIn = async (provider: 'google' | 'apple') => {
+    try {
+
+      console.log(`Signing in with ${provider}`);
+      const res = await api.post(`/api/v1/user/login/${provider}`, {
+        email,
+        password,
+      });
+
+      setTokenState(res.data.token);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      });
+    } catch (err: any) {
+      console.error(err);
+      // Handle errors (e.g., show a message to the user)
+    }
   };
 
   return (
     <SafeScreen>
       <View style={styles.container}>
-        {/* <Pressable 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Icon name="chevron-left" size={32} color="#4A6741" />
-        </Pressable> */}
-
         <Text variant="displaySmall" style={styles.title}>
           Sign In
         </Text>
@@ -53,6 +80,7 @@ const LoginScreen = () => {
             style={styles.input}
             outlineColor="#4A6741"
             activeOutlineColor="#4A6741"
+            autoCapitalize="none"
           />
           <TextInput
             label="Password"

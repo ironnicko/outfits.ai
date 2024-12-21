@@ -23,7 +23,7 @@ func ConnectDb() {
 	port := " port=" + os.Getenv("DB_PORT")
 	dbname := " dbname=" + os.Getenv("DB_NAME")
 	passw := " password=" + os.Getenv("DB_PASSWORD")
-	host := "localhost"
+	host := " host=localhost"
 	if os.Getenv("PRODUCTION") == "prod" {
 		host = " host=" + os.Getenv("DB_HOST")
 	}

@@ -1,20 +1,22 @@
 import React from 'react';
-import {StyleSheet, View, ScrollView, Dimensions} from 'react-native';
+import {StyleSheet, View, Dimensions} from 'react-native';
 import {Card, Text, useTheme} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RootStackParamList} from '../navigation/types';
 import SafeScreen from '../components/SafeScreen';
-import GenerateOutfitsScreen from './GenerateOutfitsScreen';
+
+
 
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // 48 = padding (16) * 2 + gap between cards (16)
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const FeatureCard = ({title, subtitle, icon, onPress}) => {
+const FeatureCard = ({title, subtitle, icon, onPress} : any) => {
   const theme = useTheme();
+
   return (
     <Card
       style={[styles.card, {width: CARD_WIDTH}]}

@@ -8,8 +8,22 @@ import OccasionSelectScreen from '../screens/OccasionSelectScreen';
 import SelectClothingItem from '../screens/SelectClothingItem';
 import AIRecommendationScreen from '../screens/AIRecommendationScreen';
 import { RootStackParamList } from './types';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const withProtectedRoute = <P extends object>(Component: React.ComponentType<P>) => {
+  const WrappedComponent: React.FC<P> = (props) => {
+    return (
+      <ProtectedRoute>
+        <Component {...props} />
+      </ProtectedRoute>
+    );
+  };
+
+  return WrappedComponent;
+};
+
 
 const RootNavigator = () => {
   return (
@@ -17,14 +31,14 @@ const RootNavigator = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="Login">
+      initialRouteName="MainTabs">
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="MainTabs" component={TabNavigator} />
-      <Stack.Screen name="OutfitCheck" component={OutfitCheckScreen} />
-      <Stack.Screen name="GenerateOutfits" component={GenerateOutfitsScreen} />
-      <Stack.Screen name="OccasionSelect" component={OccasionSelectScreen} />
-      <Stack.Screen name="SelectClothingItem" component={SelectClothingItem} />
-      <Stack.Screen name="AIRecommendation" component={AIRecommendationScreen} />
+      <Stack.Screen name="MainTabs" component={withProtectedRoute(TabNavigator)} />
+      <Stack.Screen name="OutfitCheck" component={withProtectedRoute(OutfitCheckScreen)} />
+      <Stack.Screen name="GenerateOutfits" component={withProtectedRoute(GenerateOutfitsScreen)} />
+      <Stack.Screen name="OccasionSelect" component={withProtectedRoute(OccasionSelectScreen)} />
+      <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
+      <Stack.Screen name="AIRecommendation" component={withProtectedRoute(AIRecommendationScreen)} />
     </Stack.Navigator>
   );
 };

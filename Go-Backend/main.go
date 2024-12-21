@@ -17,8 +17,7 @@ func main() {
 	prod := os.Getenv("PRODUCTION")
 	fmt.Println(prod)
 	if prod != "prod" {
-		err := godotenv.Load("/Users/nikhilivannan/Programs/outfits.ai/Go-Backend/.env")
-
+		err := godotenv.Load(".env")
 		if err != nil {
 			log.Fatalf("Error loading .env file")
 		}
@@ -27,11 +26,11 @@ func main() {
 	config.ConnectDb()
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000"+", "+os.Getenv("VITE_PUBLIC_IP") + ":3000",
+		AllowOrigins:     "http://localhost:3000" + ", " + os.Getenv("VITE_PUBLIC_IP") + ":3000",
 		AllowCredentials: true,
 	}))
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello FIber")
+		return c.SendString("Hello Fiber")
 	})
 
 	api := app.Group("/api/v1")
