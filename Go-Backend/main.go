@@ -25,8 +25,13 @@ func main() {
 
 	config.ConnectDb()
 	app := fiber.New()
+
+	// When going prod don't forget to change Origins problem
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000" + ", " + os.Getenv("VITE_PUBLIC_IP") + ":3000",
+		AllowOriginsFunc: func(origin string) bool {
+			return true
+		},
 		AllowCredentials: true,
 	}))
 	app.Get("/", func(c *fiber.Ctx) error {
