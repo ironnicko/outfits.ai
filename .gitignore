@@ -5,6 +5,7 @@ __pycache__/
 .DS_Store
 *u2net*
 silueta.onnx
+README.MD
 
 # C extensions
 *.so
