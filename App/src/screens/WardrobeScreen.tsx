@@ -9,6 +9,8 @@ import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
 
+
+
 type Category = {
   icon: string;
   label: string;
@@ -30,7 +32,7 @@ interface Clothes {
 
 
 const mockClothes: Clothes[] = [
-  { ID: '1', Tags: [], Color: '', Type: 'upper', URL: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2CType%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
+  { ID: '1', Tags: [], Color: '', Type: 'upper', URL: "" },
   { ID: '2', Tags: [], Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
   { ID: '3', Tags: [], Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
   { ID: '4', Tags: [], Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
@@ -47,13 +49,14 @@ const categories: Category[] = [
 ];
 
 const WardrobeScreen = () => {
+
   const [file, setFile] = useState<Asset | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [clothes, setClothes] = useState<Clothes[]>(mockClothes);
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
-  const [refresh, setRefresh] = useState(true);
+  const [refresh, setRefresh] = useState(0);
 
   const fetchClothes = async () => {
     if (!token){
@@ -67,8 +70,6 @@ const WardrobeScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       })).data
-      
-
       setClothes(data);
   };
 
@@ -119,13 +120,13 @@ const WardrobeScreen = () => {
 
   const handleUpload = async () => {
     if (!file) return;
-  
     const formData = new FormData();
-    formData.append('file', {
+    const image = {
       uri: file.uri,
       type: file.type || 'image/jpeg',
       name: file.fileName || 'image.jpg'
-    });
+    }
+    formData.append('file', image);
     formData.append('type', "full");
   
     try {
@@ -155,9 +156,8 @@ const WardrobeScreen = () => {
       
       console.log(result.assets[0]);
       setFile(result.assets[0]);
-      setRefresh(false)
       handleUpload()
-      setRefresh(true)
+      setRefresh(refresh + 1)
     }
   };
 
@@ -172,9 +172,9 @@ const WardrobeScreen = () => {
       
       console.log(result.assets[0]);
       setFile(result.assets[0]);
-      setRefresh(false)
+
       handleUpload()
-      setRefresh(true)
+      setRefresh(refresh + 1)
     }
   };
 
@@ -262,7 +262,9 @@ const WardrobeScreen = () => {
               >
                 <ClothingCard
                   imageUrl={item.URL || ""}
-                  onPress={() => console.log('Clothing item pressed:', item.ID)}
+                  onPress={() => {
+                    console.log('Clothing item pressed:', item.ID)
+                  }}
                 />
                 {item.Tags?.map((tag) =><Text>{tag.TagName}</Text>)}
               </View>
