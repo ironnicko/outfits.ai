@@ -43,6 +43,7 @@ const categories: Category[] = [
   {id: 'shoes', icon: 'shoe-formal', label: 'Shoes'},
   {id: 'bags', icon: 'briefcase', label: 'Bags'},
   {id: 'accessories', icon: 'hat-fedora', label: 'Accessories'},
+  {id: 'full', icon: 'briefcase', label: 'Tops'},
 ];
 
 const WardrobeScreen = () => {
@@ -51,9 +52,14 @@ const WardrobeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [clothes, setClothes] = useState<Clothes[]>(mockClothes);
-  const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const [refresh, setRefresh] = useState(true);
 
   const fetchClothes = async () => {
+    if (!token){
+      const getToken = await getTokenLocal();
+      setToken(getToken || '')
+    }
     const data: Clothes[] = (await  api.get(
       '/api/v1/clothing/get-clothings',
       {
@@ -61,14 +67,14 @@ const WardrobeScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       })).data
+      
 
       setClothes(data);
   };
 
   useEffect(() => {
     fetchClothes()
-  }, [])
-  
+  }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
       acc[category.id] = clothes.filter(item => item.Type === category.id).length;
@@ -149,7 +155,9 @@ const WardrobeScreen = () => {
       
       console.log(result.assets[0]);
       setFile(result.assets[0]);
+      setRefresh(false)
       handleUpload()
+      setRefresh(true)
     }
   };
 
@@ -164,7 +172,9 @@ const WardrobeScreen = () => {
       
       console.log(result.assets[0]);
       setFile(result.assets[0]);
+      setRefresh(false)
       handleUpload()
+      setRefresh(true)
     }
   };
 

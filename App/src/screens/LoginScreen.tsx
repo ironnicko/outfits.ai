@@ -18,17 +18,19 @@ const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const setTokenState = useAuthStore((state: AuthState) => state.setToken);
+
   const setUsernameState = useAuthStore((state: AuthState) => state.setUsername);
 
   const handleSignIn = async () => {
+
     try {
 
       var res: any = await api.post('/api/v1/user/login', {
         email,
         password,
       });
-
       setTokenState(res.data.token);
+
       const username = (await api.get('/api/v1/user/user-info', {
         headers:{
           Authorization: `Bearer ${res.data.token}`

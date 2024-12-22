@@ -9,6 +9,7 @@ import SafeScreen from '../components/SafeScreen';
 
 
 
+
 const {width} = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // 48 = padding (16) * 2 + gap between cards (16)
 
