@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { useAuthStore, AuthState } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
 import { useNavigation } from '@react-navigation/native';
 

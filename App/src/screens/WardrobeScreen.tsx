@@ -4,7 +4,10 @@ import {Text, Searchbar, FAB, Portal, Modal} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
 import ClothingCard from '../components/ClothingCard';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {Asset, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { api } from '../utils/api';
+import { AuthState, useAuthStore } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
 
 type Category = {
   icon: string;
@@ -14,26 +17,27 @@ type Category = {
 
 // Mock clothing data
 const mockClothes = [
-  { id: '1', type: 'tops', imageUrl: 'https://example.com/shirt1.jpg' },
-  { id: '2', type: 'tops', imageUrl: 'https://example.com/shirt2.jpg' },
-  { id: '3', type: 'bottoms', imageUrl: 'https://example.com/pants1.jpg' },
+  { id: '1', type: 'upper', imageUrl: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2Ctype%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
+  { id: '2', type: 'upper', imageUrl: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
+  { id: '3', type: 'lower', imageUrl: 'https://example.com/pants1.jpg' },
   { id: '4', type: 'shoes', imageUrl: 'https://example.com/shoes1.jpg' },
   // Add more items as needed
 ];
 
 const categories: Category[] = [
-  {id: 'tops', icon: 'tshirt-crew', label: 'Tops'},
-  {id: 'bottoms', icon: 'lingerie', label: 'Bottoms'},
+  {id: 'upper', icon: 'tshirt-crew', label: 'Tops'},
+  {id: 'lower', icon: 'lingerie', label: 'Bottoms'},
   {id: 'shoes', icon: 'shoe-formal', label: 'Shoes'},
   {id: 'bags', icon: 'briefcase', label: 'Bags'},
   {id: 'accessories', icon: 'hat-fedora', label: 'Accessories'},
 ];
 
 const WardrobeScreen = () => {
+  const [file, setFile] = useState<Asset | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-
+  const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
@@ -85,6 +89,34 @@ const WardrobeScreen = () => {
     }
   };
 
+  const handleUpload = async () => {
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append('file', {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.fileName || 'image.jpg'
+    });
+    formData.append('type', "full");
+  
+    try {
+      const res = await api.post(
+        '/api/v1/clothing/add-clothing',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('Upload successful', res.data);
+    } catch (error: any) {
+      console.error('Upload error:', error.response?.data || error.message);
+    }
+  }
+
   const handleCamera = async () => {
     const result = await launchCamera({
       mediaType: 'photo',
@@ -94,6 +126,8 @@ const WardrobeScreen = () => {
     if (result.assets && result.assets[0]) {
       // Handle the captured image
       console.log(result.assets[0]);
+      setFile(result.assets[0]);
+      handleUpload()
     }
   };
 
@@ -106,7 +140,9 @@ const WardrobeScreen = () => {
 
     if (result.assets) {
       // Handle the selected images
-      console.log(result.assets);
+      console.log(result.assets[0]);
+      setFile(result.assets[0]);
+      handleUpload()
     }
   };
 
