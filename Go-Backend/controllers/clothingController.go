@@ -159,19 +159,33 @@ func CreateClothing(c *fiber.Ctx) error {
 
 }
 
+type GetTags struct {
+	TagID   uint
+	TagName string
+}
+
 type GetClothing struct {
 	Color string
 	Type  string
 	URL   string
 	ID    uint
+	Tags  []GetTags
 }
 
-func CreateResponseClothing(clothing models.Clothing) GetClothing {
+func CreateResponseClothing(clothing models.Clothing, tags []models.Tags) GetClothing {
 	response := GetClothing{}
 	response.Color = clothing.ClothingColor
 	response.Type = clothing.ClothingType
 	response.URL = clothing.ClothingURL
 	response.ID = clothing.ID
+	tagInstance := GetTags{}
+
+	for _, tag := range tags {
+		tagInstance.TagID = tag.ID
+		tagInstance.TagName = tag.TagName
+		response.Tags = append(response.Tags, tagInstance)
+	}
+
 	return response
 }
 
@@ -181,8 +195,10 @@ func GetClothings(c *fiber.Ctx) error {
 	clothings := []models.Clothing{}
 	db.Where("user_id = ?", user.ID).Find(&clothings)
 	responseClothings := []GetClothing{}
+	tags := []models.Tags{}
 	for _, clothing := range clothings {
-		responseClothing := CreateResponseClothing(clothing)
+		db.Where("clothing_id = ?", clothing.ID).Find(&tags)
+		responseClothing := CreateResponseClothing(clothing, tags)
 		responseClothings = append(responseClothings, responseClothing)
 	}
 

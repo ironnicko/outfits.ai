@@ -15,20 +15,25 @@ type Category = {
   id: string;
 };
 
+interface Tag{
+  TagID: number
+  TagName: string
+}
+
 interface Clothes { 
   ID: string;
   Type: string;
   URL: string | null;
   Color: string | null;
-
+  Tags : Tag[] | null,
 };
 
 
 const mockClothes: Clothes[] = [
-  { ID: '1', Color: '', Type: 'upper', URL: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2CType%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
-  { ID: '2', Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
-  { ID: '3', Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
-  { ID: '4', Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
+  { ID: '1', Tags: [], Color: '', Type: 'upper', URL: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2CType%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
+  { ID: '2', Tags: [], Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
+  { ID: '3', Tags: [], Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
+  { ID: '4', Tags: [], Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
   
 ];
 
@@ -56,6 +61,7 @@ const WardrobeScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       })).data
+
       setClothes(data);
   };
 
@@ -231,6 +237,9 @@ const WardrobeScreen = () => {
         </View>
 
         {/* Clothing Grid */}
+
+        {/* Added Tags under Clothing Card */}
+
         <ScrollView 
           style={styles.gridContainer}
           showsVerticalScrollIndicator={false}
@@ -245,6 +254,7 @@ const WardrobeScreen = () => {
                   imageUrl={item.URL || ""}
                   onPress={() => console.log('Clothing item pressed:', item.ID)}
                 />
+                {item.Tags?.map((tag) =><Text>{tag.TagName}</Text>)}
               </View>
             ))}
           </View>

@@ -22,7 +22,7 @@ const LoginScreen = () => {
 
   const handleSignIn = async () => {
     try {
-      console.log(email, password)
+
       var res: any = await api.post('/api/v1/user/login', {
         email,
         password,
