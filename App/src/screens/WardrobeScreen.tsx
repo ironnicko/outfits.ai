@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useMemo} from 'react';
+import React, {useState, useCallback, useMemo, useEffect} from 'react';
 import {StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions} from 'react-native';
 import {Text, Searchbar, FAB, Portal, Modal} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -15,13 +15,21 @@ type Category = {
   id: string;
 };
 
-// Mock clothing data
-const mockClothes = [
-  { id: '1', type: 'upper', imageUrl: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2Ctype%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
-  { id: '2', type: 'upper', imageUrl: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
-  { id: '3', type: 'lower', imageUrl: 'https://example.com/pants1.jpg' },
-  { id: '4', type: 'shoes', imageUrl: 'https://example.com/shoes1.jpg' },
-  // Add more items as needed
+interface Clothes { 
+  ID: string;
+  Type: string;
+  URL: string | null;
+  Color: string | null;
+
+};
+
+
+const mockClothes: Clothes[] = [
+  { ID: '1', Color: '', Type: 'upper', URL: 'https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2F8b%2Fc9%2F8bc9d85f7c4fdb40c7a0abfb865ed50a175bfae4.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2CType%5BDESCRIPTIVESTILLLIFE%5D%2Cres%5Bm%5D%2Chmver%5B2%5D&call=url[file:/product/fullscreen]' },
+  { ID: '2', Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
+  { ID: '3', Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
+  { ID: '4', Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
+  
 ];
 
 const categories: Category[] = [
@@ -37,36 +45,44 @@ const WardrobeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
+  const [clothes, setClothes] = useState<Clothes[]>(mockClothes);
   const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
 
-  const handleCategoryPress = useCallback((categoryId: string) => {
-    setSelectedCategory(categoryId);
-  }, []);
+  const fetchClothes = async () => {
+    const data: Clothes[] = (await  api.get(
+      '/api/v1/clothing/get-clothings',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })).data
+      setClothes(data);
+  };
 
-  // Calculate category counts dynamically
+  useEffect(() => {
+    fetchClothes()
+  }, [])
+  
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
-      acc[category.id] = mockClothes.filter(item => item.type === category.id).length;
+      acc[category.id] = clothes.filter(item => item.Type === category.id).length;
       return acc;
     }, {} as Record<string, number>);
-  }, [mockClothes]);
+  }, [clothes]);
 
-  // Calculate total items from all clothes, not just filtered ones
+  
   const totalItems = useMemo(() => {
-    return mockClothes.length; // Direct count of all items
-  }, [mockClothes]);
+    return clothes.length; 
+  }, [clothes]);
 
-  // Filter clothes based on category and search query
+  
   const filteredClothes = useMemo(() => {
-    return mockClothes.filter(item => {
-      const matchesCategory = selectedCategory === 'all' || item.type === selectedCategory;
-      const matchesSearch = item.type.toLowerCase().includes(searchQuery.toLowerCase());
+    return clothes.filter(item => {
+      const matchesCategory = selectedCategory === 'all' || item.Type === selectedCategory;
+      const matchesSearch = item.Type.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && (searchQuery === '' || matchesSearch);
     });
-  }, [selectedCategory, searchQuery, mockClothes]);
+  }, [selectedCategory, searchQuery, clothes]);
 
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
@@ -84,7 +100,7 @@ const WardrobeScreen = () => {
         },
       );
     } else {
-      // For Android, you might want to use a custom modal or bottom sheet
+      
       setShowImagePickerModal(true);
     }
   };
@@ -124,7 +140,7 @@ const WardrobeScreen = () => {
     });
 
     if (result.assets && result.assets[0]) {
-      // Handle the captured image
+      
       console.log(result.assets[0]);
       setFile(result.assets[0]);
       handleUpload()
@@ -134,12 +150,12 @@ const WardrobeScreen = () => {
   const handleGallery = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
-      selectionLimit: 0, // 0 means unlimited
+      selectionLimit: 0, 
       quality: 1,
     });
 
     if (result.assets) {
-      // Handle the selected images
+      
       console.log(result.assets[0]);
       setFile(result.assets[0]);
       handleUpload()
@@ -177,7 +193,7 @@ const WardrobeScreen = () => {
             {categories.map((category) => (
               <Pressable
                 key={category.id}
-                onPress={() => handleCategoryPress(category.id)}
+                onPress={() => setSelectedCategory(category.id)}
                 style={[
                   styles.categoryBubble,
                   selectedCategory === category.id && styles.activeCategory,
@@ -202,7 +218,9 @@ const WardrobeScreen = () => {
         <View style={styles.searchContainer}>
           <Searchbar
             placeholder="Search"
-            onChangeText={handleSearch}
+            onChangeText={(query: string) => {
+              setSearchQuery(query);
+            }}
             value={searchQuery}
             style={styles.searchBar}
             iconColor="#4A6741"
@@ -212,22 +230,6 @@ const WardrobeScreen = () => {
           </Pressable>
         </View>
 
-        {/* Demo Notice */}
-        {/* <View style={styles.demoContainer}>
-          <Text variant="titleLarge" style={styles.demoTitle}>
-            This is a demo wardrobe
-          </Text>
-          <Text variant="bodyLarge" style={styles.demoSubtitle}>
-            Would you like to start uploading your own items?
-          </Text>
-          <Button
-            mode="contained"
-            style={styles.demoButton}
-            onPress={() => console.log('Deactivate Demo')}>
-            Deactivate Demo
-          </Button>
-        </View> */}
-
         {/* Clothing Grid */}
         <ScrollView 
           style={styles.gridContainer}
@@ -236,12 +238,12 @@ const WardrobeScreen = () => {
           <View style={styles.grid}>
             {filteredClothes.map((item) => (
               <View 
-                key={item.id} 
+                key={item.ID} 
                 style={[styles.gridItem, { width: cardWidth }]}
               >
                 <ClothingCard
-                  imageUrl={item.imageUrl}
-                  onPress={() => console.log('Clothing item pressed:', item.id)}
+                  imageUrl={item.URL || ""}
+                  onPress={() => console.log('Clothing item pressed:', item.ID)}
                 />
               </View>
             ))}

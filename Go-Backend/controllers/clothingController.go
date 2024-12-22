@@ -161,7 +161,6 @@ func CreateClothing(c *fiber.Ctx) error {
 
 type GetClothing struct {
 	Color string
-	Style string
 	Type  string
 	URL   string
 	ID    uint
@@ -170,7 +169,6 @@ type GetClothing struct {
 func CreateResponseClothing(clothing models.Clothing) GetClothing {
 	response := GetClothing{}
 	response.Color = clothing.ClothingColor
-	response.Style = clothing.ClothingStyle
 	response.Type = clothing.ClothingType
 	response.URL = clothing.ClothingURL
 	response.ID = clothing.ID

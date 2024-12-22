@@ -19,14 +19,13 @@ type Dbinstance struct {
 var DB Dbinstance
 
 func ConnectDb() {
-	user := " user=" + os.Getenv("DB_USERNAME")
-	port := " port=" + os.Getenv("DB_PORT")
-	dbname := " dbname=" + os.Getenv("DB_NAME")
-	passw := " password=" + os.Getenv("DB_PASSWORD")
-	// host := " host=localhost"
-	host := " host=" + os.Getenv("DB_HOST")
-	timezone := " TimeZone=" + os.Getenv("TIMEZONE")
-	dsn := host + passw + dbname + port + user + timezone + " sslmode=disable"
+	user := os.Getenv("DB_USERNAME")
+	passw := os.Getenv("DB_PASSWORD")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+	host := os.Getenv("DB_HOST")
+
+	dsn := "postgresql://" + user + ":" + passw + "@" + host + ":" + port + "/" + dbname
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -38,10 +37,15 @@ func ConnectDb() {
 
 	log.Println("DATABASE CONNECTED")
 	db.Logger = logger.Default.LogMode(logger.Info)
-	// log.Println("running migrations")
+	log.Println("running migrations")
 	// Auto Migration Of Models
-	db.AutoMigrate(&models.Clothing{}, &models.User{}, &models.UserToken{}, &models.Outfit{})
+	err = db.AutoMigrate(&models.Tags{}, &models.Clothing{}, &models.User{}, &models.UserToken{}, &models.Outfit{})
 	DB = Dbinstance{
 		Db: db,
 	}
+
+	if err != nil {
+		log.Printf("Failed to automigrate")
+	}
+
 }

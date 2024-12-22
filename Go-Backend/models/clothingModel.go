@@ -8,7 +8,6 @@ import (
 type Clothing struct {
 	gorm.Model
 	ClothingColor string `gorm:"size:255" json:"color"`
-	ClothingStyle string `gorm:"size:255" json:"style"`
 	ClothingType  string `gorm:"size:255" json:"type" validate:"required,min=3,max=50"`
 	UserID        uint   `json:"user_id"`
 	User          User   `gorm:"foreignKey:UserID"`

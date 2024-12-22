@@ -37,11 +37,11 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello Fiber")
 	})
-
 	api := app.Group("/api/v1")
 	routes.SetUpUserRoutes(api)
 	routes.SetUpClothingRoutes(api)
 	port := os.Getenv("PORT")
 	app.Listen(":" + port)
+
 
 }
