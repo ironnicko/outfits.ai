@@ -1,4 +1,18 @@
 services:
+  rembg:
+    image: danielgatis/rembg
+    platform: linux/arm64
+    environment:
+      - U2NET_HOME=/var/lib/.u2net/
+    ports:
+      - "7001:7001"
+    volumes:
+      - pgdata:/var/lib/.u2net/
+    command: >
+      s --host 0.0.0.0 --port 7001 --log_level info
+    networks:
+      - outfits-ai-network
+
   segment:
     image: ironnicko1413/outfits.ai-segment:latest
     build:
