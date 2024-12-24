@@ -1,23 +1,17 @@
-from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 import numpy as np
 from io import BytesIO
 import asyncio
 
 
-async def generate_tags(file_content):
+async def generate_tags(file_content, model, processor):
     print("Generating Tags")
-    return await asyncio.to_thread(_generate_tags_sync, file_content)
+    return await asyncio.to_thread(_generate_tags_sync, file_content, model, processor)
 
 
-def _generate_tags_sync(file_content):
+def _generate_tags_sync(file_content, model, processor):
 
     image = Image.open(BytesIO(file_content)).convert("RGB")
-
-    processor = ViTImageProcessor.from_pretrained(
-        'google/vit-base-patch16-224')
-    model = ViTForImageClassification.from_pretrained(
-        'google/vit-base-patch16-224')
 
     inputs = processor(images=image, return_tensors="pt")
     outputs = model(**inputs)
