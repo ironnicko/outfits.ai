@@ -35,7 +35,7 @@ async def upload_file(
                      'type': type}
         file_content = await file.read()
         print("Starting Process...")
-        rem_bg_image = remove_bg(file_content, meta_data)
+        rem_bg_image = await remove_bg(file_content, meta_data)
         tags = generate_tags(rem_bg_image)
         print("Successfully Generated Tags")
 

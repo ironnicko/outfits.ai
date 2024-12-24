@@ -1,6 +1,6 @@
 import io
-
-import requests
+import json
+import aiohttp
 from upload_s3 import upload_s3
 import dotenv
 from os import getenv
@@ -9,46 +9,48 @@ from PIL import Image
 dotenv.load_dotenv()
 
 
-def send_post_request(url):
+async def send_post_request(url, file_bytes):
     try:
-
+        W, H = Image.open(io.BytesIO(file_bytes)).size
         headers = {
-            "accept": "application/json"
-        }
-        data = {
-            'model': getenv("MODEL"),
-            'a': 'false',
-            'af': '240',
-            'ab': '10',
-            'ae': '10',
-            'om': 'false',
-            'ppm': 'false'
+            "accept": "application/json",
         }
 
-        print("Sending Request")
-        response = requests.get(url, headers=headers, data=data)
+        extras = {
+            "sam_prompt": [
+                {
+                    "type": "point",
+                    "data": [W >> 1, H >> 1],
+                    "label": 1
+                }
+            ]
+        }
+        query_parameters = {
+            "extras": json.dumps(extras)
+        }
 
-        if response.status_code == 200:
-            print("Sent!")
-            return response.content
-        else:
-            print(f"Error: {response.status_code}")
-            print(response.text)
-            raise Exception("Failed to send POST request")
+        form = aiohttp.FormData()
+        form.add_field('file', file_bytes, filename='picture.png',
+                       content_type='image/png')
+        form.add_field('model', getenv("MODEL"))
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=form, params=query_parameters, headers=headers) as response:
+                if response.status == 200:
+                    return await response.read()
+                else:
+                    print(f"Request failed with status: {response.status}")
+                    return None
     except Exception as e:
         print(f"Error in send_post_request: {e}")
-        return b""
+        return None
 
 
-def remove_bg(file_bytes, metadata):
-    upload_s3(file_bytes, metadata)
-    file_name = metadata['cid'] + ".png"
-    s3_url = "https://s3.us-east-1.amazonaws.com/outfits.ai-bucket/" + \
-        f"clothing/{metadata['uid']}/{metadata['type']}/{file_name}"
+async def remove_bg(file_bytes, metadata):
     try:
-        url = "http://" + getenv("REM_HOST") + f":7001/api/remove?url={s3_url}"
+        url = "http://" + getenv("REM_HOST") + f":7001/api/remove"
 
-        img = send_post_request(url)
+        img = await send_post_request(url, file_bytes)
 
         if img:
             upload_s3(img, metadata)

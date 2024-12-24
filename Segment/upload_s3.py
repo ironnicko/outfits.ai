@@ -7,7 +7,7 @@ from io import BytesIO
 def upload_s3(in_mem_file, metadata):
     load_dotenv()
     aws_access_key = os.getenv("ACCESS_KEY")
-    aws_secret_key = os.getenv("SECRET_KEY", "cwQ5mhzijMwGjun7a+T6hbAh67un8/TLiUSu/ayp")
+    aws_secret_key = os.getenv("SECRET_KEY")
     aws_session_token = os.getenv("SESSION")
     in_mem_file = BytesIO(in_mem_file)
     print("Uploading to S3")
