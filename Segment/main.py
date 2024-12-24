@@ -3,6 +3,8 @@ from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from remove_bg import remove_bg
+from generate_tags import generate_tags
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -32,10 +34,12 @@ async def upload_file(
                      'cid': clothing_ID,
                      'type': type}
         file_content = await file.read()
+        print("Starting Process...")
+        rem_bg_image = remove_bg(file_content, meta_data)
+        tags = generate_tags(rem_bg_image)
+        print("Successfully Generated Tags")
 
-        remove_bg(file_content, meta_data)
-
-        return JSONResponse(content={"filename": file.filename, "status": "File received successfully"})
+        return JSONResponse(content={"Tags": tags, "status": "File received successfully"})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -142,7 +143,7 @@ func CreateClothing(c *fiber.Ctx) error {
 	}
 	defer resp.Body.Close()
 
-	// Return the FastAPI server's response to the client
+	// Read the FastAPI server's response
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		db.Delete(&models.Clothing{}, clothing.ID)
@@ -151,12 +152,37 @@ func CreateClothing(c *fiber.Ctx) error {
 		})
 	}
 
+	// Parse the JSON response
+	var fastAPIResponse struct {
+		Tags   []string `json:"Tags"`
+		Status string   `json:"status"`
+	}
+	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
+		db.Delete(&models.Clothing{}, clothing.ID)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse JSON response",
+		})
+	}
+
+	// Save Tags to the database
+	for _, tagName := range fastAPIResponse.Tags {
+		tag := models.Tags{
+			TagName:    tagName,
+			ClothingID: clothing.ID,
+		}
+		if err := db.Create(&tag).Error; err != nil {
+			db.Delete(&models.Clothing{}, clothing.ID)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to save tag to database",
+			})
+		}
+	}
+
 	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
 	db.Save(&clothing)
 
 	return c.Status(resp.StatusCode).Send(respBody)
-
 }
 
 type GetTags struct {
