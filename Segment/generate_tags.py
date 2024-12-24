@@ -2,26 +2,28 @@ from transformers import ViTImageProcessor, ViTForImageClassification
 from PIL import Image
 import numpy as np
 from io import BytesIO
+import asyncio
 
 
-def generate_tags(file_content):
+async def generate_tags(file_content):
     print("Generating Tags")
+    return await asyncio.to_thread(_generate_tags_sync, file_content)
+
+
+def _generate_tags_sync(file_content):
+
     image = Image.open(BytesIO(file_content)).convert("RGB")
 
-    processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+    processor = ViTImageProcessor.from_pretrained(
+        'google/vit-base-patch16-224')
+    model = ViTForImageClassification.from_pretrained(
+        'google/vit-base-patch16-224')
 
     inputs = processor(images=image, return_tensors="pt")
     outputs = model(**inputs)
-    logits = outputs.logits.detach().numpy()  # Convert tensor to numpy array
+    logits = outputs.logits.detach().numpy()
 
     top_k = 5
-    # Use numpy to get top_k indices
-    top_k_indices = np.argsort(logits[0])[::-1][:top_k]  # Sort in descending order
-
+    top_k_indices = np.argsort(logits[0])[::-1][:top_k]
     top_k_classes = [model.config.id2label[idx] for idx in top_k_indices]
-    top_k_values = logits[0][top_k_indices]  # Retrieve confidence values for top_k
-
-    for i in range(top_k):
-        print(f"{top_k_classes[i]} with confidence {top_k_values[i]:.4f}%")
     return top_k_classes
