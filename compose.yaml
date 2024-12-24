@@ -18,10 +18,14 @@ services:
     build:
       context: Segment/
       dockerfile: Dockerfile
+    environment:
+      - HF_HOME=/var/lib/.u2net/
     ports:
       - "8001:8001"
     env_file:
       - ./.env
+    volumes:
+      - pgdata:/var/lib/.u2net/
     networks:
       - outfits-ai-network
 

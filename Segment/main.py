@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI):
         'google/vit-base-patch16-224')
     yield
     # During Shut-Down
+    VIT.clear()
 
 app = FastAPI(lifespan=lifespan)
 
