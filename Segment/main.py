@@ -83,7 +83,7 @@ async def upload_file(
         tags = await generate_tags(rem_bg_image, **VIT)
         print("Successfully processed the file and generated tags")
 
-        await insert_embeddings([",".join(tags)], **EMBED)
+        await insert_embeddings([",".join(tags)], user_ID, **EMBED)
 
         return create_response(
             {"Tags": tags, "status": "File received successfully"}

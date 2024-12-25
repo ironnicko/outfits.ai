@@ -8,7 +8,7 @@ async def encode_sentences(sentences, model):
     return embeddings
 
 
-async def insert_embeddings(sentences, conn, model):
+async def insert_embeddings(sentences, user_ID, conn, model):
 
     embeddings = await encode_sentences(sentences, model)
 
@@ -29,7 +29,7 @@ async def insert_embeddings(sentences, conn, model):
                     ", ".join(map(str, embedding.tolist())) + "]"
                 await cur.execute(
                     "INSERT INTO vectors (user_id, embedding, text) VALUES (%s, %s, %s)",
-                    (1, embedding_str, sentences[index])
+                    (user_ID, embedding_str, sentences[index])
                 )
 
         await conn.commit()
