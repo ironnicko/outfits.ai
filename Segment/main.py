@@ -1,3 +1,5 @@
+import os
+import psycopg
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
@@ -6,9 +8,16 @@ from remove_bg import remove_bg
 from generate_tags import generate_tags
 from transformers import ViTImageProcessor, ViTForImageClassification
 from contextlib import asynccontextmanager
-
+from sentence_transformers import SentenceTransformer
+from set_embeddings import insert_embeddings
 
 VIT = {}
+EMBED = {}
+
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST")
+DB_USERNAME = os.getenv("DB_USERNAME")
 
 
 @asynccontextmanager
@@ -18,9 +27,16 @@ async def lifespan(app: FastAPI):
         'google/vit-base-patch16-224')
     VIT["model"] = ViTForImageClassification.from_pretrained(
         'google/vit-base-patch16-224')
+    EMBED["model"] = SentenceTransformer(
+        'sentence-transformers/all-mpnet-base-v2')
+    EMBED["conn"] = await psycopg.AsyncConnection.connect(
+        f"port=5432 password={DB_PASSWORD} dbname={DB_NAME} user={DB_USERNAME} host={DB_HOST}"
+    )
     yield
     # During Shut-Down
     VIT.clear()
+    EMBED["conn"].close()
+    EMBED.clear()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -66,6 +82,8 @@ async def upload_file(
         print("Generating tags...")
         tags = await generate_tags(rem_bg_image, **VIT)
         print("Successfully processed the file and generated tags")
+
+        await insert_embeddings([",".join(tags)], **EMBED)
 
         return create_response(
             {"Tags": tags, "status": "File received successfully"}
