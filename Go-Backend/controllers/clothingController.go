@@ -39,7 +39,7 @@ func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage stri
 	}
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": errorMessage})
 }
-func CreateMultiPartFormBody(user models.User, clothing models.Clothing, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
+func CreateMultiPartFormBody(strUID string, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
 	// Create a new multipart request to send the file to the FastAPI server
 
 	part, err := writer.CreateFormFile("file", fileHeader.Filename)
@@ -50,14 +50,11 @@ func CreateMultiPartFormBody(user models.User, clothing models.Clothing, writer 
 	// Copy the file buffer to the multipart form part
 	io.Copy(part, fileBuffer)
 
-	strUID := strconv.FormatUint(uint64(user.ID), 10)
-	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
-
 	writer.WriteField("user_ID", strUID)
 
 	writer.WriteField("clothing_ID", strCID)
 
-	writer.WriteField("type", clothing.ClothingType)
+	writer.WriteField("type", clothingType)
 
 	// Close the writer to finalize the multipart form
 	writer.Close()
@@ -76,9 +73,6 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	clothing.UserID = user.ID
 	clothing.ClothingType = c.FormValue("type")
-
-	strUID := strconv.FormatUint(uint64(user.ID), 10)
-	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
 
 	validate := validator.New()
 
@@ -118,7 +112,10 @@ func CreateClothing(c *fiber.Ctx) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	CreateMultiPartFormBody(user, clothing, writer, &fileBuffer, fileHeader)
+	strUID := strconv.FormatUint(uint64(user.ID), 10)
+	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
+
+	CreateMultiPartFormBody(strUID, strCID, clothing.ClothingType, writer, &fileBuffer, fileHeader)
 
 	// Send the POST request to the FastAPI server
 	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
