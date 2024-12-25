@@ -17,6 +17,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func formatEmbeddingForSQL(embedding []float64) string {
@@ -32,6 +33,36 @@ func formatEmbeddingForSQL(embedding []float64) string {
 	return sb.String()
 }
 
+func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage string) error {
+	if db != nil {
+		db.Delete(&models.Clothing{}, clothingID)
+	}
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": errorMessage})
+}
+func CreateMultiPartFormBody(user models.User, clothing models.Clothing, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
+	// Create a new multipart request to send the file to the FastAPI server
+
+	part, err := writer.CreateFormFile("file", fileHeader.Filename)
+	if err != nil {
+
+	}
+
+	// Copy the file buffer to the multipart form part
+	io.Copy(part, fileBuffer)
+
+	strUID := strconv.FormatUint(uint64(user.ID), 10)
+	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
+
+	writer.WriteField("user_ID", strUID)
+
+	writer.WriteField("clothing_ID", strCID)
+
+	writer.WriteField("type", clothing.ClothingType)
+
+	// Close the writer to finalize the multipart form
+	writer.Close()
+}
+
 func CreateClothing(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.User)
 	db := configs.DB.Db
@@ -39,46 +70,41 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&clothing); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": false,
-			"result": err.Error(),
+			"error": err.Error(),
 		})
 	}
 
 	clothing.UserID = user.ID
 	clothing.ClothingType = c.FormValue("type")
 
+	strUID := strconv.FormatUint(uint64(user.ID), 10)
+	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
+
 	validate := validator.New()
 
 	if err := validate.Struct(user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status": false,
-			"error":  err.Error(),
+			"error": err.Error(),
 		})
 	}
 
 	result := db.Create(&clothing)
 	if result.Error != nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"status": false,
-			"result": result.Error,
+			"error": result.Error,
 		})
 	}
 
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse file",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse File")
 	}
 
 	// Open the file in memory
 	file, err := fileHeader.Open()
 	if err != nil {
 		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to open file",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to Open File")
 	}
 	defer file.Close()
 
@@ -86,84 +112,34 @@ func CreateClothing(c *fiber.Ctx) error {
 	var fileBuffer bytes.Buffer
 	_, err = io.Copy(&fileBuffer, file)
 	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to copy file to buffer",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to Copy File to Buffer")
 	}
 
-	// Create a new multipart request to send the file to the FastAPI server
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", fileHeader.Filename)
-	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create form file",
-		})
-	}
 
-	// Copy the file buffer to the multipart form part
-	_, err = io.Copy(part, &fileBuffer)
-	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to copy file to multipart writer",
-		})
-	}
-
-	strUID := strconv.FormatUint(uint64(user.ID), 10)
-	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
-
-	err = writer.WriteField("user_ID", strUID)
-	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to write user_ID"})
-	}
-
-	err = writer.WriteField("clothing_ID", strCID)
-	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to write user_ID"})
-	}
-	err = writer.WriteField("type", clothing.ClothingType)
-	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to write user_ID"})
-	}
-
-	// Close the writer to finalize the multipart form
-	writer.Close()
+	CreateMultiPartFormBody(user, clothing, writer, &fileBuffer, fileHeader)
 
 	// Send the POST request to the FastAPI server
 	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
 	fmt.Println(url)
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create POST request",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to create POST request")
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to send POST request",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to send POST request")
 	}
 	defer resp.Body.Close()
 
 	// Read the FastAPI server's response
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to read response from FastAPI server",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to Read Reponse from Segment")
 	}
 
 	// Parse the JSON response
@@ -174,10 +150,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		Text      string    `json:"text"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
-		db.Delete(&models.Clothing{}, clothing.ID)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to parse JSON response",
-		})
+		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse JSON Response")
 	}
 
 	// Save Tags to the database
@@ -187,13 +160,11 @@ func CreateClothing(c *fiber.Ctx) error {
 			ClothingID: clothing.ID,
 		}
 		if err := db.Create(&tag).Error; err != nil {
-			db.Delete(&models.Clothing{}, clothing.ID)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to save tag to database",
-			})
+			return ErrorRollBack(c, db, clothing.ID, "Failed to Save Tags to Database")
 		}
 	}
 
+	// Save Vector to the Database
 	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
 	db.Exec(query, user.ID, clothing.ID, formatEmbeddingForSQL(fastAPIResponse.Embedding), fastAPIResponse.Text, time.Now(), time.Now())
 
