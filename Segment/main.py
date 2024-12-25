@@ -1,5 +1,5 @@
+import json
 import os
-import psycopg
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
@@ -9,7 +9,7 @@ from generate_tags import generate_tags
 from transformers import ViTImageProcessor, ViTForImageClassification
 from contextlib import asynccontextmanager
 from sentence_transformers import SentenceTransformer
-from set_embeddings import insert_embeddings
+from get_embeddings import get_embeddings
 
 VIT = {}
 EMBED = {}
@@ -29,13 +29,9 @@ async def lifespan(app: FastAPI):
         'google/vit-base-patch16-224')
     EMBED["model"] = SentenceTransformer(
         'sentence-transformers/all-mpnet-base-v2')
-    EMBED["conn"] = await psycopg.AsyncConnection.connect(
-        f"port=5432 password={DB_PASSWORD} dbname={DB_NAME} user={DB_USERNAME} host={DB_HOST}"
-    )
     yield
     # During Shut-Down
     VIT.clear()
-    EMBED["conn"].close()
     EMBED.clear()
 
 app = FastAPI(lifespan=lifespan)
@@ -54,13 +50,13 @@ def create_response(content, status_code=200):
     return JSONResponse(content=content, status_code=status_code)
 
 
-@app.get("/")
+@ app.get("/")
 async def home():
     """Health check endpoint."""
     return create_response({"result": "success"})
 
 
-@app.post("/upload")
+@ app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
     user_ID: str = Form(...),
@@ -82,11 +78,16 @@ async def upload_file(
         print("Generating tags...")
         tags = await generate_tags(rem_bg_image, **VIT)
         print("Successfully processed the file and generated tags")
-
-        await insert_embeddings([",".join(tags)], user_ID, **EMBED)
+        text = ",".join(tags)
+        embedding = await get_embeddings([text], **EMBED)
 
         return create_response(
-            {"Tags": tags, "status": "File received successfully"}
+            {
+                "Tags": tags,
+                "status": "File received successfully",
+                "Embedding": embedding.tolist()[0],
+                "text": text
+            }
         )
     except HTTPException as http_exc:
         return create_response({"error": http_exc.detail}, status_code=http_exc.status_code)

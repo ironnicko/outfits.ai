@@ -9,6 +9,7 @@ import (
 	"outfits/models"
 	"strconv"
 	"strings"
+	"time"
 
 	"bytes"
 	"io"
@@ -17,6 +18,19 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
+
+func formatEmbeddingForSQL(embedding []float64) string {
+	var sb strings.Builder
+	sb.WriteString("[")
+	for i, val := range embedding {
+		sb.WriteString(fmt.Sprintf("%f", val))
+		if i < len(embedding)-1 {
+			sb.WriteString(", ")
+		}
+	}
+	sb.WriteString("]")
+	return sb.String()
+}
 
 func CreateClothing(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.User)
@@ -154,8 +168,10 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	// Parse the JSON response
 	var fastAPIResponse struct {
-		Tags   []string `json:"Tags"`
-		Status string   `json:"status"`
+		Tags      []string  `json:"Tags"`
+		Status    string    `json:"status"`
+		Embedding []float64 `json:"Embedding"`
+		Text      string    `json:"text"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
 		db.Delete(&models.Clothing{}, clothing.ID)
@@ -177,6 +193,9 @@ func CreateClothing(c *fiber.Ctx) error {
 			})
 		}
 	}
+
+	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
+	db.Exec(query, user.ID, clothing.ID, formatEmbeddingForSQL(fastAPIResponse.Embedding), fastAPIResponse.Text, time.Now(), time.Now())
 
 	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
