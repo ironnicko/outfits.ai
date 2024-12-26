@@ -1,5 +1,6 @@
 import io
 import json
+import random
 import aiohttp
 from upload_s3 import upload_s3
 import dotenv
@@ -20,7 +21,7 @@ async def send_post_request(url, file_bytes):
             "sam_prompt": [
                 {
                     "type": "point",
-                    "data": [W >> 1, H >> 1],
+                    "data": [(W >> 1) + random.randint(-5, 5), (H >> 1) + random.randint(-5, 5)],
                     "label": 1
                 }
             ]

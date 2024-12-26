@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     VIT["processor"] = ViTImageProcessor.from_pretrained(
         'google/vit-base-patch16-224')
     VIT["model"] = ViTForImageClassification.from_pretrained(
-        'google/vit-base-patch16-224')
+        'jolual2747/vit-clothes-classification')
     EMBED["model"] = SentenceTransformer(
         'sentence-transformers/all-MiniLM-L6-v2')
     yield
