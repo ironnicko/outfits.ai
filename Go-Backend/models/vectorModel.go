@@ -10,6 +10,6 @@ type Vector struct {
 	User       User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 	ClothingID uint      `json:"clothing_id"`
 	Clothing   Clothing  `gorm:"foreignKey:ClothingID;constraint:OnDelete:CASCADE;"`
-	Embedding  []float64 `gorm:"type:vector(768);not null"`
+	Embedding  []float64 `gorm:"type:vector(384);not null"`
 	Text       string
 }

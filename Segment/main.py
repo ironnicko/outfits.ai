@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     VIT["model"] = ViTForImageClassification.from_pretrained(
         'google/vit-base-patch16-224')
     EMBED["model"] = SentenceTransformer(
-        'sentence-transformers/all-mpnet-base-v2')
+        'sentence-transformers/all-MiniLM-L6-v2')
     yield
     # During Shut-Down
     VIT.clear()
@@ -85,7 +85,7 @@ async def upload_file(
             {
                 "Tags": tags,
                 "status": "File received successfully",
-                "Embedding": embedding.tolist()[0],
+                "Embedding": json.dumps(embedding.tolist()[0]),
                 "text": text
             }
         )

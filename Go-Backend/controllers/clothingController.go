@@ -20,19 +20,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func formatEmbeddingForSQL(embedding []float64) string {
-	var sb strings.Builder
-	sb.WriteString("[")
-	for i, val := range embedding {
-		sb.WriteString(fmt.Sprintf("%f", val))
-		if i < len(embedding)-1 {
-			sb.WriteString(", ")
-		}
-	}
-	sb.WriteString("]")
-	return sb.String()
-}
-
 func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage string) error {
 	if db != nil {
 		db.Delete(&models.Clothing{}, clothingID)
@@ -141,10 +128,10 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	// Parse the JSON response
 	var fastAPIResponse struct {
-		Tags      []string  `json:"Tags"`
-		Status    string    `json:"status"`
-		Embedding []float64 `json:"Embedding"`
-		Text      string    `json:"text"`
+		Tags      []string `json:"Tags"`
+		Status    string   `json:"status"`
+		Embedding string   `json:"Embedding"`
+		Text      string   `json:"text"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
 		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse JSON Response")
@@ -163,7 +150,7 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	// Save Vector to the Database
 	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-	db.Exec(query, user.ID, clothing.ID, formatEmbeddingForSQL(fastAPIResponse.Embedding), fastAPIResponse.Text, time.Now(), time.Now())
+	db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, fastAPIResponse.Text, time.Now(), time.Now())
 
 	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket

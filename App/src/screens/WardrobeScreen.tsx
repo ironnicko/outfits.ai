@@ -156,6 +156,8 @@ const WardrobeScreen = () => {
       
       console.log(result.assets[0]);
       setFile(result.assets[0]);
+
+      // Add frontend loading logic that's non-blocking
       handleUpload()
       setRefresh(refresh + 1)
     }
@@ -173,6 +175,7 @@ const WardrobeScreen = () => {
       console.log(result.assets[0]);
       setFile(result.assets[0]);
 
+      // Add frontend loading logic that's non-blocking
       handleUpload()
       setRefresh(refresh + 1)
     }
