@@ -54,9 +54,9 @@ async def remove_bg(file_bytes, metadata):
         img = await send_post_request(url, file_bytes)
 
         if img:
-            upload_s3(img, metadata)
+            url = upload_s3(img, metadata)
             print("Upload Success!")
-            return img
+            return url
         else:
             raise Exception("Image processing failed")
     except Exception as e:

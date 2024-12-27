@@ -59,7 +59,6 @@ func CreateClothing(c *fiber.Ctx) error {
 	}
 
 	clothing.UserID = user.ID
-	clothing.ClothingType = c.FormValue("type")
 
 	validate := validator.New()
 
@@ -132,6 +131,8 @@ func CreateClothing(c *fiber.Ctx) error {
 		Status    string   `json:"status"`
 		Embedding string   `json:"Embedding"`
 		Text      string   `json:"text"`
+		Type      string   `json:"type"`
+		Color     string   `json:"color"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
 		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse JSON Response")
@@ -154,6 +155,8 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
+	clothing.ClothingType = fastAPIResponse.Type
+	clothing.ClothingColor = fastAPIResponse.Color
 	db.Save(&clothing)
 
 	return c.Status(resp.StatusCode).Send(respBody)

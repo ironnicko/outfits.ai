@@ -1,10 +1,10 @@
-import React, {useState, useCallback, useMemo, useEffect} from 'react';
-import {StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions} from 'react-native';
-import {Text, Searchbar, FAB, Portal, Modal} from 'react-native-paper';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions } from 'react-native';
+import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
 import ClothingCard from '../components/ClothingCard';
-import {Asset, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
@@ -12,22 +12,22 @@ import { getTokenLocal } from '../utils/auth';
 
 
 type Category = {
-  icon: string;
-  label: string;
-  id: string;
+  Icon: string;
+  Label: string;
+  ID: string;
 };
 
-interface Tag{
+interface Tag {
   TagID: number
   TagName: string
 }
 
-interface Clothes { 
+interface Clothes {
   ID: string;
   Type: string;
   URL: string | null;
   Color: string | null;
-  Tags : Tag[] | null,
+  Tags: Tag[] | null,
 };
 
 
@@ -36,16 +36,16 @@ const mockClothes: Clothes[] = [
   { ID: '2', Tags: [], Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
   { ID: '3', Tags: [], Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
   { ID: '4', Tags: [], Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
-  
+
 ];
 
 const categories: Category[] = [
-  {id: 'upper', icon: 'tshirt-crew', label: 'Tops'},
-  {id: 'lower', icon: 'lingerie', label: 'Bottoms'},
-  {id: 'shoes', icon: 'shoe-formal', label: 'Shoes'},
-  {id: 'bags', icon: 'briefcase', label: 'Bags'},
-  {id: 'accessories', icon: 'hat-fedora', label: 'Accessories'},
-  {id: 'full', icon: 'briefcase', label: 'Tops'},
+  { ID: 'all', Icon: 'hanger', Label: 'All' },
+  { ID: 'upper', Icon: 'tshirt-crew', Label: 'Tops' },
+  { ID: 'lower', Icon: 'lingerie', Label: 'Bottoms' },
+  { ID: 'shoes', Icon: 'shoe-formal', Label: 'Shoes' },
+  { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
+  { ID: 'accessories', Icon: 'hat-fedora', Label: 'Accessories' },
 ];
 
 const WardrobeScreen = () => {
@@ -59,18 +59,18 @@ const WardrobeScreen = () => {
   const [refresh, setRefresh] = useState(0);
 
   const fetchClothes = async () => {
-    if (!token){
+    if (!token) {
       const getToken = await getTokenLocal();
       setToken(getToken || '')
     }
-    const data: Clothes[] = (await  api.get(
+    const data: Clothes[] = (await api.get(
       '/api/v1/clothing/get-clothings',
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })).data
-      setClothes(data);
+    setClothes(data);
   };
 
   useEffect(() => {
@@ -78,17 +78,17 @@ const WardrobeScreen = () => {
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
-      acc[category.id] = clothes.filter(item => item.Type === category.id).length;
+      acc[category.ID] = clothes.filter(item => item.Type === category.ID).length;
       return acc;
     }, {} as Record<string, number>);
   }, [clothes]);
 
-  
+
   const totalItems = useMemo(() => {
-    return clothes.length; 
+    return clothes.length;
   }, [clothes]);
 
-  
+
   const filteredClothes = useMemo(() => {
     return clothes.filter(item => {
       const matchesCategory = selectedCategory === 'all' || item.Type === selectedCategory;
@@ -113,7 +113,7 @@ const WardrobeScreen = () => {
         },
       );
     } else {
-      
+
       setShowImagePickerModal(true);
     }
   };
@@ -127,8 +127,7 @@ const WardrobeScreen = () => {
       name: file.fileName || 'image.jpg'
     }
     formData.append('file', image);
-    formData.append('type', "full");
-  
+
     try {
       const res = await api.post(
         '/api/v1/clothing/add-clothing',
@@ -153,7 +152,7 @@ const WardrobeScreen = () => {
     });
 
     if (result.assets && result.assets[0]) {
-      
+
       console.log(result.assets[0]);
       setFile(result.assets[0]);
 
@@ -166,12 +165,12 @@ const WardrobeScreen = () => {
   const handleGallery = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
-      selectionLimit: 0, 
+      selectionLimit: 0,
       quality: 1,
     });
 
     if (result.assets) {
-      
+
       console.log(result.assets[0]);
       setFile(result.assets[0]);
 
@@ -211,22 +210,22 @@ const WardrobeScreen = () => {
             style={styles.categoriesScroll}>
             {categories.map((category) => (
               <Pressable
-                key={category.id}
-                onPress={() => setSelectedCategory(category.id)}
+                key={category.ID}
+                onPress={() => setSelectedCategory(category.ID)}
                 style={[
                   styles.categoryBubble,
-                  selectedCategory === category.id && styles.activeCategory,
+                  selectedCategory === category.ID && styles.activeCategory,
                 ]}>
-                <Icon 
-                  name={category.icon} 
-                  size={24} 
-                  color={selectedCategory === category.id ? '#4A6741' : '#666'}
+                <Icon
+                  name={category.Icon}
+                  size={24}
+                  color={selectedCategory === category.ID ? '#4A6741' : '#666'}
                 />
                 <Text style={[
                   styles.categoryCount,
-                  selectedCategory === category.id && styles.activeCategoryText,
+                  selectedCategory === category.ID && styles.activeCategoryText,
                 ]}>
-                  {categoryCounts[category.id]}
+                  {categoryCounts[category.ID]}
                 </Text>
               </Pressable>
             ))}
@@ -253,14 +252,14 @@ const WardrobeScreen = () => {
 
         {/* Added Tags under Clothing Card */}
 
-        <ScrollView 
+        <ScrollView
           style={styles.gridContainer}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.grid}>
             {filteredClothes.map((item) => (
-              <View 
-                key={item.ID} 
+              <View
+                key={item.ID}
                 style={[styles.gridItem, { width: cardWidth }]}
               >
                 <ClothingCard
@@ -269,14 +268,14 @@ const WardrobeScreen = () => {
                     console.log('Clothing item pressed:', item.ID)
                   }}
                 />
-                {item.Tags?.map((tag) =><Text>{tag.TagName}</Text>)}
+                {item.Tags?.map((tag) => <Text>{tag.TagName}</Text>)}
               </View>
             ))}
           </View>
         </ScrollView>
 
         <FAB
-          icon="camera"
+          Icon="camera"
           style={styles.fab}
           color="#fff"
           size="medium"
@@ -299,7 +298,7 @@ const WardrobeScreen = () => {
                 <Icon name="camera" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Take Picture</Text>
               </Pressable>
-              
+
               <Pressable
                 style={styles.modalOption}
                 onPress={() => {
@@ -309,7 +308,7 @@ const WardrobeScreen = () => {
                 <Icon name="image-multiple" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Select Picture(s)</Text>
               </Pressable>
-              
+
               <Pressable
                 style={[styles.modalOption, styles.cancelOption]}
                 onPress={() => setShowImagePickerModal(false)}>

@@ -15,6 +15,7 @@ def upload_s3(in_mem_file, metadata):
     bucket_name = os.getenv("BUCKET_NAME")
     bucket = boto3.client('s3', region_name="us-east-1", aws_access_key_id=aws_access_key,
                           aws_secret_access_key=aws_secret_key, aws_session_token=aws_session_token)
-
+    suffix = f"clothing/{metadata['uid']}/{metadata['type']}/{file_name}"
     bucket.upload_fileobj(in_mem_file, bucket_name,
-                          f"clothing/{metadata['uid']}/{metadata['type']}/{file_name}", ExtraArgs={"ACL": "public-read"})
+                          suffix, ExtraArgs={"ACL": "public-read"})
+    return "https://s3.us-east-1.amazonaws.com/outfits.ai-bucket/" + suffix
