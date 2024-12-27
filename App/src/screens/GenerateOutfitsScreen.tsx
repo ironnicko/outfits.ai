@@ -4,34 +4,33 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
-import {WEATHER_API_KEY} from '@env';
 import {Text, Button, IconButton} from 'react-native-paper';
 
 
-type ClothingType = 'hat' | 'top' | 'bottom' | 'shoes' | 'bag';
+type ClothingType = 'hat' | 'upper' | 'lower' | 'shoes' | 'bag';
 
 interface SelectedClothing {
-  type: ClothingType;
+  Type: ClothingType;
   itemId?: string;
 }
 
 const GenerateOutfitsScreen = () => {
 
-  const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+
   const navigation = useNavigation();
   const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
-    {type: 'top'},
-    {type: 'bottom'},
-    {type: 'shoes'},
+    {Type: 'upper'},
+    {Type: 'lower'},
+    {Type: 'shoes'},
   ]);
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
   const [weather, setWeather] = useState<string>('');
 
   const clothingItems = [
-    {type: 'hat', icon: 'hat-fedora', size: 48},
-    {type: 'top', icon: 'tshirt-crew', size: 64},
-    {type: 'bottom', icon: 'lingerie', size: 64}, // replace with some svg
-    {type: 'shoes', icon: 'shoe-formal', size: 48},
+    {Type: 'hat', Icon: 'hat-fedora', Size: 48},
+    {Type: 'upper', Icon: 'tshirt-crew', Size: 64},
+    {Type: 'lower', Icon: 'lingerie', Size: 64}, // replace with some svg
+    {Type: 'shoes', Icon: 'shoe-formal', Size: 48},
   ];
 
   useEffect(() => {
@@ -80,14 +79,14 @@ const GenerateOutfitsScreen = () => {
   };
 
   const handleClothingItemPress = (type: ClothingType) => {
-    if (selectedItems.find(item => item.type === type)) {
+    if (selectedItems.find(item => item.Type === type)) {
       navigation.navigate('SelectClothingItem', {
         type,
         title: type.charAt(0).toUpperCase() + type.slice(1) + 's',
         onSelect: (itemId: string) => {
           setSelectedItems(prev =>
             prev.map(item =>
-              item.type === type ? {...item, itemId} : item,
+              item.Type === type ? {...item, itemId} : item,
             ),
           );
         },
@@ -97,11 +96,11 @@ const GenerateOutfitsScreen = () => {
     }
   };
 
-  const toggleItem = (type: ClothingType) => {
+  const toggleItem = (Type: ClothingType) => {
     setSelectedItems(prev =>
-      prev.find(item => item.type === type)
-        ? prev.filter(item => item.type !== type)
-        : [...prev, {type}],
+      prev.find(item => item.Type === Type)
+        ? prev.filter(item => item.Type !== Type)
+        : [...prev, {Type}],
     );
   };
 
@@ -115,15 +114,15 @@ const GenerateOutfitsScreen = () => {
   const isOccasionSelected = selectedOccasion !== 'Select Occasion';
 
   const renderClothingItem = (item: typeof clothingItems[0]) => {
-    const selectedItem = selectedItems.find(si => si.type === item.type);
+    const selectedItem = selectedItems.find(si => si.Type === item.Type);
     const isSelected = !!selectedItem;
     const hasWardrobe = !!selectedItem?.itemId;
 
     return (
       <Pressable
-        key={item.type}
-        onPress={() => handleClothingItemPress(item.type as ClothingType)}
-        onLongPress={() => toggleItem(item.type as ClothingType)}
+        key={item.Type}
+        onPress={() => handleClothingItemPress(item.Type as ClothingType)}
+        onLongPress={() => toggleItem(item.Type as ClothingType)}
         style={[
           styles.clothingItem,
           isSelected && styles.selectedItem,
@@ -141,8 +140,8 @@ const GenerateOutfitsScreen = () => {
           </View>
         ) : (
           <Icon
-            name={item.icon}
-            size={item.size}
+            name={item.Icon}
+            size={item.Size}
             color={isSelected ? '#fff' : '#4A6741'}
           />
         )}
@@ -192,7 +191,7 @@ const GenerateOutfitsScreen = () => {
               labelStyle={styles.buttonLabel}
               onPress={() => console.log('Show outfit')}>
               Show Outfit
-              <Icon name="eye" size={24} color="#fff" style={styles.buttonIcon} />
+              <Icon name="eye" Size={24} color="#fff" style={styles.buttonIcon} />
             </Button>
           )}
           
@@ -213,7 +212,7 @@ const GenerateOutfitsScreen = () => {
               Generate Outfits
               <Icon 
                 name="auto-fix" 
-                size={24} 
+                Size={24} 
                 color={isOccasionSelected ? "#fff" : "#rgba(255, 255, 255, 0.5)"} 
                 style={styles.buttonIcon} 
               />
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
   checkmark: {
     position: 'absolute',
     right: 4,
-    top: 4,
+    upper: 4,
     backgroundColor: '#4A6741',
     borderRadius: 8,
     padding: 4,

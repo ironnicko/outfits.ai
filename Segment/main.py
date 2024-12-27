@@ -1,18 +1,19 @@
 import json
 import os
+from openai import AsyncOpenAI
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from gpt_request import gpt_request
 from remove_bg import remove_bg
 from generate_tags import generate_tags
-from transformers import ViTImageProcessor, ViTForImageClassification
 from contextlib import asynccontextmanager
 from sentence_transformers import SentenceTransformer
 from get_embeddings import get_embeddings
 
-VIT = {}
 EMBED = {}
+LLM = {}
 
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
@@ -23,16 +24,15 @@ DB_USERNAME = os.getenv("DB_USERNAME")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # During Start-Up
-    VIT["processor"] = ViTImageProcessor.from_pretrained(
-        'google/vit-base-patch16-224')
-    VIT["model"] = ViTForImageClassification.from_pretrained(
-        'jolual2747/vit-clothes-classification')
+
     EMBED["model"] = SentenceTransformer(
         'sentence-transformers/all-MiniLM-L6-v2')
+    LLM["client"] = AsyncOpenAI()
+    LLM["client"].base_url = "https://free.v36.cm/v1/"
     yield
     # During Shut-Down
-    VIT.clear()
     EMBED.clear()
+    LLM.clear()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -73,22 +73,21 @@ async def upload_file(
                 status_code=400, detail="Uploaded file is empty")
 
         print("Starting background removal...")
-        rem_bg_image = await remove_bg(file_content, meta_data)
+        rem_bg_image: str = await remove_bg(file_content, meta_data)
 
         print("Generating tags...")
-        tags = await generate_tags(rem_bg_image, **VIT)
+        response: dict = await gpt_request(**LLM, url=rem_bg_image)
         print("Successfully processed the file and generated tags")
-        text = ",".join(tags)
+        text = " ".join(response["Tags"])
         embedding = await get_embeddings([text], **EMBED)
 
-        return create_response(
-            {
-                "Tags": tags,
-                "status": "File received successfully",
-                "Embedding": json.dumps(embedding.tolist()[0]),
-                "text": text
-            }
-        )
+        response.update({
+            "status": "File received successfully",
+            "Embedding": json.dumps(embedding.tolist()[0]),
+            "text": text,
+        })
+
+        return create_response(response)
     except HTTPException as http_exc:
         return create_response({"error": http_exc.detail}, status_code=http_exc.status_code)
     except Exception as e:
