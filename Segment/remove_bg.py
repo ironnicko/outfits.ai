@@ -2,15 +2,15 @@ import io
 import json
 import random
 import aiohttp
-from upload_s3 import upload_s3
 import dotenv
 from os import getenv
 from PIL import Image
 
+
 dotenv.load_dotenv()
 
 
-async def send_post_request(url, file_bytes):
+async def send_post_request(url, file_bytes, metadata):
     try:
         W, H = Image.open(io.BytesIO(file_bytes)).size
         headers = {
@@ -21,7 +21,7 @@ async def send_post_request(url, file_bytes):
             "sam_prompt": [
                 {
                     "type": "point",
-                    "data": [(W >> 1) + random.randint(-5, 5), (H >> 1) + random.randint(-5, 5)],
+                    "data": [(W >> 1) + random.randint(-3, 3), (H >> 1) + random.randint(0,3)],
                     "label": 1
                 }
             ]
@@ -31,8 +31,8 @@ async def send_post_request(url, file_bytes):
         }
 
         form = aiohttp.FormData()
-        form.add_field('file', file_bytes, filename='picture.png',
-                       content_type='image/png')
+        form.add_field('file', file_bytes, filename=metadata["filename"],
+                       content_type=metadata["filetype"])
         form.add_field('model', getenv("MODEL"))
 
         async with aiohttp.ClientSession() as session:
@@ -51,12 +51,10 @@ async def remove_bg(file_bytes, metadata):
     try:
         url = "http://" + getenv("REM_HOST") + f":7001/api/remove"
 
-        img = await send_post_request(url, file_bytes)
+        img = await send_post_request(url, file_bytes, metadata)
 
         if img:
-            url = upload_s3(img, metadata)
-            print("Upload Success!")
-            return url
+            return img
         else:
             raise Exception("Image processing failed")
     except Exception as e:

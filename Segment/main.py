@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 from openai import AsyncOpenAI
@@ -11,6 +12,7 @@ from generate_tags import generate_tags
 from contextlib import asynccontextmanager
 from sentence_transformers import SentenceTransformer
 from get_embeddings import get_embeddings
+from upload_s3 import upload_s3
 
 EMBED = {}
 LLM = {}
@@ -61,11 +63,11 @@ async def upload_file(
     file: UploadFile = File(...),
     user_ID: str = Form(...),
     clothing_ID: str = Form(...),
-    type: str = Form(...),
 ):
     try:
 
-        meta_data = {"uid": user_ID, "cid": clothing_ID, "type": type}
+        meta_data = {"uid": user_ID, "cid": clothing_ID,
+                     "filetype": file.content_type, "filename": file.filename}
 
         file_content = await file.read()
         if not file_content:
@@ -74,10 +76,15 @@ async def upload_file(
 
         print("Starting background removal...")
         rem_bg_image: str = await remove_bg(file_content, meta_data)
-
+        base64img = f"data:{meta_data['filetype']};base64," + \
+            base64.b64encode(rem_bg_image).decode("utf-8")
         print("Generating tags...")
-        response: dict = await gpt_request(**LLM, url=rem_bg_image)
+        response: dict = await gpt_request(**LLM, url=base64img)
         print("Successfully processed the file and generated tags")
+        meta_data["type"] = response["type"]
+
+        await upload_s3(rem_bg_image, meta_data)
+
         text = " ".join(response["Tags"])
         embedding = await get_embeddings([text], **EMBED)
 

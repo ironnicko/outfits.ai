@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
@@ -52,6 +52,7 @@ const WardrobeScreen = () => {
 
   const [file, setFile] = useState<Asset | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [clothes, setClothes] = useState<Clothes[]>(mockClothes);
@@ -71,6 +72,7 @@ const WardrobeScreen = () => {
         },
       })).data
     setClothes(data);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -78,7 +80,8 @@ const WardrobeScreen = () => {
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
-      acc[category.ID] = clothes.filter(item => item.Type === category.ID).length;
+      console.log(category.ID)
+      acc[category.ID] = (category.ID != 'all' ? clothes.filter(item => item.Type === category.ID).length : clothes.length);
       return acc;
     }, {} as Record<string, number>);
   }, [clothes]);
@@ -157,7 +160,9 @@ const WardrobeScreen = () => {
       setFile(result.assets[0]);
 
       // Add frontend loading logic that's non-blocking
-      handleUpload()
+      setLoading(true)
+      await handleUpload()
+      setLoading(false)
       setRefresh(refresh + 1)
     }
   };
@@ -175,7 +180,9 @@ const WardrobeScreen = () => {
       setFile(result.assets[0]);
 
       // Add frontend loading logic that's non-blocking
-      handleUpload()
+      setLoading(true)
+      await handleUpload()
+      setLoading(false)
       setRefresh(refresh + 1)
     }
   };
@@ -217,6 +224,7 @@ const WardrobeScreen = () => {
                   selectedCategory === category.ID && styles.activeCategory,
                 ]}>
                 <Icon
+
                   name={category.Icon}
                   size={24}
                   color={selectedCategory === category.ID ? '#4A6741' : '#666'}
@@ -252,30 +260,39 @@ const WardrobeScreen = () => {
 
         {/* Added Tags under Clothing Card */}
 
-        <ScrollView
-          style={styles.gridContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.grid}>
-            {filteredClothes.map((item) => (
-              <View
-                key={item.ID}
-                style={[styles.gridItem, { width: cardWidth }]}
-              >
-                <ClothingCard
-                  imageUrl={item.URL || ""}
-                  onPress={() => {
-                    console.log('Clothing item pressed:', item.ID)
-                  }}
-                />
-                {item.Tags?.map((tag) => <Text>{tag.TagName}</Text>)}
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="4A6741" />
+            </View>
+              ): (
+          <ScrollView
+            style={styles.gridContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.grid}>
+              {filteredClothes.map((item) => (
+                <View
+                  key={item.ID}
+                  style={[styles.gridItem, { width: cardWidth }]}
+                >
+                  <ClothingCard
+                    imageUrl={item.URL || ""}
+                    onPress={() => {
+                      console.log('Clothing item pressed:', item.ID);
+                    }}
+                  />
+                  {item.Tags?.map((tag) => (
+                    <Text key={tag.TagName}>{tag.TagName}</Text>
+                  ))}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        )
+        }
 
         <FAB
-          Icon="camera"
+          icon="camera"
           style={styles.fab}
           color="#fff"
           size="medium"
