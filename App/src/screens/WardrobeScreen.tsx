@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
@@ -8,6 +8,7 @@ import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-pick
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
+import { Tag, useClothingStore } from '../store/clothingStore';
 
 
 
@@ -17,27 +18,6 @@ type Category = {
   ID: string;
 };
 
-interface Tag {
-  TagID: number
-  TagName: string
-}
-
-interface Clothes {
-  ID: string;
-  Type: string;
-  URL: string | null;
-  Color: string | null;
-  Tags: Tag[] | null,
-};
-
-
-const mockClothes: Clothes[] = [
-  { ID: '1', Tags: [], Color: '', Type: 'upper', URL: "" },
-  { ID: '2', Tags: [], Color: '', Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
-  { ID: '3', Tags: [], Color: '', Type: 'lower', URL: 'https://example.com/pants1.jpg' },
-  { ID: '4', Tags: [], Color: '', Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
-
-];
 
 const categories: Category[] = [
   { ID: 'all', Icon: 'hanger', Label: 'All' },
@@ -53,25 +33,21 @@ const WardrobeScreen = () => {
   const [file, setFile] = useState<Asset | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const [clothes, setClothes] = useState<Clothes[]>(mockClothes);
+  const clothes = useClothingStore((state) => state.clothes);
+  const setClothes = useClothingStore((state) => state.fetch)
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
-  const [refresh, setRefresh] = useState(0);
+
 
   const fetchClothes = async () => {
     if (!token) {
       const getToken = await getTokenLocal();
       setToken(getToken || '')
     }
-    const data: Clothes[] = (await api.get(
-      '/api/v1/clothing/get-clothings',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })).data
-    setClothes(data);
+
+    setClothes(token || "");
     setLoading(false);
   };
 
@@ -80,7 +56,6 @@ const WardrobeScreen = () => {
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
-      console.log(category.ID)
       acc[category.ID] = (category.ID != 'all' ? clothes.filter(item => item.Type === category.ID).length : clothes.length);
       return acc;
     }, {} as Record<string, number>);
@@ -163,7 +138,7 @@ const WardrobeScreen = () => {
       setLoading(true)
       await handleUpload()
       setLoading(false)
-      setRefresh(refresh + 1)
+      setRefresh(true)
     }
   };
 
@@ -181,9 +156,10 @@ const WardrobeScreen = () => {
 
       // Add frontend loading logic that's non-blocking
       setLoading(true)
+      
       await handleUpload()
       setLoading(false)
-      setRefresh(refresh + 1)
+      setRefresh(true)
     }
   };
 
@@ -214,7 +190,8 @@ const WardrobeScreen = () => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}>
+            style={styles.categoriesScroll}
+            >
             {categories.map((category) => (
               <Pressable
                 key={category.ID}
@@ -268,6 +245,7 @@ const WardrobeScreen = () => {
           <ScrollView
             style={styles.gridContainer}
             showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => fetchClothes()}/>}
           >
             <View style={styles.grid}>
               {filteredClothes.map((item) => (
@@ -281,7 +259,7 @@ const WardrobeScreen = () => {
                       console.log('Clothing item pressed:', item.ID);
                     }}
                   />
-                  {item.Tags?.map((tag) => (
+                  {item.Tags?.map((tag : Tag) => (
                     <Text key={tag.TagName}>{tag.TagName}</Text>
                   ))}
                 </View>
@@ -298,6 +276,7 @@ const WardrobeScreen = () => {
           size="medium"
           onPress={handleImagePicker}
           customSize={56}
+          disabled={loading}
         />
 
         {Platform.OS === 'android' && (

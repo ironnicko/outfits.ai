@@ -11,50 +11,44 @@ import {Text, IconButton, Icon} from 'react-native-paper';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
 import type {RootStackParamList} from '../navigation/types';
+import { useClothingStore, Clothes } from '../store/clothingStore';
+import ClothingCard from '../components/ClothingCard';
 
 type RouteProps = RouteProp<RootStackParamList, 'SelectClothingItem'>;
 
-// Temporary mock data - will be replaced with DB data
-const mockClothingItems = [
-  {
-    id: '1',
-    imageUrl: 'https://example.com/item1.jpg',
-    type: 'top',
-    name: 'Grey Sweater',
-  },
-  // Add more mock items
-];
 
 const SelectClothingItem = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const {type, title, onSelect} = route.params;
+  const clothes = useClothingStore<Clothes[]>((state) => state.clothes);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const numColumns = 3;
   const screenWidth = Dimensions.get('window').width;
   const itemWidth = (screenWidth - 48) / numColumns; // 48 = padding and gaps
 
-  const renderItem = ({item}) => (
+  const renderItemFunc = (item: any) => {
+    return (
     <Pressable
       style={[
         styles.itemContainer,
         {width: itemWidth},
-        selectedItem === item.id && styles.selectedItemContainer,
+        selectedItem === item.ID && styles.selectedItemContainer,
       ]}
       onPress={() => {
-        setSelectedItem(item.id);
-        onSelect(item.id);
+        setSelectedItem(item.ID);
+        onSelect(item);
         navigation.goBack();
       }}>
-      <Image source={{uri: item.imageUrl}} style={styles.itemImage} />
-      {selectedItem === item.id && (
+      <Image source={{uri: item.URL}} style={styles.itemImage} />
+      {selectedItem === item.ID && (
         <View style={styles.checkmark}>
           <Icon name="check" size={24} color="#fff" />
         </View>
       )}
     </Pressable>
-  );
+  )};
 
   return (
     <SafeScreen>
@@ -71,9 +65,9 @@ const SelectClothingItem = () => {
         </View>
 
         <FlatList
-          data={mockClothingItems.filter(item => item.type === type)}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
+          data={clothes.filter(item => item.Type === type)}
+          renderItem={({item}) => renderItemFunc(item)}
+          keyExtractor={item => item.ID}
           numColumns={numColumns}
           contentContainerStyle={styles.gridContainer}
         />

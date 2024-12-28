@@ -1,14 +1,13 @@
 import base64
 import json
 import os
-from openai import AsyncOpenAI
+import g4f
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from gpt_request import gpt_request
 from remove_bg import remove_bg
-from generate_tags import generate_tags
 from contextlib import asynccontextmanager
 from sentence_transformers import SentenceTransformer
 from get_embeddings import get_embeddings
@@ -29,8 +28,7 @@ async def lifespan(app: FastAPI):
 
     EMBED["model"] = SentenceTransformer(
         'sentence-transformers/all-MiniLM-L6-v2')
-    LLM["client"] = AsyncOpenAI()
-    LLM["client"].base_url = "https://free.v36.cm/v1/"
+    LLM["client"] = g4f.AsyncClient(provider=g4f.Provider.Blackbox)
     yield
     # During Shut-Down
     EMBED.clear()
@@ -76,10 +74,8 @@ async def upload_file(
 
         print("Starting background removal...")
         rem_bg_image: str = await remove_bg(file_content, meta_data)
-        base64img = f"data:{meta_data['filetype']};base64," + \
-            base64.b64encode(rem_bg_image).decode("utf-8")
         print("Generating tags...")
-        response: dict = await gpt_request(**LLM, url=base64img)
+        response: dict = await gpt_request(**LLM, img=rem_bg_image, filename=file.filename)
         print("Successfully processed the file and generated tags")
         meta_data["type"] = response["type"]
 

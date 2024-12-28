@@ -21,7 +21,7 @@ async def send_post_request(url, file_bytes, metadata):
             "sam_prompt": [
                 {
                     "type": "point",
-                    "data": [(W >> 1) + random.randint(-3, 3), (H >> 1) + random.randint(0,3)],
+                    "data": [(W >> 1) + random.randint(-5, 5), (H >> 1) + random.randint(5,5)],
                     "label": 1
                 }
             ]
