@@ -5,7 +5,6 @@ __pycache__/
 .DS_Store
 *u2net*
 silueta.onnx
-README.MD
 *har_and_cookies
 
 # C extensions

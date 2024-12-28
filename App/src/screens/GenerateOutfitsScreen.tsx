@@ -96,10 +96,10 @@ const GenerateOutfitsScreen = () => {
   };
 
   // Check if any selected items have an itemId (meaning an article was selected)
-  const hasAnySelectedArticle = selectedItems.some(item => item.itemId);
+  const hasAnySelectedArticle = selectedItems.some(item => item.ID);
   
-  // Check if any selected items don't have an itemId (meaning we can generate outfits)
-  const hasUnselectedArticles = selectedItems.some(item => !item.itemId);
+  // Check if any selected items don't have an ID (meaning we can generate outfits)
+  const hasUnselectedArticles = selectedItems.some(item => !item.ID);
 
   // Check if an occasion is selected (not the default text)
   const isOccasionSelected = selectedOccasion !== 'Select Occasion';
@@ -112,8 +112,8 @@ const GenerateOutfitsScreen = () => {
     return (
       <Pressable
         key={item.Type}
-        onPress={() => handleClothingItemPress(item.Type as ClothingType)}
-        onLongPress={() => toggleItem(item.Type as ClothingType)}
+        onPress={() => handleClothingItemPress(item.Type)}
+        onLongPress={() => toggleItem(item.Type)}
         style={[
           styles.clothingItem,
           isSelected && styles.selectedItem,
