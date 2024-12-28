@@ -5,24 +5,15 @@ import SafeScreen from '../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import Geolocation from '@react-native-community/geolocation';
 import {Text, Button, IconButton} from 'react-native-paper';
+import { Clothes } from '../store/clothingStore';
 
 
-type ClothingType = 'hat' | 'upper' | 'lower' | 'shoes' | 'bag';
-
-interface SelectedClothing {
-  Type: ClothingType;
-  itemId?: string;
-}
 
 const GenerateOutfitsScreen = () => {
 
 
   const navigation = useNavigation();
-  const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
-    {Type: 'upper'},
-    {Type: 'lower'},
-    {Type: 'shoes'},
-  ]);
+  const [selectedItems, setSelectedItems] = useState<Clothes[]>([]);
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
   const [weather, setWeather] = useState<string>('');
 
@@ -83,10 +74,10 @@ const GenerateOutfitsScreen = () => {
       navigation.navigate('SelectClothingItem', {
         type,
         title: type.charAt(0).toUpperCase() + type.slice(1) + 's',
-        onSelect: (itemId: string) => {
+        onSelect: (ID: string) => {
           setSelectedItems(prev =>
             prev.map(item =>
-              item.Type === type ? {...item, itemId} : item,
+              item.Type === type ? {...item, ID} : item,
             ),
           );
         },
@@ -113,10 +104,10 @@ const GenerateOutfitsScreen = () => {
   // Check if an occasion is selected (not the default text)
   const isOccasionSelected = selectedOccasion !== 'Select Occasion';
 
-  const renderClothingItem = (item: typeof clothingItems[0]) => {
+  const renderClothingItem = (item: Clothes) => {
     const selectedItem = selectedItems.find(si => si.Type === item.Type);
     const isSelected = !!selectedItem;
-    const hasWardrobe = !!selectedItem?.itemId;
+    const hasWardrobe = !!selectedItem?.ID;
 
     return (
       <Pressable
@@ -131,7 +122,7 @@ const GenerateOutfitsScreen = () => {
         {hasWardrobe ? (
           <View style={styles.selectedItemContent}>
             <Image 
-              source={{ uri: `your_image_url_for_${selectedItem.itemId}` }}
+              // source={{ uri: selectedItem?.ID.URL }}
               style={styles.selectedItemImage}
             />
             <View style={styles.checkmark}>

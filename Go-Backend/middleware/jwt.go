@@ -4,6 +4,7 @@ import (
 	"os"
 	configs "outfits/config"
 	"outfits/models"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 
@@ -21,9 +22,28 @@ func JWTProtected() fiber.Handler {
 			})
 		}
 
-		tokenString := authHeader[len("Bearer "):]
+		parts := strings.Split(authHeader, " ")
 
-		if tokenString == "" {
+		// Check if the token is in the expected format
+		if len(parts) != 2 {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid token format",
+			})
+		}
+
+		// Now safely access the parts
+		scheme := parts[0]
+		if scheme != "Bearer" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid token scheme",
+			})
+		}
+
+		// Access the token safely
+		authToken := parts[1]
+		// Continue with your logic...
+
+		if authToken == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"status": false,
 				"result": "Empty Token",
@@ -32,14 +52,14 @@ func JWTProtected() fiber.Handler {
 
 		var userToken models.UserToken
 
-		if err := configs.DB.Db.Where("token = ?", tokenString).First(&userToken).Error; err != nil {
+		if err := configs.DB.Db.Where("token = ?", authToken).First(&userToken).Error; err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"status": false,
 				"result": "Invalid Token",
 			})
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(authToken, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.NewValidationError("unexpected signing method", jwt.ValidationErrorSignatureInvalid)
 			}
