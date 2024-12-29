@@ -4,6 +4,11 @@
 
 outfits.ai is a sophisticated web application designed to revolutionize wardrobe management. Easily catalog, organize, and style your clothing collection with advanced digital tools.
 
+### Check out the video demonstration below:
+
+[![Watch the video](https://img.youtube.com/vi/your_video_id/0.jpg)](https://drive.google.com/file/d/1LLCnsV0EO8NgbomlRtyiIhbHDGzDUd4V/view)
+
+
 ## 🌟 Features
 
 - **Wardrobe Digitization**: Catalog entire clothing collection
