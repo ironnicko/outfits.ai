@@ -5,7 +5,7 @@ prompt = """
 Provided below is the image of clothing article, you need to give me the color, type, and tags in the following format as plain-text:
 {\"color\" : <the color of the clothing>, \"clothingType\": <the type of the clothing>, \"Tags\": {<generate an array of tags describing the clothing article along with the occasion of the clothing article>}}
 The 'type' must fall under the following categories:
-upper, lower, full, shoe, accessories, others
+top, bottom, full, shoe, accessories, others
 
 Don't generate less than 5 Tags and no more than 7
 

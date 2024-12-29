@@ -4,25 +4,17 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../../components/SafeScreen';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Text, Button, IconButton } from 'react-native-paper';
-import { Tag } from '../../store/clothingStore';
+import { Clothes } from '../../store/clothingStore';
+import { RootStackParamList } from '../../types/types';
 
-export interface SelectedClothing {
+export interface SelectedClothing extends Clothes{
   Type?: string;
   Icon?: string;
   Size?: number;
-  Color?: string;
-  ID?: number;
-  Tags?: Tag[];
-  URL?: string;
 }
 
 
-interface RootStackParamList {
-  SelectClothingItem: { type: string; onSelect: (clothing: SelectedClothing) => void };
-  OccasionSelect: {onSelect: (occasion: string) => void}
-};
-
-type NavigationProps = NavigationProp<RootStackParamList, 'SelectClothingItem'>;
+type NavigationProps = NavigationProp<RootStackParamList>;
 
 
 const GenerateOutfitsScreen = () => {
@@ -32,9 +24,8 @@ const GenerateOutfitsScreen = () => {
 
   const clothingItems: SelectedClothing[] = [
     { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
-    { Type: 'upper', Icon: 'tshirt-crew', Size: 64 },
-    { Type: 'full', Icon: 'hat-fedora', Size: 64 }, // Full-body dresses
-    { Type: 'lower', Icon: 'lingerie', Size: 64 },
+    { Type: 'top', Icon: 'tshirt-crew', Size: 64 },
+    { Type: 'bottom', Icon: 'lingerie', Size: 64 },
     { Type: 'shoes', Icon: 'shoe-formal', Size: 48 },
   ];
 
@@ -91,7 +82,7 @@ const GenerateOutfitsScreen = () => {
         {hasURL ? (
           <View style={styles.selectedItemContent}>
             <Image 
-              source={{ uri: selectedItem?.URL }}
+              source={{ uri: selectedItem.URL || " " }}
               style={styles.selectedItemImage}
             />
             <View style={styles.checkmark}>

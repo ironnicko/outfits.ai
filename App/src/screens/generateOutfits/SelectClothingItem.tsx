@@ -10,7 +10,7 @@ import {
 import {Text, IconButton} from 'react-native-paper';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import SafeScreen from '../../components/SafeScreen';
-import type {RootStackParamList} from '../../navigation/types';
+import type {RootStackParamList} from '../../types/types';
 import { useClothingStore, Clothes } from '../../store/clothingStore';
 import { SelectedClothing } from './GenerateOutfitsScreen';
 
@@ -66,8 +66,8 @@ const SelectClothingItem = () => {
 
         <FlatList
           data={clothes.filter(item => item.Type === type)}
-          renderItem={({item}) => renderItemFunc(item)}
-          keyExtractor={item => item.ID}
+          renderItem={({item} ) => renderItemFunc(item)}
+          keyExtractor={(item: Clothes) => item.ID || " "}
           numColumns={numColumns}
           contentContainerStyle={styles.gridContainer}
         />

@@ -4,7 +4,7 @@ import {Card, Text, useTheme} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '../navigation/types';
+import type {RootStackParamList} from '../types/types';
 import SafeScreen from '../components/SafeScreen';
 
 

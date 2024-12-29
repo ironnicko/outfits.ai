@@ -10,8 +10,6 @@ import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
 import { Tag, useClothingStore } from '../store/clothingStore';
 
-
-
 type Category = {
   Icon: string;
   Label: string;
@@ -21,8 +19,8 @@ type Category = {
 
 const categories: Category[] = [
   { ID: 'all', Icon: 'hanger', Label: 'All' },
-  { ID: 'upper', Icon: 'tshirt-crew', Label: 'Tops' },
-  { ID: 'lower', Icon: 'lingerie', Label: 'Bottoms' },
+  { ID: 'top', Icon: 'tshirt-crew', Label: 'Tops' },
+  { ID: 'bottom', Icon: 'lingerie', Label: 'Bottoms' },
   { ID: 'shoes', Icon: 'shoe-formal', Label: 'Shoes' },
   { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
   { ID: 'accessories', Icon: 'hat-fedora', Label: 'Accessories' },
@@ -70,12 +68,12 @@ const WardrobeScreen = () => {
   const filteredClothes = useMemo(() => {
     return clothes.filter(item => {
       const matchesCategory = selectedCategory === 'all' || item.Type === selectedCategory;
-      const matchesSearch = item.Type.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (item.Type || "").toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && (searchQuery === '' || matchesSearch);
     });
   }, [selectedCategory, searchQuery, clothes]);
 
-  const handleImagePicker = () => {
+  const handleImagePicker = async () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -133,8 +131,6 @@ const WardrobeScreen = () => {
 
       console.log(result.assets[0]);
       setFile(result.assets[0]);
-
-      // Add frontend loading logic that's non-blocking
       setLoading(true)
       await handleUpload()
       setLoading(false)
@@ -150,13 +146,8 @@ const WardrobeScreen = () => {
     });
 
     if (result.assets) {
-
-      console.log(result.assets[0]);
       setFile(result.assets[0]);
-
-      // Add frontend loading logic that's non-blocking
       setLoading(true)
-      
       await handleUpload()
       setLoading(false)
       setRefresh(!refresh)
@@ -245,7 +236,7 @@ const WardrobeScreen = () => {
           <ScrollView
             style={styles.gridContainer}
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => fetchClothes()}/>}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => setRefresh(!refresh)}/>}
           >
             <View style={styles.grid}>
               {filteredClothes.map((item) => (
@@ -260,9 +251,6 @@ const WardrobeScreen = () => {
                       console.log('Clothing item pressed:', item.ID);
                     }}
                   />
-                  {item.Tags?.map((tag : Tag) => (
-                    <Text key={tag.TagName}>{tag.TagName}</Text>
-                  ))}
                 </View>
               ))}
             </View>
@@ -298,8 +286,8 @@ const WardrobeScreen = () => {
 
               <Pressable
                 style={styles.modalOption}
-                onPress={() => {
-                  handleGallery();
+                onPress={async () => {
+                  await handleGallery();
                   setShowImagePickerModal(false);
                 }}>
                 <Icon name="image-multiple" size={24} color="#4A6741" />
@@ -432,6 +420,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
     overflow: 'hidden',
+    justifyContent: 'center'
   },
   activeCategoryText: {
     color: '#4A6741',

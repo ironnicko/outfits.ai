@@ -7,17 +7,17 @@ export interface Tag {
 }
 
 export interface Clothes {
-    ID: string;
-    Type: string;
-    URL: string | null;
+    ID?: string;
+    Type?: string;
+    URL?: string | null;
     Color?: string | null;
-    Tags: Tag[] | null;
+    Tags?: Tag[] | null;
 }
 
 const mockClothes: Clothes[] = [
-    { ID: '1', Tags: [], Type: 'upper', URL: "" },
-    { ID: '2', Tags: [], Type: 'upper', URL: '' },
-    { ID: '3', Tags: [], Type: 'lower', URL: '' },
+    { ID: '1', Tags: [], Type: 'top', URL: "" },
+    { ID: '2', Tags: [], Type: 'top', URL: '' },
+    { ID: '3', Tags: [], Type: 'bottom', URL: '' },
     { ID: '4', Tags: [], Type: 'shoes', URL: '' },
 ];
 

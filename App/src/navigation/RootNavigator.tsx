@@ -7,7 +7,7 @@ import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScr
 import OccasionSelectScreen from '../screens/generateOutfits/OccasionSelectScreen';
 import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
 import AIRecommendationScreen from '../screens/AIRecommendationScreen';
-import { RootStackParamList } from './types';
+import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
