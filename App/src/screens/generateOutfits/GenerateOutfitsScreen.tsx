@@ -1,97 +1,65 @@
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Pressable, PermissionsAndroid, Platform, Image} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Pressable, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import SafeScreen from '../components/SafeScreen';
-import {useNavigation} from '@react-navigation/native';
-import Geolocation from '@react-native-community/geolocation';
-import {Text, Button, IconButton} from 'react-native-paper';
-import { Clothes } from '../store/clothingStore';
+import SafeScreen from '../../components/SafeScreen';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { Text, Button, IconButton } from 'react-native-paper';
+import { Tag } from '../../store/clothingStore';
 
+export interface SelectedClothing {
+  Type?: string;
+  Icon?: string;
+  Size?: number;
+  Color?: string;
+  ID?: number;
+  Tags?: Tag[];
+  URL?: string;
+}
+
+
+interface RootStackParamList {
+  SelectClothingItem: { type: string; onSelect: (clothing: SelectedClothing) => void };
+  OccasionSelect: {onSelect: (occasion: string) => void}
+};
+
+type NavigationProps = NavigationProp<RootStackParamList, 'SelectClothingItem'>;
 
 
 const GenerateOutfitsScreen = () => {
-
-
-  const navigation = useNavigation();
-  const [selectedItems, setSelectedItems] = useState<Clothes[]>([]);
+  const navigation = useNavigation<NavigationProps>();
+  const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([]);
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
-  const [weather, setWeather] = useState<string>('');
 
-  const clothingItems = [
-    {Type: 'hat', Icon: 'hat-fedora', Size: 48},
-    {Type: 'upper', Icon: 'tshirt-crew', Size: 64},
-    {Type: 'lower', Icon: 'lingerie', Size: 64}, // replace with some svg
-    {Type: 'shoes', Icon: 'shoe-formal', Size: 48},
+  const clothingItems: SelectedClothing[] = [
+    { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
+    { Type: 'upper', Icon: 'tshirt-crew', Size: 64 },
+    { Type: 'full', Icon: 'hat-fedora', Size: 64 }, // Full-body dresses
+    { Type: 'lower', Icon: 'lingerie', Size: 64 },
+    { Type: 'shoes', Icon: 'shoe-formal', Size: 48 },
   ];
 
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  const requestLocationPermission = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        Geolocation.requestAuthorization();
-        getLocation();
-      } else {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          getLocation();
-        }
-      }
-    } catch (err) {
-      console.warn(err);
-    }
-  };
-
-  const getLocation = () => {
-    Geolocation.getCurrentPosition(
-      position => {
-        fetchWeather(position.coords.latitude, position.coords.longitude);
-      },
-      error => console.log(error),
-      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-    );
-  };
-
-  const fetchWeather = async (lat: number, lon: number) => {
-    // try {
-    //   const response = await fetch(
-    //     `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}`,
-    //   );
-    //   const data = await response.json();
-    //   setWeather(data.weather[0].main);
-    // } catch (error) {
-    //   console.error('Weather fetch error:', error);
-    // }
-    console.log('tried fetching weather, fix the api');
-  };
-
-  const handleClothingItemPress = (type: ClothingType) => {
-    if (selectedItems.find(item => item.Type === type)) {
+  const handleClothingItemPress = (Type: string) => {
+    if (selectedItems.find((item: SelectedClothing) => item.Type === Type)) {
       navigation.navigate('SelectClothingItem', {
-        type,
-        title: type.charAt(0).toUpperCase() + type.slice(1) + 's',
-        onSelect: (ID: string) => {
-          setSelectedItems(prev =>
-            prev.map(item =>
-              item.Type === type ? {...item, ID} : item,
+        type : Type,
+        onSelect: (clothing: SelectedClothing) => {
+          setSelectedItems((prev: SelectedClothing[]) =>
+            prev.map((item: SelectedClothing) =>
+              item.Type === Type ? clothing : item,
             ),
           );
         },
       });
     } else {
-      toggleItem(type);
+      toggleItem(Type);
     }
   };
 
-  const toggleItem = (Type: ClothingType) => {
-    setSelectedItems(prev =>
+  const toggleItem = (Type: string) => {
+    setSelectedItems((prev: SelectedClothing[]) =>
       prev.find(item => item.Type === Type)
         ? prev.filter(item => item.Type !== Type)
-        : [...prev, {Type}],
+        : [...prev, { Type }],
     );
   };
 
@@ -104,25 +72,26 @@ const GenerateOutfitsScreen = () => {
   // Check if an occasion is selected (not the default text)
   const isOccasionSelected = selectedOccasion !== 'Select Occasion';
 
-  const renderClothingItem = (item: Clothes) => {
+  const renderClothingItem = (item: SelectedClothing) => {
     const selectedItem = selectedItems.find(si => si.Type === item.Type);
     const isSelected = !!selectedItem;
-    const hasWardrobe = !!selectedItem?.ID;
+    const hasWardrobe = !!selectedItem;
+    const hasURL = !!selectedItem?.URL;
 
     return (
       <Pressable
         key={item.Type}
-        onPress={() => handleClothingItemPress(item.Type)}
-        onLongPress={() => toggleItem(item.Type)}
+        onPress={() => handleClothingItemPress(item.Type || "")}
+        onLongPress={() => toggleItem(item.Type || "")}
         style={[
           styles.clothingItem,
           isSelected && styles.selectedItem,
           hasWardrobe && styles.wardrobeItem,
         ]}>
-        {hasWardrobe ? (
+        {hasURL ? (
           <View style={styles.selectedItemContent}>
             <Image 
-              // source={{ uri: selectedItem?.ID.URL }}
+              source={{ uri: selectedItem?.URL }}
               style={styles.selectedItemImage}
             />
             <View style={styles.checkmark}>
@@ -152,12 +121,6 @@ const GenerateOutfitsScreen = () => {
           <Text style={styles.headerText}>Long press to remove clothing items</Text>
         </View>
 
-        {weather && (
-          <Text style={styles.weatherText}>
-            Current Weather: {weather}
-          </Text>
-        )}
-
         <View style={styles.clothingContainer}>
           {clothingItems.map(renderClothingItem)}
         </View>
@@ -182,7 +145,7 @@ const GenerateOutfitsScreen = () => {
               labelStyle={styles.buttonLabel}
               onPress={() => console.log('Show outfit')}>
               Show Outfit
-              <Icon name="eye" Size={24} color="#fff" style={styles.buttonIcon} />
+              <Icon name="eye" size={24} color="#fff" style={styles.buttonIcon} />
             </Button>
           )}
           
@@ -203,8 +166,8 @@ const GenerateOutfitsScreen = () => {
               Generate Outfits
               <Icon 
                 name="auto-fix" 
-                Size={24} 
-                color={isOccasionSelected ? "#fff" : "#rgba(255, 255, 255, 0.5)"} 
+                size={24} 
+                color={isOccasionSelected ? "#fff" : "rgba(255, 255, 255, 0.5)"} 
                 style={styles.buttonIcon} 
               />
             </Button>
@@ -214,6 +177,7 @@ const GenerateOutfitsScreen = () => {
     </SafeScreen>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -294,7 +258,7 @@ const styles = StyleSheet.create({
   checkmark: {
     position: 'absolute',
     right: 4,
-    upper: 4,
+    top: 4,
     backgroundColor: '#4A6741',
     borderRadius: 8,
     padding: 4,

@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
 import {StyleSheet, View, ScrollView, Pressable} from 'react-native';
 import {Text, IconButton, TextInput, Icon} from 'react-native-paper';
-import SafeScreen from '../components/SafeScreen';
+import SafeScreen from '../../components/SafeScreen';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
-import {RootStackParamList} from '../App';
+import {RootStackParamList} from '../../App';
 
 const occasions = [
   'Casual Outing',

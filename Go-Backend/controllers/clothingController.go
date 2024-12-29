@@ -41,8 +41,6 @@ func CreateMultiPartFormBody(strUID string, strCID string, clothingType string, 
 
 	writer.WriteField("clothing_ID", strCID)
 
-	writer.WriteField("type", clothingType)
-
 	// Close the writer to finalize the multipart form
 	writer.Close()
 }
@@ -131,7 +129,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		Status    string   `json:"status"`
 		Embedding string   `json:"Embedding"`
 		Text      string   `json:"text"`
-		Type      string   `json:"type"`
+		Type      string   `json:"clothingType"`
 		Color     string   `json:"color"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
@@ -153,10 +151,10 @@ func CreateClothing(c *fiber.Ctx) error {
 	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
 	db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, fastAPIResponse.Text, time.Now(), time.Now())
 
-	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
-	clothing.ClothingURL = bucket
 	clothing.ClothingType = fastAPIResponse.Type
 	clothing.ClothingColor = fastAPIResponse.Color
+	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
+	clothing.ClothingURL = bucket
 	db.Save(&clothing)
 
 	return c.Status(resp.StatusCode).Send(respBody)

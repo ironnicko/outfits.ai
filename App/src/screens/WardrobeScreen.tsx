@@ -39,7 +39,7 @@ const WardrobeScreen = () => {
   const clothes = useClothingStore((state) => state.clothes);
   const setClothes = useClothingStore((state) => state.fetch)
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
-
+  console.log(clothes)
 
   const fetchClothes = async () => {
     if (!token) {
@@ -138,7 +138,7 @@ const WardrobeScreen = () => {
       setLoading(true)
       await handleUpload()
       setLoading(false)
-      setRefresh(true)
+      setRefresh(!refresh)
     }
   };
 
@@ -159,7 +159,7 @@ const WardrobeScreen = () => {
       
       await handleUpload()
       setLoading(false)
-      setRefresh(true)
+      setRefresh(!refresh)
     }
   };
 
@@ -256,6 +256,7 @@ const WardrobeScreen = () => {
                   <ClothingCard
                     imageUrl={item.URL || ""}
                     onPress={() => {
+                      // Need to create a card view
                       console.log('Clothing item pressed:', item.ID);
                     }}
                   />
