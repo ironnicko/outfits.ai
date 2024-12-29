@@ -7,23 +7,24 @@ export interface Tag {
 }
 
 export interface Clothes {
-    ID: string;
-    Type: string;
-    URL: string | null;
+    ID?: string;
+    Type?: string;
+    URL?: string | null;
     Color?: string | null;
-    Tags: Tag[] | null;
+    Tags?: Tag[] | null;
 }
 
 const mockClothes: Clothes[] = [
-    { ID: '1', Tags: [], Type: 'upper', URL: "" },
-    { ID: '2', Tags: [], Type: 'upper', URL: 'https://cdn2.iconfinder.com/data/icons/arrows-part-1/32/tiny-arrow-left-2-1024.png' },
-    { ID: '3', Tags: [], Type: 'lower', URL: 'https://example.com/pants1.jpg' },
-    { ID: '4', Tags: [], Type: 'shoes', URL: 'https://example.com/shoes1.jpg' },
+    { ID: '1', Tags: [], Type: 'top', URL: "" },
+    { ID: '2', Tags: [], Type: 'top', URL: '' },
+    { ID: '3', Tags: [], Type: 'bottom', URL: '' },
+    { ID: '4', Tags: [], Type: 'shoes', URL: '' },
 ];
 
 interface ClothingState {
     clothes: Clothes[];
     fetch: (token: string) => Promise<void>;
+    clear: () => void;
 }
 
 export const useClothingStore = create<ClothingState>((set) => ({
@@ -41,4 +42,7 @@ export const useClothingStore = create<ClothingState>((set) => ({
             console.error("Failed to fetch clothes:", error);
         }
     },
+    clear: () => {
+        set({ clothes: mockClothes })
+    }
 }));

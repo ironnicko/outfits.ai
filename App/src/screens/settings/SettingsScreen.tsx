@@ -2,13 +2,14 @@ import React from 'react';
 import {StyleSheet, View, Pressable, Alert} from 'react-native';
 import {Text, Divider} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import SafeScreen from '../components/SafeScreen';
+import SafeScreen from '../../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '../navigation/types';
-import { clearTokenLocal, clearUsernameLocal, getTokenLocal, getUsernameLocal } from '../utils/auth';
-import { AuthState, useAuthStore } from '../store/authStore';
-import { api } from '../utils/api';
+import type {RootStackParamList} from '../../types/types';
+import { clearTokenLocal, clearUsernameLocal, getTokenLocal, getUsernameLocal } from '../../utils/auth';
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { api } from '../../utils/api';
+import { useClothingStore } from '../../store/clothingStore';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,6 +29,7 @@ const SettingsScreen =  () => {
   const navigation = useNavigation<NavigationProp>();
   const clearToken = useAuthStore((state: AuthState) => state.clearToken);
   const clearUsername = useAuthStore((state: AuthState) => state.clearUsername);
+  const clearClothes = useClothingStore((state) => state.clear);
   const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
   const username = useAuthStore((state: AuthState) => state.username) || getUsernameLocal();
   const handleLogout = () => {
@@ -46,6 +48,7 @@ const SettingsScreen =  () => {
             clearUsername();
             clearTokenLocal();
             clearToken();
+            clearClothes();
             api.post(
           '/api/v1/user/logout',
               {token : token},

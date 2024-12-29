@@ -1,4 +1,3 @@
-import base64
 import json
 import os
 import g4f
@@ -77,7 +76,8 @@ async def upload_file(
         print("Generating tags...")
         response: dict = await gpt_request(**LLM, img=rem_bg_image, filename=file.filename)
         print("Successfully processed the file and generated tags")
-        meta_data["type"] = response["type"]
+        print(response)
+        meta_data["type"] = response["clothingType"]
 
         await upload_s3(rem_bg_image, meta_data)
 

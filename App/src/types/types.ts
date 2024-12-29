@@ -1,17 +1,16 @@
+import { SelectedClothing } from "../screens/generateOutfits/GenerateOutfitsScreen";
+
 export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   OutfitCheck: undefined;
   GenerateOutfits: undefined;
-  OccasionSelect: undefined;
   Notifications: undefined;
   Tutorials: undefined;
   Support: undefined;
   About: undefined;
-  SelectClothingItem: {
-    type: 'hat' | 'top' | 'bottom' | 'shoes' | 'bag';
-    title: string;
-  };
+  SelectClothingItem: { type: string; onSelect: (clothing: SelectedClothing) => void };
+  OccasionSelect: { onSelect: (occasion: string) => void }
   AIRecommendation: undefined;
 };
 

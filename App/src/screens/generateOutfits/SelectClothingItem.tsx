@@ -7,12 +7,12 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
-import {Text, IconButton, Icon} from 'react-native-paper';
+import {Text, IconButton} from 'react-native-paper';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
-import SafeScreen from '../components/SafeScreen';
-import type {RootStackParamList} from '../navigation/types';
-import { useClothingStore, Clothes } from '../store/clothingStore';
-import ClothingCard from '../components/ClothingCard';
+import SafeScreen from '../../components/SafeScreen';
+import type {RootStackParamList} from '../../types/types';
+import { useClothingStore, Clothes } from '../../store/clothingStore';
+import { SelectedClothing } from './GenerateOutfitsScreen';
 
 type RouteProps = RouteProp<RootStackParamList, 'SelectClothingItem'>;
 
@@ -20,31 +20,31 @@ type RouteProps = RouteProp<RootStackParamList, 'SelectClothingItem'>;
 const SelectClothingItem = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
-  const {type, title, onSelect} = route.params;
+  const {type, onSelect} = route.params;
   const clothes = useClothingStore<Clothes[]>((state) => state.clothes);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedClothing>();
 
   const numColumns = 3;
   const screenWidth = Dimensions.get('window').width;
   const itemWidth = (screenWidth - 48) / numColumns; // 48 = padding and gaps
 
-  const renderItemFunc = (item: any) => {
+
+  const renderItemFunc = (item: SelectedClothing) => {
     return (
     <Pressable
       style={[
         styles.itemContainer,
         {width: itemWidth},
-        selectedItem === item.ID && styles.selectedItemContainer,
+        selectedItem === (item.ID || '') && styles.selectedItemContainer,
       ]}
       onPress={() => {
-        setSelectedItem(item.ID);
+        setSelectedItem(item);
         onSelect(item);
         navigation.goBack();
       }}>
-      <Image source={{uri: item.URL}} style={styles.itemImage} />
-      {selectedItem === item.ID && (
+      <Image source={{uri: item.URL || " "}} style={styles.itemImage} />
+      {selectedItem === (item.ID || '') && (
         <View style={styles.checkmark}>
-          <Icon name="check" size={24} color="#fff" />
         </View>
       )}
     </Pressable>
@@ -66,8 +66,8 @@ const SelectClothingItem = () => {
 
         <FlatList
           data={clothes.filter(item => item.Type === type)}
-          renderItem={({item}) => renderItemFunc(item)}
-          keyExtractor={item => item.ID}
+          renderItem={({item} ) => renderItemFunc(item)}
+          keyExtractor={(item: Clothes) => item.ID || " "}
           numColumns={numColumns}
           contentContainerStyle={styles.gridContainer}
         />

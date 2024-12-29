@@ -3,11 +3,11 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import LoginScreen from '../screens/LoginScreen';
 import TabNavigator from './TabNavigator';
 import OutfitCheckScreen from '../screens/OutfitCheckScreen';
-import GenerateOutfitsScreen from '../screens/GenerateOutfitsScreen';
-import OccasionSelectScreen from '../screens/OccasionSelectScreen';
-import SelectClothingItem from '../screens/SelectClothingItem';
+import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScreen';
+import OccasionSelectScreen from '../screens/generateOutfits/OccasionSelectScreen';
+import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
 import AIRecommendationScreen from '../screens/AIRecommendationScreen';
-import { RootStackParamList } from './types';
+import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
