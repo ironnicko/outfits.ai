@@ -5,6 +5,7 @@ import (
 	"os"
 	"outfits/models"
 
+	"github.com/supabase-community/auth-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,6 +18,19 @@ type Dbinstance struct {
 
 // Global Variable It will hold database instance throughout the application
 var DB Dbinstance
+var SupabaseClient auth.Client
+
+func CreateUsersTable(db *gorm.DB) error {
+	return db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			email VARCHAR(255),
+			password VARCHAR(255),
+			username VARCHAR(255),
+			id UUID  PRIMARY KEY,
+			FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE
+		);
+	`).Error
+}
 
 func ConnectDb() {
 	user := os.Getenv("DB_USERNAME")
@@ -38,12 +52,17 @@ func ConnectDb() {
 	log.Println("DATABASE CONNECTED")
 	db.Logger = logger.Default.LogMode(logger.Info)
 	log.Println("running migrations")
+
+	if err := CreateUsersTable(db); err != nil {
+		log.Fatalf("failed to create users table: %v", err)
+	}
+
 	// Auto Migration Of Models
-	err = db.AutoMigrate(&models.Vector{}, &models.Tags{}, &models.Clothing{}, &models.User{}, &models.UserToken{}, &models.Outfit{})
+	err = db.AutoMigrate(&models.Vector{}, &models.Tags{}, &models.Clothing{}, &models.User{}, &models.Outfit{})
 	DB = Dbinstance{
 		Db: db,
 	}
-
+	SupabaseClient = auth.New(os.Getenv("URL"), os.Getenv("ANON"))
 	if err != nil {
 		log.Printf("Failed to automigrate")
 	}

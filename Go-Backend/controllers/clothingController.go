@@ -15,8 +15,9 @@ import (
 	"io"
 	"mime/multipart"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/supabase-community/auth-go/types"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,7 @@ func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage stri
 	}
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": errorMessage})
 }
-func CreateMultiPartFormBody(strUID string, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
+func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
 	// Create a new multipart request to send the file to the FastAPI server
 
 	part, err := writer.CreateFormFile("file", fileHeader.Filename)
@@ -37,7 +38,7 @@ func CreateMultiPartFormBody(strUID string, strCID string, clothingType string, 
 	// Copy the file buffer to the multipart form part
 	io.Copy(part, fileBuffer)
 
-	writer.WriteField("user_ID", strUID)
+	writer.WriteField("user_ID", strUID.String())
 
 	writer.WriteField("clothing_ID", strCID)
 
@@ -46,7 +47,7 @@ func CreateMultiPartFormBody(strUID string, strCID string, clothingType string, 
 }
 
 func CreateClothing(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.User)
+	user := c.Locals("user").(types.UserResponse)
 	db := configs.DB.Db
 	clothing := models.Clothing{}
 
@@ -57,14 +58,6 @@ func CreateClothing(c *fiber.Ctx) error {
 	}
 
 	clothing.UserID = user.ID
-
-	validate := validator.New()
-
-	if err := validate.Struct(user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
 
 	result := db.Create(&clothing)
 	if result.Error != nil {
@@ -96,10 +89,9 @@ func CreateClothing(c *fiber.Ctx) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	strUID := strconv.FormatUint(uint64(user.ID), 10)
 	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
 
-	CreateMultiPartFormBody(strUID, strCID, clothing.ClothingType, writer, &fileBuffer, fileHeader)
+	CreateMultiPartFormBody(user.ID, strCID, clothing.ClothingType, writer, &fileBuffer, fileHeader)
 
 	// Send the POST request to the FastAPI server
 	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
@@ -153,7 +145,7 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	clothing.ClothingType = fastAPIResponse.Type
 	clothing.ClothingColor = fastAPIResponse.Color
-	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), strUID, clothing.ClothingType, strCID + ".png"}, "/")
+	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), user.ID.String(), clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
 	db.Save(&clothing)
 
@@ -192,9 +184,10 @@ func CreateResponseClothing(clothing models.Clothing, tags []models.Tags) GetClo
 
 func GetClothings(c *fiber.Ctx) error {
 	db := configs.DB.Db
-	user := c.Locals("user").(models.User)
+	user := c.Locals("user").(types.UserResponse)
 	clothings := []models.Clothing{}
-	db.Where("user_id = ?", user.ID).Find(&clothings)
+	db.Where("user_id = ?", user.ID.String()).Find(&clothings)
+
 	responseClothings := []GetClothing{}
 	tags := []models.Tags{}
 	for _, clothing := range clothings {

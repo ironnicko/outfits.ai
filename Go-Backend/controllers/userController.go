@@ -3,12 +3,11 @@ package controllers
 import (
 	configs "outfits/config"
 	"outfits/models"
-	"outfits/utils"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
+	"github.com/supabase-community/auth-go"
+	"github.com/supabase-community/auth-go/types"
 )
 
 func CreateUser(c *fiber.Ctx) error {
@@ -31,17 +30,21 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-
+	details := types.SignupRequest{
+		Email:    user.Email,
+		Password: user.Password,
+	}
+	userAuth, err := configs.SupabaseClient.Signup(details)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": false,
 			"error":  err.Error(),
 		})
 	}
 
-	user.Password = string(hashPassword)
-
+	user.ID = userAuth.ID
+	user.Email = ""
+	user.Password = ""
 	result := db.Create(&user)
 
 	if result.Error != nil {
@@ -53,107 +56,66 @@ func CreateUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  true,
+		"token":   userAuth.AccessToken,
 		"message": "User Created",
 	})
 
 }
 
 func LoginUser(c *fiber.Ctx) error {
-	data := new(models.User)
-	if err := c.BodyParser(data); err != nil {
+	user := models.User{}
+
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": false,
-			"error":  err.Error(),
+			"result": err.Error(),
 		})
 	}
 
-	var user models.User
-	result := configs.DB.Db.Where("email = ?", data.Email).First(&user)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"status": false,
-				"error":  "Invalid email or password",
-			})
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": false,
-			"error":  result.Error.Error(),
-		})
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+	if err := c.BodyParser(&user); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": false,
-			"error":  "Invalid email or password",
+			"result": err.Error(),
 		})
 	}
 
-	// Check if a token already exists for the user
-	var userToken models.UserToken
-	if err := configs.DB.Db.Where("user_id = ?", user.ID).First(&userToken).Error; err == nil {
-		return c.JSON(fiber.Map{
-			"status": true,
-			"token":  userToken.Token,
-		})
-	}
-
-	// Generate a new token
-	token, err := utils.GenerateJWT(user.ID)
+	userAuth, err := configs.SupabaseClient.SignInWithEmailPassword(user.Email, user.Password)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status": false,
-			"error":  err.Error(),
+			"result": err.Error(),
 		})
 	}
 
-	// Save the token to the database
-	userToken = models.UserToken{
-		UserID: user.ID,
-		Token:  token,
-	}
-	if err := configs.DB.Db.Create(&userToken).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status": false,
-			"error":  err.Error(),
-		})
-	}
-
+	user.ID = userAuth.User.ID
 	return c.JSON(fiber.Map{
 		"status": true,
-		"token":  token,
+		"token":  userAuth.AccessToken,
 		"userId": user.ID,
 	})
 }
 
 func LogoutUser(c *fiber.Ctx) error {
-	user := models.UserToken{}
-	userId := c.Locals("user").(models.User)
-	db := configs.DB.Db
-	if err := db.Where("user_id =?", userId.ID).First(&user).Error; err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"status": false,
-			"result": err.Error(),
-		})
-	} else {
-		db.Delete(&user)
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"status": true,
-			"result": "User Logout Successful",
-		})
-	}
+	userClient := c.Locals("client").(auth.Client)
+	userClient.Logout()
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status": true,
+		"result": "User Logout Successful",
+	})
 }
 
-// To extract user information from the token
+// // To extract user information from the token
 
 func UserInfo(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.User)
+	userObj := c.Locals("user").(types.UserResponse)
+	db := configs.DB.Db
+	user := models.User{}
+	db.Where("id = ?", userObj.ID.String()).Find(&user)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  true,
 		"message": "User Information",
 		"result": fiber.Map{
-			"id":       user.ID,
-			"email":    user.Email,
+			"id":       userObj.ID.String(),
 			"username": user.Username,
 		},
 	})

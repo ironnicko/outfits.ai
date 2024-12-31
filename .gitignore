@@ -6,6 +6,7 @@ __pycache__/
 *u2net*
 silueta.onnx
 *har_and_cookies
+*mp4
 
 # C extensions
 *.so

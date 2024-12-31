@@ -1,12 +1,10 @@
 package middleware
 
 import (
-	"os"
-	configs "outfits/config"
-	"outfits/models"
+	"log"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	configs "outfits/config"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -41,8 +39,6 @@ func JWTProtected() fiber.Handler {
 
 		// Access the token safely
 		authToken := parts[1]
-		// Continue with your logic...
-
 		if authToken == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"status": false,
@@ -50,47 +46,21 @@ func JWTProtected() fiber.Handler {
 			})
 		}
 
-		var userToken models.UserToken
-
-		if err := configs.DB.Db.Where("token = ?", authToken).First(&userToken).Error; err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status": false,
-				"result": "Invalid Token",
-			})
-		}
-
-		token, err := jwt.Parse(authToken, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.NewValidationError("unexpected signing method", jwt.ValidationErrorSignatureInvalid)
-			}
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
-
+		// Verify the token with Supabase
+		userClient := configs.SupabaseClient.WithToken(authToken)
+		user, err := userClient.GetUser()
 		if err != nil {
+			log.Printf("Token verification failed: %v", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"status": false,
 				"result": "Invalid Token",
 			})
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			userID := uint(claims["user_id"].(float64))
-			var user models.User
-			if err := configs.DB.Db.Where("id = ?", userID).First(&user).Error; err != nil {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-					"status": false,
-					"result": "Invalid Token",
-				})
-			}
-			// storing user information in context
-			c.Locals("user", user)
-			return c.Next()
-		}
-
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"status": false,
-			"result": "Invalid Token",
-		})
-
+		// Store user information in the context
+		c.Locals("client", userClient)
+		c.Locals("user", *user)
+		// Proceed to the next handler
+		return c.Next()
 	}
 }
