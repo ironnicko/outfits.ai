@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +20,7 @@ type Outfit struct {
 	Hat          *Clothing `gorm:"foreignKey:Outfithat;constraint:OnDelete:CASCADE;"`
 	Outfitdress  *string   `json:"dress"`
 	Dress        *Clothing `gorm:"foreignKey:Outfitdress;constraint:OnDelete:CASCADE;"`
-	UserID       uint      `json:"userID" gorm:"constraint:OnDelete:CASCADE;"`
+	UserID       uuid.UUID `json:"userID" gorm:"constraint:OnDelete:CASCADE;"`
 	User         User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
