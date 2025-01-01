@@ -2,6 +2,13 @@ resource "aws_s3_bucket" "outfits-ai" {
   bucket = var.bucket_name
 }
 
+
+resource "aws_iam_role_policy_attachment" "s3_access" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+
 resource "aws_s3_bucket_ownership_controls" "outfits-ai" {
   bucket = aws_s3_bucket.outfits-ai.id
   rule {

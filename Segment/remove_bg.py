@@ -38,6 +38,11 @@ async def send_post_request(url, file_bytes, metadata):
                 },
                 {
                     "type": "point",
+                    "data": [W >> 1, H >> 1],
+                    "label": 1
+                },
+                {
+                    "type": "point",
                     "data": [bottom_right_x, bottom_right_y],
                     "label": 1
                 },
