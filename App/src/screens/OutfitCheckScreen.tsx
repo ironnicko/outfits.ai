@@ -12,12 +12,17 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
 import { api } from '../utils/api';
+import { AuthState, useAuthStore } from '../store/authStore';
+
+// Need to dynamically start loading when outfit is uploaded
+
+// Need to provide space for a scrollable view with the suggestions from GPT.
 
 const OutfitCheckScreen = () => {
   const navigation = useNavigation();
 
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-
+  const token = useAuthStore((state: AuthState) => state.token);
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -53,6 +58,7 @@ const handleUpload = async (file: Asset) => {
         formData,
         {
           headers: {
+            'Authorization' : `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         }

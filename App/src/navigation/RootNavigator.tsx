@@ -38,8 +38,8 @@ const RootNavigator = () => {
       <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
       <Stack.Screen name="AIRecommendation" component={withProtectedRoute(AIRecommendationScreen)} />
       <Stack.Screen name="OutfitPreview" component={withProtectedRoute(OutfitPreviewScreen)} />
-      <Stack.Screen name="ShowOutfit" component={withProtectedRoute(ShowOutfitScreen)} />
-      <Stack.Screen name="MyLooksScreen" component={withProtectedRoute(MyLooksScreen)} />
+      <Stack.Screen name="ShowOutfits" component={withProtectedRoute(ShowOutfitScreen)} />
+      <Stack.Screen name="MyLooks" component={withProtectedRoute(MyLooksScreen)} />
     </Stack.Navigator>
   );
 };

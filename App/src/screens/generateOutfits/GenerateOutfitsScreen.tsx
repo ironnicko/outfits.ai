@@ -107,6 +107,7 @@ const GenerateOutfitsScreen = () => {
 
   const handleGenerateOutfit = () => {
     if (hasAnySelectedArticle && isOccasionSelected) {
+      console.log(selectedItems.length)
       navigation.navigate('OutfitPreview', {
         selectedItems,
         occasion: selectedOccasion,
