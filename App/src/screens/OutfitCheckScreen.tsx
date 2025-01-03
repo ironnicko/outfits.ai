@@ -1,19 +1,21 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Image, Platform, Alert, ActionSheetIOS, Pressable} from 'react-native';
+import {StyleSheet, View, Image, Platform, ActionSheetIOS, Pressable} from 'react-native';
 import {Text, IconButton, Button, Portal, Modal} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   launchCamera,
   launchImageLibrary,
-  ImagePickerResponse,
   Asset,
+  ImageLibraryOptions,
+  CameraOptions,
 } from 'react-native-image-picker';
 import {useNavigation} from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
+import { bpi } from '../utils/api';
 
 const OutfitCheckScreen = () => {
   const navigation = useNavigation();
-  const [selectedImage, setSelectedImage] = useState<Asset | null>(null);
+
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
 
   const handleImagePicker = () => {
@@ -36,8 +38,33 @@ const OutfitCheckScreen = () => {
     }
   };
 
+const handleUpload = async (file: Asset) => {
+    const formData = new FormData();
+    const image = {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.fileName || 'image.jpg'
+    }
+    formData.append('file', image);
+
+    try {
+      const res = await bpi.post(
+        '/outfitcheck',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('Upload successful', res.data);
+    } catch (error: any) {
+      console.error('Upload error:', error.response?.data || error.message);
+    }
+  }
+
   const openGallery = async () => {
-    const options = {
+    const options: ImageLibraryOptions = {
       mediaType: 'photo',
       includeBase64: false,
       maxHeight: 2000,
@@ -51,9 +78,8 @@ const OutfitCheckScreen = () => {
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets[0]) {
-        setSelectedImage(response.assets[0]);
-        // Here you would typically upload the image to your server
-        console.log('Selected image: ', response.assets[0].uri);
+        await handleUpload(response.assets[0]);
+
       }
     } catch (error) {
       console.log('Error picking image: ', error);
@@ -61,12 +87,12 @@ const OutfitCheckScreen = () => {
   };
 
   const openCamera = async () => {
-    const options = {
+    const options:CameraOptions = {
       mediaType: 'photo',
       includeBase64: false,
       maxHeight: 2000,
       maxWidth: 2000,
-      saveToPhotos: true,
+      saveToPhotos: true
     };
 
     try {
@@ -76,9 +102,7 @@ const OutfitCheckScreen = () => {
       } else if (response.errorCode) {
         console.log('Camera Error: ', response.errorMessage);
       } else if (response.assets && response.assets[0]) {
-        setSelectedImage(response.assets[0]);
-        // Here you would typically upload the image to your server
-        console.log('Captured image: ', response.assets[0].uri);
+        await handleUpload(response.assets[0]);
       }
     } catch (error) {
       console.log('Error using camera: ', error);

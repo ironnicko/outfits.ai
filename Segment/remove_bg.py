@@ -1,29 +1,44 @@
 import io
 import json
-import random
 import aiohttp
 import dotenv
 from os import getenv
 from PIL import Image
 
-
 dotenv.load_dotenv()
+
+W, H = 720, 720
 
 
 async def send_post_request(url, file_bytes, metadata):
     try:
-        W, H = Image.open(io.BytesIO(file_bytes)).size
+        img = Image.open(io.BytesIO(file_bytes))
+        img = img.resize((W, H))
+
+        side_length = 150
+
+        top_left_x = (W - side_length) >> 1
+        top_left_y = (H - side_length) >> 1
+        bottom_right_x = top_left_x + side_length
+        bottom_right_y = top_left_y + side_length
+
+        file_bytes = io.BytesIO()
+        img.save(file_bytes, "png")
+        file_bytes = file_bytes.getvalue()
         headers = {
             "accept": "application/json",
         }
 
         extras = {
             "sam_prompt": [
+
                 {
                     "type": "point",
-                    "data": [(W >> 1) + random.randint(-5, 5), (H >> 1) + random.randint(5,5)],
+                    "data": [W >> 1, H >> 1],
                     "label": 1
-                }
+                },
+
+
             ]
         }
         query_parameters = {
@@ -32,7 +47,7 @@ async def send_post_request(url, file_bytes, metadata):
 
         form = aiohttp.FormData()
         form.add_field('file', file_bytes, filename=metadata["filename"],
-                       content_type=metadata["filetype"])
+                       content_type="image/png")
         form.add_field('model', getenv("MODEL"))
 
         async with aiohttp.ClientSession() as session:

@@ -20,6 +20,19 @@ DB_NAME = os.getenv("DB_NAME")
 DB_HOST = os.getenv("DB_HOST")
 DB_USERNAME = os.getenv("DB_USERNAME")
 
+prompt1 = """
+Provided below is the image of clothing article, you need to give me the color, type, and tags in the following format as plain-text:
+{\"color\" : <the color of the clothing>, \"clothingType\": <the type of the clothing>, \"Tags\": {<generate an array of tags describing the clothing article along with the occasion of the clothing article>}}
+The 'type' must fall under the following categories:
+top, bottom, shoe, accessories, others
+
+Don't generate less than 5 Tags and no more than 7
+
+Except 'Tags' nothing else will be an array
+
+The reply must be plain-text.
+"""
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -55,6 +68,77 @@ async def home():
     return create_response({"result": "success"})
 
 
+@app.post("/mixmatch")
+async def mixmatch(
+    file: UploadFile = File(...),
+):
+    try:
+        file_content = await file.read()
+        if not file_content:
+            raise HTTPException(
+                status_code=400, detail="Uploaded file is empty")
+        print("Starting background removal...")
+        meta_data = {"filetype": file.content_type, "filename": file.filename}
+        rem_bg_image: str = await remove_bg(file_content, meta_data)
+
+        print("Generating tags...")
+        response: dict = await gpt_request(**LLM, prompt=prompt1, img=rem_bg_image, filename=file.filename)
+
+        text = " ".join(response["Tags"])
+        embedding = await get_embeddings([text], **EMBED)
+
+        # using this embedding, find top, bottom, shoe, accessories that are close to this
+
+        # create at best 10 outfits
+
+        return response
+
+    except HTTPException as http_exc:
+        return create_response({"error": http_exc.detail}, status_code=http_exc.status_code)
+    except Exception as e:
+        print(f"Error during upload processing: {e}")
+        return create_response({"error": "An unexpected error occurred."}, status_code=500)
+
+
+@app.post("/outfitcheck")
+async def outfitcheck(
+    file: UploadFile = File(...),
+):
+    try:
+        file_content = await file.read()
+        if not file_content:
+            raise HTTPException(
+                status_code=400, detail="Uploaded file is empty")
+        prompt = """
+        Provided below is the image of a person with their outfit, you need to give me what they are doing well,
+        what they are not doing well, and what they can do to improve their outfit.
+
+        Also provide a score out of 5. Only integer scores.
+
+        OUTPUT FORMAT:
+        {
+            "DoingWell" : <string describing what person is doing well>,
+            "NotDoingWell" : <string describing what person is not doing well, make sure to be friendly>,
+            "Improvements" : <string describing what person can improve>,
+            "Score" : <integer>
+
+        }
+
+        Keep it concise, informal, and under 120 words.
+
+        The reply must be JSON.
+        """
+        response: dict = await gpt_request(**LLM, prompt=prompt, img=file_content, filename=file.filename)
+
+        return response
+
+    except HTTPException as http_exc:
+        return create_response({"error": http_exc.detail}, status_code=http_exc.status_code)
+    except Exception as e:
+        print(f"Error during upload processing: {e}")
+        return create_response({"error": "An unexpected error occurred."}, status_code=500)
+
+
 @ app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
@@ -74,7 +158,8 @@ async def upload_file(
         print("Starting background removal...")
         rem_bg_image: str = await remove_bg(file_content, meta_data)
         print("Generating tags...")
-        response: dict = await gpt_request(**LLM, img=rem_bg_image, filename=file.filename)
+
+        response: dict = await gpt_request(**LLM, prompt=prompt1, img=rem_bg_image, filename=file.filename)
         print("Successfully processed the file and generated tags")
         print(response)
         meta_data["type"] = response["clothingType"]

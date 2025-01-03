@@ -1,102 +1,67 @@
+# ec2.tf
+data "aws_vpc" "default" {
+  default = true
+}
+
 resource "aws_security_group" "main" {
-  egress = [
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 0
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "-1"
-      security_groups  = []
-      self             = false
-      to_port          = 0
+  vpc_id = data.aws_vpc.default.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  dynamic "ingress" {
+    for_each = [22, 80, 443, 3000, 8000, 8001]
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
     }
-  ]
-  ingress = [
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 22
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 22
-    },
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 443
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 443
-    },
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 80
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 80
-    },
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 8000
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 8000
-    },
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 3000
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 3000
-    }
-  ]
+  }
+
+  tags = {
+    Name = "main-security-group"
+  }
 }
 
 resource "aws_instance" "my_vm" {
-  ami = "ami-055e62b4ea2fe95fd"
+  ami           = var.instance_ami
+  instance_type = "r6g.large"
+  key_name      = "vockey"
 
-  instance_type          = "r6gd.large"
-  key_name               = "vockey"
   vpc_security_group_ids = [aws_security_group.main.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   root_block_device {
     volume_size = 32
-    volume_type = "gp2"  
+    volume_type = "gp2"
   }
+
   tags = {
     Name = "outfits.ai"
   }
 
   provisioner "remote-exec" {
     inline = ["echo 'wait until SSH is ready'"]
+
     connection {
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.private_key_path)
-      host = aws_instance.my_vm.public_ip
+      host        = self.public_ip
     }
   }
-  provisioner "local-exec"{
-    command = "ansible-playbook -i aws_ec2.yaml -u ec2-user --private-key ${var.private_key_path} playbook.yaml"
-  }
 
+  provisioner "local-exec" {
+    command = "ansible-playbook -i aws_ec2.yaml -u ${var.ssh_user} --private-key ${var.private_key_path} playbook.yaml"
+  }
+}
+
+# outputs.tf (optional, but helpful)
+output "instance_public_ip" {
+  value = aws_instance.my_vm.public_ip
 }

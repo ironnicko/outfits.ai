@@ -8,7 +8,7 @@ import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-pick
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
-import { Tag, useClothingStore } from '../store/clothingStore';
+import { useClothingStore } from '../store/clothingStore';
 
 type Category = {
   Icon: string;
@@ -28,7 +28,7 @@ const categories: Category[] = [
 
 const WardrobeScreen = () => {
 
-  const [file, setFile] = useState<Asset | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
@@ -37,7 +37,7 @@ const WardrobeScreen = () => {
   const clothes = useClothingStore((state) => state.clothes);
   const setClothes = useClothingStore((state) => state.fetch)
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
-  console.log(clothes)
+
 
   const fetchClothes = async () => {
     if (!token) {
@@ -94,8 +94,7 @@ const WardrobeScreen = () => {
     }
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
+  const handleUpload = async (file: Asset) => {
     const formData = new FormData();
     const image = {
       uri: file.uri,
@@ -130,9 +129,8 @@ const WardrobeScreen = () => {
     if (result.assets && result.assets[0]) {
 
       console.log(result.assets[0]);
-      setFile(result.assets[0]);
       setLoading(true)
-      await handleUpload()
+      await handleUpload(result.assets[0])
       setLoading(false)
       setRefresh(!refresh)
     }
@@ -146,9 +144,11 @@ const WardrobeScreen = () => {
     });
 
     if (result.assets) {
-      setFile(result.assets[0]);
       setLoading(true)
-      await handleUpload()
+      console.log(result.assets)
+      for (const file of result.assets){
+        await handleUpload(file)
+      }
       setLoading(false)
       setRefresh(!refresh)
     }
