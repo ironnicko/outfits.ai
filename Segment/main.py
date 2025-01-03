@@ -101,7 +101,7 @@ async def mixmatch(
 
 
 @app.post("/outfitcheck")
-async def check(
+async def outfitcheck(
     file: UploadFile = File(...),
 ):
     try:
@@ -115,11 +115,21 @@ async def check(
 
         Also provide a score out of 5. Only integer scores.
 
+        OUTPUT FORMAT:
+        {
+            "DoingWell" : <string describing what person is doing well>,
+            "NotDoingWell" : <string describing what person is not doing well, make sure to be friendly>,
+            "Improvements" : <string describing what person can improve>,
+            "Score" : <integer>
+
+        }
+
         Keep it concise, informal, and under 120 words.
 
-        The reply must be plain-text.
+        The reply must be JSON.
         """
         response: dict = await gpt_request(**LLM, prompt=prompt, img=file_content, filename=file.filename)
+
         return response
 
     except HTTPException as http_exc:

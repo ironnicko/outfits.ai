@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	configs "outfits/config"
@@ -44,6 +43,29 @@ func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType strin
 
 	// Close the writer to finalize the multipart form
 	writer.Close()
+}
+
+func SendRequest(url string, body *bytes.Buffer, writer *multipart.Writer) ([]byte, error) {
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer resp.Body.Close()
+
+	return respBody, nil
+
 }
 
 func CreateClothing(c *fiber.Ctx) error {
@@ -95,26 +117,10 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	// Send the POST request to the FastAPI server
 	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
-	fmt.Println(url)
-	req, err := http.NewRequest("POST", url, body)
+	respBody, err := SendRequest(url, body, writer)
 	if err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to create POST request")
+		ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to send POST request")
-	}
-	defer resp.Body.Close()
-
-	// Read the FastAPI server's response
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to Read Reponse from Segment")
-	}
-
 	// Parse the JSON response
 	var fastAPIResponse struct {
 		Tags      []string `json:"Tags"`
@@ -149,7 +155,7 @@ func CreateClothing(c *fiber.Ctx) error {
 	clothing.ClothingURL = bucket
 	db.Save(&clothing)
 
-	return c.Status(resp.StatusCode).Send(respBody)
+	return c.Status(fiber.StatusAccepted).Send(respBody)
 }
 
 type GetTags struct {

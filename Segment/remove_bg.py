@@ -15,7 +15,7 @@ async def send_post_request(url, file_bytes, metadata):
         img = Image.open(io.BytesIO(file_bytes))
         img = img.resize((W, H))
 
-        side_length = 75
+        side_length = 150
 
         top_left_x = (W - side_length) >> 1
         top_left_y = (H - side_length) >> 1
@@ -31,31 +31,13 @@ async def send_post_request(url, file_bytes, metadata):
 
         extras = {
             "sam_prompt": [
-                {
-                    "type": "point",
-                    "data": [top_left_x, top_left_y],
-                    "label": 1
-                },
+
                 {
                     "type": "point",
                     "data": [W >> 1, H >> 1],
                     "label": 1
                 },
-                {
-                    "type": "point",
-                    "data": [bottom_right_x, bottom_right_y],
-                    "label": 1
-                },
-                {
-                    "type": "point",
-                    "data": [top_left_x, bottom_right_y],
-                    "label": 1
-                },
-                {
-                    "type": "point",
-                    "data": [bottom_right_x, top_left_y],
-                    "label": 1
-                },
+
 
             ]
         }

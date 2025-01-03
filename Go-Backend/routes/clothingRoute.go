@@ -10,8 +10,8 @@ import (
 func SetUpClothingRoutes(group fiber.Router) {
 	clothingRoute := group.Group("/clothing")
 
-	// clothingRoute.Post("/", middleware.JWTProtected(),controllers.)
 	clothingRoute.Get("/get-clothings", middleware.JWTProtected(), controllers.GetClothings)
 	clothingRoute.Post("/add-clothing", middleware.JWTProtected(), controllers.CreateClothing)
+	clothingRoute.Post("/outfitcheck", middleware.JWTProtected(), controllers.OutfitCheck)
 
 }

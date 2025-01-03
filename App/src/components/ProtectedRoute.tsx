@@ -16,7 +16,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const checkToken = async () => {
       const storedToken = await getTokenLocal();
       if (!storedToken) {
-        navigation.navigate('Login'); // Navigate to login screen if not authenticated
+        // navigation.navigate('Login'); // Navigate to login screen if not authenticated
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
       }
       setLoading(false);
     };
