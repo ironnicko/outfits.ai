@@ -15,10 +15,9 @@ export interface Clothes {
 }
 
 const mockClothes: Clothes[] = [
-    { ID: '1', Tags: [], Type: 'top', URL: "" },
-    { ID: '2', Tags: [], Type: 'top', URL: '' },
-    { ID: '3', Tags: [], Type: 'bottom', URL: '' },
-    { ID: '4', Tags: [], Type: 'shoes', URL: '' },
+    { ID: '2', Tags: [], Type: 'top', URL: '/Users/avya/Desktop/outfits.ai/App/clothing/top/85.png' },
+    { ID: '3', Tags: [], Type: 'bottom', URL: '/Users/avya/Desktop/outfits.ai/App/clothing/bottom/89.png' },
+    { ID: '4', Tags: [], Type: 'shoe', URL: '/Users/avya/Desktop/outfits.ai/App/clothing/shoe/WhatsApp Image 2024-12-30 at 21.58.44.png' },
 ];
 
 interface ClothingState {

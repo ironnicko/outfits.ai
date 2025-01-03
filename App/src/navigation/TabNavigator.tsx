@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import WardrobeScreen from '../screens/WardrobeScreen';
 import {useTheme} from 'react-native-paper';
 import SettingsScreen from '../screens/settings/SettingsScreen';
+import MyLooksScreen from '../screens/MyLooksScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -41,7 +42,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="My Looks"
-        component={MyLooks}
+        component={MyLooksScreen}
         options={{
           tabBarIcon: ({color, size}) => (
             <Icon name="dots-grid" size={size} color={color} />

@@ -19,7 +19,12 @@ type NavigationProps = NavigationProp<RootStackParamList>;
 
 const GenerateOutfitsScreen = () => {
   const navigation = useNavigation<NavigationProps>();
-  const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([]);
+  const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
+    // Initialize with default selected items
+    { Type: 'top' },
+    { Type: 'bottom' },
+    { Type: 'shoe' }
+  ]);
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
 
   const clothingItems: SelectedClothing[] = [
@@ -100,6 +105,23 @@ const GenerateOutfitsScreen = () => {
     );
   };
 
+  const handleGenerateOutfit = () => {
+    if (hasAnySelectedArticle && isOccasionSelected) {
+      navigation.navigate('OutfitPreview', {
+        selectedItems,
+        occasion: selectedOccasion,
+      });
+    }
+  };
+
+  const handleShowOutfit = () => {
+    if (hasAnySelectedArticle) {
+      navigation.navigate('ShowOutfit', {
+        selectedItems,
+      });
+    }
+  };
+
   return (
     <SafeScreen>
       <View style={styles.container}>
@@ -134,7 +156,7 @@ const GenerateOutfitsScreen = () => {
               style={[styles.button]}
               contentStyle={styles.buttonContent}
               labelStyle={styles.buttonLabel}
-              onPress={() => console.log('Show outfit')}>
+              onPress={handleShowOutfit}>
               Show Outfit
               <Icon name="eye" size={24} color="#fff" style={styles.buttonIcon} />
             </Button>
@@ -153,8 +175,8 @@ const GenerateOutfitsScreen = () => {
                 !isOccasionSelected && styles.buttonLabelDisabled,
               ]}
               disabled={!isOccasionSelected}
-              onPress={() => console.log('Generate outfits')}>
-              Generate Outfits
+              onPress={handleGenerateOutfit}>
+              Generate Outfit
               <Icon 
                 name="auto-fix" 
                 size={24} 

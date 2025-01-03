@@ -1,6 +1,13 @@
 import { SelectedClothing } from "../screens/generateOutfits/GenerateOutfitsScreen";
 
 export type RootStackParamList = {
+  Home: undefined;
+  GenerateOutfits: undefined;
+  OutfitPreview: {
+    selectedItems: SelectedClothing[];
+    occasion: string;
+  };
+  MyLooks: undefined;
   Login: undefined;
   MainTabs: undefined;
   OutfitCheck: undefined;

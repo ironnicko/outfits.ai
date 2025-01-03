@@ -7,23 +7,21 @@ import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScr
 import OccasionSelectScreen from '../screens/generateOutfits/OccasionSelectScreen';
 import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
 import AIRecommendationScreen from '../screens/AIRecommendationScreen';
+import OutfitPreviewScreen from '../screens/OutfitPreviewScreen';
+import ShowOutfitScreen from '../screens/ShowOutfitScreen';
 import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
+import MyLooksScreen from '../screens/MyLooksScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const withProtectedRoute = <P extends object>(Component: React.ComponentType<P>) => {
-  const WrappedComponent: React.FC<P> = (props) => {
-    return (
-      <ProtectedRoute>
-        <Component {...props} />
-      </ProtectedRoute>
-    );
-  };
-
-  return WrappedComponent;
+  return (props: P) => (
+    <ProtectedRoute>
+      <Component {...props} />
+    </ProtectedRoute>
+  );
 };
-
 
 const RootNavigator = () => {
   return (
@@ -39,6 +37,9 @@ const RootNavigator = () => {
       <Stack.Screen name="OccasionSelect" component={withProtectedRoute(OccasionSelectScreen)} />
       <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
       <Stack.Screen name="AIRecommendation" component={withProtectedRoute(AIRecommendationScreen)} />
+      <Stack.Screen name="OutfitPreview" component={withProtectedRoute(OutfitPreviewScreen)} />
+      <Stack.Screen name="ShowOutfit" component={withProtectedRoute(ShowOutfitScreen)} />
+      <Stack.Screen name="MyLooksScreen" component={withProtectedRoute(MyLooksScreen)} />
     </Stack.Navigator>
   );
 };
