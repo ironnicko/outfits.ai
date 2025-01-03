@@ -2,22 +2,18 @@ import React from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { SelectedClothing } from './generateOutfits/GenerateOutfitsScreen';
 import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
 import { useOutfitStore } from '../store/outfitStore';
+import { RootStackParamList } from '../types/types';
+import {  RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
-interface OutfitPreviewScreenProps {
-  route: {
-    params: {
-      selectedItems: SelectedClothing[];
-      occasion: string;
-    };
-  };
-  navigation: any;
-}
 
-const OutfitPreviewScreen = ({ route, navigation }: OutfitPreviewScreenProps) => {
+type RouteProps = RouteProp<RootStackParamList, 'OutfitPreview'>;
+
+const OutfitPreviewScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute<RouteProps>()
   const { selectedItems, occasion } = route.params;
   const addOutfit = useOutfitStore(state => state.addOutfit);
 

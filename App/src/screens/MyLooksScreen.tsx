@@ -4,13 +4,18 @@ import { Text } from 'react-native-paper';
 import SafeScreen from '../components/SafeScreen';
 import { useOutfitStore } from '../store/outfitStore';
 import OutfitPreview from '../components/OutfitPreview';
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { SavedOutfit } from "../store/outfitStore"
+import { RootStackParamList } from '../types/types';
+
+type NavigationProps = NavigationProp<RootStackParamList>;
 
 const MyLooksScreen = () => {
-  const navigation = useNavigation();
-  const outfits = useOutfitStore(state => state.outfits);
+  const navigation = useNavigation<NavigationProps>();
+  const outfits: SavedOutfit[] = useOutfitStore(state => state.outfits);
 
-  const renderOutfit = ({ item }) => (
+  const renderOutfit = (item : SavedOutfit) => (
+
     <Pressable 
       style={styles.outfitCard}
       onPress={() => navigation.navigate('OutfitPreview', {
@@ -36,7 +41,7 @@ const MyLooksScreen = () => {
         ) : (
           <FlatList
             data={outfits}
-            renderItem={renderOutfit}
+            renderItem={({item} ) => renderOutfit(item)}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.listContainer}
           />

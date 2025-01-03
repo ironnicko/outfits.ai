@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { SelectedClothing } from '../screens/generateOutfits/GenerateOutfitsScreen';
 
-interface SavedOutfit {
+export interface SavedOutfit {
   id: string;
   items: SelectedClothing[];
   occasion?: string;
@@ -10,13 +10,13 @@ interface SavedOutfit {
 
 interface OutfitStore {
   outfits: SavedOutfit[];
-  addOutfit: (outfit: Omit<SavedOutfit, 'id' | 'createdAt'>) => void;
+  addOutfit: (outfit: SavedOutfit) => void;
   removeOutfit: (id: string) => void;
 }
 
 export const useOutfitStore = create<OutfitStore>((set) => ({
   outfits: [],
-  addOutfit: (outfit) => 
+  addOutfit: (outfit) =>
     set((state) => ({
       outfits: [...state.outfits, {
         ...outfit,

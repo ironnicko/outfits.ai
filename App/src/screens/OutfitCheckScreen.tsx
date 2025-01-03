@@ -11,7 +11,7 @@ import {
 } from 'react-native-image-picker';
 import {useNavigation} from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
-import { bpi } from '../utils/api';
+import { api } from '../utils/api';
 
 const OutfitCheckScreen = () => {
   const navigation = useNavigation();
@@ -48,8 +48,8 @@ const handleUpload = async (file: Asset) => {
     formData.append('file', image);
 
     try {
-      const res = await bpi.post(
-        '/outfitcheck',
+      const res = await api.post(
+        'api/v1/clothing/outfitcheck',
         formData,
         {
           headers: {

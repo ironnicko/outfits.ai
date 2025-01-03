@@ -2,20 +2,17 @@ import React from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { SelectedClothing } from './generateOutfits/GenerateOutfitsScreen';
 import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { RootStackParamList } from '../types/types';
 
-interface ShowOutfitScreenProps {
-  route: {
-    params: {
-      selectedItems: SelectedClothing[];
-    };
-  };
-  navigation: any;
-}
 
-const ShowOutfitScreen = ({ route, navigation }: ShowOutfitScreenProps) => {
+type RouteProps = RouteProp<RootStackParamList, 'OutfitPreview'>;
+
+const ShowOutfitScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute<RouteProps>()
   const { selectedItems } = route.params;
 
   const handleSaveToLooks = () => {

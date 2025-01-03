@@ -91,12 +91,12 @@ const GenerateOutfitsScreen = () => {
               style={styles.selectedItemImage}
             />
             <View style={styles.checkmark}>
-              <Icon name="check" size={16} color="#fff" />
+              <Icon name="check" size={16} color="#fff"/>
             </View>
           </View>
         ) : (
           <Icon
-            name={item.Icon}
+            name={item.Icon || ""}
             size={item.Size}
             color={isSelected ? '#fff' : '#4A6741'}
           />
@@ -116,9 +116,7 @@ const GenerateOutfitsScreen = () => {
 
   const handleShowOutfit = () => {
     if (hasAnySelectedArticle) {
-      navigation.navigate('ShowOutfit', {
-        selectedItems,
-      });
+      navigation.navigate('ShowOutfits', {selectedItems});
     }
   };
 
