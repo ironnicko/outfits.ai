@@ -104,6 +104,7 @@ docker-compose up --build
   cd ./Go-Backend
   go run .
   ```
+
   ### Make sure to set VITE_PUBLIC_IP=http://localhost in .env
 
 - ## Segment:
@@ -112,8 +113,8 @@ docker-compose up --build
   cd ./Segment
   python3 main.py
   ```
-  ### Download <a href="https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_cloth_seg.onnx">u2net_cloth_seg.onnx</a> and place it in Segment directory
 
+  ### Download <a href="https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_cloth_seg.onnx">u2net_cloth_seg.onnx</a> and place it in Segment directory
 
 - ## Frontend:
 
@@ -153,27 +154,17 @@ DB_PORT=
 DB_NAME=
 DB_PASSWORD=
 DB_HOST=
-PORT=
-SEGMENT_URL=http://segment
-JWT_SECRET=
-TIMEZONE=
-BUCKET_PREFIX=
-VITE_PORT=
-BUCKET_NAME=
-ACCESS_KEY=
-SECRET_KEY=
-SESSION=
+PORT=8000
+JWT_SECRET=<JWT secret>
+TIMEZONE=UTC
+BUCKET_PREFIX=<S3 bucket prefix>
+VITE_PORT=3000
+BUCKET_NAME=<bucket name>
 MODEL=sam
+SEGMENT_URL=http://segment
 REM_HOST=rembg
-```
-
-#### Optional:
-
-```
-VITE_PUBLIC_IP=
-POSTGRES_PASSWORD=
-POSTGRES_USER=
-POSTGRES_DB=
+URL=<supabase project URL>
+ANON=<supabase API KEY>
 ```
 
 #### VITE_PUBLIC_IP will be necessary when running locally

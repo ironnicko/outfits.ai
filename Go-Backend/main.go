@@ -17,7 +17,7 @@ func main() {
 	prod := os.Getenv("PRODUCTION")
 	fmt.Println(prod)
 	if prod != "prod" {
-		err := godotenv.Load(".env")
+		err := godotenv.Load(".env.local")
 		if err != nil {
 			log.Fatalf("Error loading .env file")
 		}

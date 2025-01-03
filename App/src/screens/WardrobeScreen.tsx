@@ -21,7 +21,7 @@ const categories: Category[] = [
   { ID: 'all', Icon: 'hanger', Label: 'All' },
   { ID: 'top', Icon: 'tshirt-crew', Label: 'Tops' },
   { ID: 'bottom', Icon: 'lingerie', Label: 'Bottoms' },
-  { ID: 'shoes', Icon: 'shoe-formal', Label: 'Shoes' },
+  { ID: 'shoe', Icon: 'shoe-formal', Label: 'Shoes' },
   { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
   { ID: 'accessories', Icon: 'hat-fedora', Label: 'Accessories' },
 ];
