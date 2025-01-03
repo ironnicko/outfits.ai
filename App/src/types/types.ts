@@ -6,7 +6,6 @@ export type RootStackParamList = {
     selectedItems: SelectedClothing[];
     occasion?: string;
   };
-  ShowOutfits: { selectedItems: SelectedClothing[]; }
   MyLooks: undefined;
   Login: undefined;
   MainTabs: undefined;

@@ -8,7 +8,6 @@ import OccasionSelectScreen from '../screens/generateOutfits/OccasionSelectScree
 import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
 import AIRecommendationScreen from '../screens/AIRecommendationScreen';
 import OutfitPreviewScreen from '../screens/OutfitPreviewScreen';
-import ShowOutfitScreen from '../screens/ShowOutfitScreen';
 import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
 import MyLooksScreen from '../screens/MyLooksScreen';
@@ -38,7 +37,6 @@ const RootNavigator = () => {
       <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
       <Stack.Screen name="AIRecommendation" component={withProtectedRoute(AIRecommendationScreen)} />
       <Stack.Screen name="OutfitPreview" component={withProtectedRoute(OutfitPreviewScreen)} />
-      <Stack.Screen name="ShowOutfits" component={withProtectedRoute(ShowOutfitScreen)} />
       <Stack.Screen name="MyLooks" component={withProtectedRoute(MyLooksScreen)} />
     </Stack.Navigator>
   );

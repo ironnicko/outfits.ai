@@ -18,10 +18,7 @@ const OutfitPreviewScreen = () => {
   const addOutfit = useOutfitStore(state => state.addOutfit);
 
   const handleSaveToLooks = () => {
-    addOutfit({
-      items: selectedItems,
-      occasion,
-    });
+
   };
 
   const handleExport = () => {
