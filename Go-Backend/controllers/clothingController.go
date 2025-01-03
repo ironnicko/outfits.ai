@@ -26,12 +26,12 @@ func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage stri
 	}
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": errorMessage})
 }
-func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) {
+func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) error {
 	// Create a new multipart request to send the file to the FastAPI server
 
 	part, err := writer.CreateFormFile("file", fileHeader.Filename)
 	if err != nil {
-
+		return err
 	}
 
 	// Copy the file buffer to the multipart form part
@@ -43,6 +43,7 @@ func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType strin
 
 	// Close the writer to finalize the multipart form
 	writer.Close()
+	return nil
 }
 
 func SendRequest(url string, body *bytes.Buffer, writer *multipart.Writer) ([]byte, error) {
@@ -74,30 +75,26 @@ func CreateClothing(c *fiber.Ctx) error {
 	clothing := models.Clothing{}
 
 	if err := c.BodyParser(&clothing); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 
 	clothing.UserID = user.ID
 
 	result := db.Create(&clothing)
 	if result.Error != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": result.Error,
-		})
+		return ErrorRollBack(c, db, clothing.ID, result.Error.Error())
 	}
 
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse File")
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 
 	// Open the file in memory
 	file, err := fileHeader.Open()
 	if err != nil {
 		db.Delete(&models.Clothing{}, clothing.ID)
-		return ErrorRollBack(c, db, clothing.ID, "Failed to Open File")
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 	defer file.Close()
 
@@ -105,7 +102,7 @@ func CreateClothing(c *fiber.Ctx) error {
 	var fileBuffer bytes.Buffer
 	_, err = io.Copy(&fileBuffer, file)
 	if err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to Copy File to Buffer")
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 
 	body := &bytes.Buffer{}
@@ -113,13 +110,16 @@ func CreateClothing(c *fiber.Ctx) error {
 
 	strCID := strconv.FormatUint(uint64(clothing.ID), 10)
 
-	CreateMultiPartFormBody(user.ID, strCID, clothing.ClothingType, writer, &fileBuffer, fileHeader)
+	err = CreateMultiPartFormBody(user.ID, strCID, clothing.ClothingType, writer, &fileBuffer, fileHeader)
+	if err != nil {
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
+	}
 
 	// Send the POST request to the FastAPI server
 	url := os.Getenv("SEGMENT_URL") + ":8001/upload"
 	respBody, err := SendRequest(url, body, writer)
 	if err != nil {
-		ErrorRollBack(c, db, clothing.ID, err.Error())
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 	// Parse the JSON response
 	var fastAPIResponse struct {
@@ -131,7 +131,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		Color     string   `json:"color"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
-		return ErrorRollBack(c, db, clothing.ID, "Failed to Parse JSON Response")
+		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 
 	// Save Tags to the database
@@ -141,19 +141,24 @@ func CreateClothing(c *fiber.Ctx) error {
 			ClothingID: clothing.ID,
 		}
 		if err := db.Create(&tag).Error; err != nil {
-			return ErrorRollBack(c, db, clothing.ID, "Failed to Save Tags to Database")
+			return ErrorRollBack(c, db, clothing.ID, err.Error())
 		}
 	}
 
 	// Save Vector to the Database
 	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-	db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, fastAPIResponse.Text, time.Now(), time.Now())
+	if db_error := db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, fastAPIResponse.Text, time.Now(), time.Now()); db_error.Error != nil {
+		return ErrorRollBack(c, db, clothing.ID, db_error.Error.Error())
+	}
 
 	clothing.ClothingType = fastAPIResponse.Type
 	clothing.ClothingColor = fastAPIResponse.Color
 	bucket := strings.Join([]string{os.Getenv("BUCKET_PREFIX"), user.ID.String(), clothing.ClothingType, strCID + ".png"}, "/")
 	clothing.ClothingURL = bucket
-	db.Save(&clothing)
+
+	if db_error := db.Save(&clothing); db_error.Error != nil {
+		return ErrorRollBack(c, db, clothing.ID, db_error.Error.Error())
+	}
 
 	return c.Status(fiber.StatusAccepted).Send(respBody)
 }

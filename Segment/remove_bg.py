@@ -1,11 +1,17 @@
 import io
 import json
 import aiohttp
-import dotenv
-from os import getenv
+from dotenv import dotenv_values
+from os import listdir, environ
 from PIL import Image
 
-dotenv.load_dotenv()
+
+check_local = ".env.local" in listdir()
+
+config = {
+    **environ,
+    **dotenv_values(".env" + ["", ".local"][check_local]),
+}
 
 W, H = 720, 720
 
@@ -48,7 +54,7 @@ async def send_post_request(url, file_bytes, metadata):
         form = aiohttp.FormData()
         form.add_field('file', file_bytes, filename=metadata["filename"],
                        content_type="image/png")
-        form.add_field('model', getenv("MODEL"))
+        form.add_field('model', config.get("MODEL"))
 
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=form, params=query_parameters, headers=headers) as response:
@@ -64,7 +70,7 @@ async def send_post_request(url, file_bytes, metadata):
 
 async def remove_bg(file_bytes, metadata):
     try:
-        url = "http://" + getenv("REM_HOST") + f":7001/api/remove"
+        url = "http://" + config.get("REM_HOST") + f":7001/api/remove"
 
         img = await send_post_request(url, file_bytes, metadata)
 

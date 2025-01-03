@@ -26,7 +26,7 @@ const GenerateOutfitsScreen = () => {
     { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
     { Type: 'top', Icon: 'tshirt-crew', Size: 64 },
     { Type: 'bottom', Icon: 'lingerie', Size: 64 },
-    { Type: 'shoes', Icon: 'shoe-formal', Size: 48 },
+    { Type: 'shoe', Icon: 'shoe-formal', Size: 48 },
   ];
 
   const handleClothingItemPress = (Type: string) => {
