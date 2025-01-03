@@ -60,7 +60,7 @@ const HomeScreen = () => {
             title="Mix & Match"
             subtitle="Upload a picture for outfit advice"
             icon="camera"
-            onPress={() => navigation.navigate('AIRecommendation')}
+            onPress={() => navigation.navigate('MixAndMatch')}
           />
           <FeatureCard
             title="Outfit Check"

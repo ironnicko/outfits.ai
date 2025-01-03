@@ -17,7 +17,7 @@ export type RootStackParamList = {
   About: undefined;
   SelectClothingItem: { type: string; onSelect: (clothing: SelectedClothing) => void };
   OccasionSelect: { onSelect: (occasion: string) => void }
-  AIRecommendation: undefined;
+  MixAndMatch: undefined;
 };
 
 export type MainTabParamList = {

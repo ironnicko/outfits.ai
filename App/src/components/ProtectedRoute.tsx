@@ -3,12 +3,17 @@ import { View, ActivityIndicator } from 'react-native';
 import { getTokenLocal } from '../utils/auth';
 import { useNavigation } from '@react-navigation/native';
 
+import { RootStackParamList } from '../types/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 interface ProtectedRouteProps {
   children: JSX.Element;
 }
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {

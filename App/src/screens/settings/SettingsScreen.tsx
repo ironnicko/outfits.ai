@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {StyleSheet, View, Pressable, Alert} from 'react-native';
 import {Text, Divider} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -31,7 +31,21 @@ const SettingsScreen =  () => {
   const clearUsername = useAuthStore((state: AuthState) => state.clearUsername);
   const clearClothes = useClothingStore((state) => state.clear);
   const token = useAuthStore((state: AuthState) => state.token) || getTokenLocal();
-  const username = useAuthStore((state: AuthState) => state.username) || getUsernameLocal();
+  
+
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const localUsername = await getUsernameLocal();
+      setUsername(localUsername || " ");
+      const authUsername =  useAuthStore((state) => state.username);
+      setUsername(authUsername || localUsername || " ");
+
+    };
+    fetchUsername();
+  }, []);
+
   const handleLogout = () => {
     Alert.alert(
       'Sign Out',
@@ -86,7 +100,7 @@ const SettingsScreen =  () => {
             Signed in as
           </Text>
           <Text variant="headlineSmall" style={styles.email}>
-            { username }
+            { username  }
           </Text>
         </View>
 

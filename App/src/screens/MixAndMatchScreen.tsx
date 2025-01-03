@@ -6,7 +6,7 @@ import SafeScreen from '../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
-const AIRecommendationScreen = () => {
+const MixAndMatchScreen = () => {
   const navigation = useNavigation();
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
 
@@ -232,4 +232,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AIRecommendationScreen; 
+export default MixAndMatchScreen; 

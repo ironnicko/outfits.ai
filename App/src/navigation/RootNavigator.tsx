@@ -6,7 +6,7 @@ import OutfitCheckScreen from '../screens/OutfitCheckScreen';
 import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScreen';
 import OccasionSelectScreen from '../screens/generateOutfits/OccasionSelectScreen';
 import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
-import AIRecommendationScreen from '../screens/AIRecommendationScreen';
+import MixAndMatchScreen from '../screens/MixAndMatchScreen';
 import OutfitPreviewScreen from '../screens/OutfitPreviewScreen';
 import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
@@ -35,7 +35,7 @@ const RootNavigator = () => {
       <Stack.Screen name="GenerateOutfits" component={withProtectedRoute(GenerateOutfitsScreen)} />
       <Stack.Screen name="OccasionSelect" component={withProtectedRoute(OccasionSelectScreen)} />
       <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
-      <Stack.Screen name="AIRecommendation" component={withProtectedRoute(AIRecommendationScreen)} />
+      <Stack.Screen name="MixAndMatch" component={withProtectedRoute(MixAndMatchScreen)} />
       <Stack.Screen name="OutfitPreview" component={withProtectedRoute(OutfitPreviewScreen)} />
       <Stack.Screen name="MyLooks" component={withProtectedRoute(MyLooksScreen)} />
     </Stack.Navigator>
