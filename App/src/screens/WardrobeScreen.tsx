@@ -34,8 +34,8 @@ const WardrobeScreen = () => {
   const [refresh, setRefresh] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const clothes = useClothingStore((state) => state.clothes);
   const setClothes = useClothingStore((state) => state.fetch)
+  const clothes = useClothingStore((state) => state.clothes);
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
 
 

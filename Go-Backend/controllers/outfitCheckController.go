@@ -13,18 +13,18 @@ import (
 func OutfitCheck(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "File issue!"})
+		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 	file, err := fileHeader.Open()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "File issue!"})
+		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 	defer file.Close()
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", fileHeader.Filename)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "File issue!"})
+		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 	// Copy the file buffer to the multipart form part
 	io.Copy(part, file)
@@ -33,7 +33,7 @@ func OutfitCheck(c *fiber.Ctx) error {
 	respBody, err := SendRequest(url, body, writer)
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 	var fastAPIResponse struct {
 		Score        int    `json:"Score"`
@@ -42,7 +42,7 @@ func OutfitCheck(c *fiber.Ctx) error {
 		Improvements string `json:"Improvements"`
 	}
 	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "JSON parsing Error!"})
+		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fastAPIResponse)

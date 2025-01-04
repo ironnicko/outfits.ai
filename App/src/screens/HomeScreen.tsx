@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {StyleSheet, View, Dimensions} from 'react-native';
 import {Card, Text, useTheme} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -6,6 +6,9 @@ import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RootStackParamList} from '../types/types';
 import SafeScreen from '../components/SafeScreen';
+import { useClothingStore } from '../store/clothingStore';
+import { AuthState, useAuthStore } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
 
 
 
@@ -40,7 +43,21 @@ const FeatureCard = ({title, subtitle, icon, onPress} : any) => {
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const setClothes = useClothingStore((state) => state.fetch)
+  
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const fetchClothes = async () => {
+    const getToken = token || (await getTokenLocal());
+    if (!token) {
+      setToken(getToken || "")
+    }
 
+    setClothes(getToken|| "");
+  };
+
+  useEffect(() => {
+    fetchClothes()
+  }, [])
   return (
     <SafeScreen>
       <View style={styles.container}>

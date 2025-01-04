@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Pressable, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../../components/SafeScreen';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Text, Button, IconButton } from 'react-native-paper';
-import { Clothes } from '../../store/clothingStore';
+import { Clothes, Tag, useClothingStore } from '../../store/clothingStore';
 import { RootStackParamList } from '../../types/types';
+import { api } from '../../utils/api';
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { getTokenLocal } from '../../utils/auth';
 
 export interface SelectedClothing extends Clothes{
   Type?: string;
@@ -19,6 +22,8 @@ type NavigationProps = NavigationProp<RootStackParamList>;
 
 const GenerateOutfitsScreen = () => {
   const navigation = useNavigation<NavigationProps>();
+  
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
   const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
     // Initialize with default selected items
     { Type: 'top' },
@@ -27,6 +32,21 @@ const GenerateOutfitsScreen = () => {
   ]);
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
 
+
+  const setClothes = useClothingStore((state) => state.fetch)
+  
+  const fetchClothes = async () => {
+    const getToken = token || (await getTokenLocal());
+    if (!token) {
+      setToken(getToken || "")
+    }
+
+    setClothes(getToken|| "");
+  };
+
+  useEffect(() => {
+    fetchClothes()
+  }, [])
   const clothingItems: SelectedClothing[] = [
     { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
     { Type: 'top', Icon: 'tshirt-crew', Size: 64 },
@@ -50,6 +70,7 @@ const GenerateOutfitsScreen = () => {
       toggleItem(Type);
     }
   };
+
 
   const toggleItem = (Type: string) => {
     setSelectedItems((prev: SelectedClothing[]) =>
@@ -105,13 +126,52 @@ const GenerateOutfitsScreen = () => {
     );
   };
 
-  const handleGenerateOutfit = () => {
+  const handleGenerateOutfit = async () => {
+
+    if (!token) {
+      const getToken = await getTokenLocal();
+      setToken(getToken || '')
+    }
 
     if (selectedItems.length) {
-      navigation.navigate('OutfitPreview', {
-        selectedItems,
-        occasion: selectedOccasion,
-      });
+      const tags : Set<string> = new Set<string>();
+      const pairingArticles : string[] = [];
+      for(let item of selectedItems){
+        // Extract all unique tags
+        for(let tag of (item.Tags || [])){
+          tags.add(tag.TagName);
+        }
+
+        // Find out what clothing article needs to be queried
+        if (item.Tags == undefined){
+          pairingArticles.push(item.Type || " ")
+        }
+      }
+      try {
+        const res = await api.post(
+          '/api/v1/clothing/generate-outfits',
+          {
+            articles : pairingArticles,
+            occasion: selectedOccasion
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        if (res.status != 200){
+          throw Error(res.statusText)
+        }
+        console.log(res.data)
+        navigation.navigate('OutfitPreview', {
+          selectedItems,
+          occasion: selectedOccasion,
+        });
+      } catch (error: any) {
+          console.error('Upload error:', error.response?.data || error.message);
+      }
     }
   };
 
@@ -174,7 +234,7 @@ const GenerateOutfitsScreen = () => {
                 !isOccasionSelected && styles.buttonLabelDisabled,
               ]}
               disabled={!isOccasionSelected}
-              onPress={handleGenerateOutfit}>
+              onPress={async() => await handleGenerateOutfit()}>
               Generate Outfit
               <Icon 
                 name="auto-fix" 

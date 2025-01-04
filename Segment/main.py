@@ -62,6 +62,15 @@ def create_response(content, status_code=200):
     return JSONResponse(content=content, status_code=status_code)
 
 
+@app.post("/embedding")
+async def embedding(
+    occasion: str = Form(...)
+):
+    embedding = await get_embeddings([occasion], **EMBED)
+
+    return create_response({"embedding": json.dumps(embedding.tolist()[0])})
+
+
 @ app.get("/")
 async def home():
     """Health check endpoint."""
