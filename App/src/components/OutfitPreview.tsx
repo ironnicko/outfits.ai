@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
-import { Text } from 'react-native-paper';
 import { SelectedClothing } from '../screens/generateOutfits/GenerateOutfitsScreen';
 
 interface OutfitPreviewProps {
@@ -8,7 +7,14 @@ interface OutfitPreviewProps {
   occasion?: string;
 }
 
+function isSelectedClothing(item: any): item is SelectedClothing {
+
+  return item && typeof item === 'object' && 'bottom' in item && 'hat' in item && 'shoe' in item && 'top' in item;
+}
+
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
+
+
   const getItemPosition = (type: string) => {
     switch (type) {
       case 'hat':
@@ -23,26 +29,26 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
         return {};
     }
   };
-
   return (
     <View style={styles.container}>
       {/* {occasion && (
         <Text style={styles.occasionText}>{occasion}</Text>
       )} */}
       <View style={styles.outfitContainer}>
-        {items.map((item, index) => (
+        {items.map((item: SelectedClothing, index: number) => {
+          return (
           <View
             key={index}
-            style={[styles.itemContainer, getItemPosition(item.Type || '')]}>
-            {item.URL ? (
+            style={[styles.itemContainer, getItemPosition((item.Type || item.type) || "")]}>
+            {(item.URL || item.url) ? (
               <Image
-                source={{ uri: item.URL }}
+                source={{ uri: (item.URL || item.url)}}
                 style={styles.itemImage}
                 resizeMode="contain"
               />
             ) : null}
           </View>
-        ))}
+        )})}
       </View>
     </View>
   );

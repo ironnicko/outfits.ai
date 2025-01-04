@@ -163,26 +163,26 @@ func CreateClothing(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusAccepted).Send(respBody)
 }
 
-type GetTags struct {
+type RequestTags struct {
 	TagID   uint
 	TagName string
 }
 
-type GetClothing struct {
+type RequestClothings struct {
 	Color string
 	Type  string
 	URL   string
 	ID    uint
-	Tags  []GetTags
+	Tags  []RequestTags
 }
 
-func CreateResponseClothing(clothing models.Clothing, tags []models.Tags) GetClothing {
-	response := GetClothing{}
+func CreateResponseClothing(clothing models.Clothing, tags []models.Tags) RequestClothings {
+	response := RequestClothings{}
 	response.Color = clothing.ClothingColor
 	response.Type = clothing.ClothingType
 	response.URL = clothing.ClothingURL
 	response.ID = clothing.ID
-	tagInstance := GetTags{}
+	tagInstance := RequestTags{}
 
 	for _, tag := range tags {
 		tagInstance.TagID = tag.ID
@@ -199,7 +199,7 @@ func GetClothings(c *fiber.Ctx) error {
 	clothings := []models.Clothing{}
 	db.Where("user_id = ?", user.ID.String()).Find(&clothings)
 
-	responseClothings := []GetClothing{}
+	responseClothings := []RequestClothings{}
 	tags := []models.Tags{}
 	for _, clothing := range clothings {
 		db.Where("clothing_id = ?", clothing.ID).Find(&tags)
@@ -208,4 +208,13 @@ func GetClothings(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(responseClothings)
+}
+
+func GetClothing(c *fiber.Ctx) error {
+	db := configs.DB.Db
+	clothing_id := c.FormValue("clothing_id")
+	clothing := models.Clothing{}
+	db.Where("id = ?", clothing_id).Find(&clothing)
+	return c.JSON(clothing)
+
 }

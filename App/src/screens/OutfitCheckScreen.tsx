@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Image, Platform, ActionSheetIOS, Pressable} from 'react-native';
 import {Text, IconButton, Button, Portal, Modal} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -13,6 +13,8 @@ import {useNavigation} from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
+import { useClothingStore } from '../store/clothingStore';
 
 // Need to dynamically start loading when outfit is uploaded
 
@@ -22,7 +24,22 @@ const OutfitCheckScreen = () => {
   const navigation = useNavigation();
 
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const token = useAuthStore((state: AuthState) => state.token);
+  const setClothes = useClothingStore((state) => state.fetch)
+  
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const fetchClothes = async () => {
+    const getToken = token || (await getTokenLocal());
+    if (!token) {
+      setToken(getToken || "")
+    }
+
+    setClothes(getToken|| "");
+  };
+
+  useEffect(() => {
+    fetchClothes()
+  }, [])
+
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(

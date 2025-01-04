@@ -11,9 +11,12 @@ import { AuthState, useAuthStore } from '../../store/authStore';
 import { getTokenLocal } from '../../utils/auth';
 
 export interface SelectedClothing extends Clothes{
-  Type?: string;
   Icon?: string;
   Size?: number;
+  type? : string
+  url?: string
+  tags?: Tag[]
+  color?: string
 }
 
 
@@ -40,7 +43,6 @@ const GenerateOutfitsScreen = () => {
     if (!token) {
       setToken(getToken || "")
     }
-
     setClothes(getToken|| "");
   };
 
@@ -54,20 +56,20 @@ const GenerateOutfitsScreen = () => {
     { Type: 'shoe', Icon: 'shoe-formal', Size: 48 },
   ];
 
-  const handleClothingItemPress = (Type: string) => {
-    if (selectedItems.find((item: SelectedClothing) => item.Type === Type)) {
+  const handleClothingItemPress = (type: string) => {
+    if (selectedItems.find((item: SelectedClothing) => item.Type === type)) {
       navigation.navigate('SelectClothingItem', {
-        type : Type,
+        type : type,
         onSelect: (clothing: SelectedClothing) => {
           setSelectedItems((prev: SelectedClothing[]) =>
             prev.map((item: SelectedClothing) =>
-              item.Type === Type ? clothing : item,
+              item.Type === type ? clothing : item,
             ),
           );
         },
       });
     } else {
-      toggleItem(Type);
+      toggleItem(type);
     }
   };
 
@@ -134,17 +136,14 @@ const GenerateOutfitsScreen = () => {
     }
 
     if (selectedItems.length) {
-      const tags : Set<string> = new Set<string>();
+      const pairWithArticles: {ID?: string, Tags: Tag[]} [] = [];
       const pairingArticles : string[] = [];
       for(let item of selectedItems){
-        // Extract all unique tags
-        for(let tag of (item.Tags || [])){
-          tags.add(tag.TagName);
-        }
-
         // Find out what clothing article needs to be queried
         if (item.Tags == undefined){
           pairingArticles.push(item.Type || " ")
+        } else {
+          pairWithArticles.push({ID : item.ID, Tags: item.Tags })
         }
       }
       try {
@@ -152,21 +151,41 @@ const GenerateOutfitsScreen = () => {
           '/api/v1/clothing/generate-outfits',
           {
             articles : pairingArticles,
-            occasion: selectedOccasion
+            occasion: selectedOccasion,
+            pairWithArticles: pairWithArticles
           },
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
+              'Content-type': 'application/json',
             },
           }
         );
         if (res.status != 200){
           throw Error(res.statusText)
         }
-        console.log(res.data)
+        const outfits = []
+        for (let outfit of res.data){
+          var outfit_data: any = []
+          for(let key in outfit){
+            const id = outfit[key]
+            const formData = new FormData()
+            formData.append('clothing_id', id)
+            outfit_data.push((await api.post(
+            '/api/v1/clothing',formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-type': 'multipart/form-data',
+              },
+            }
+            )).data)
+          }
+          outfits.push(outfit_data)
+        }
+        // TODO: Add carousel in OutfitPreview and pass outfits as 'outfits'
         navigation.navigate('OutfitPreview', {
-          selectedItems,
+          outfits: outfits[0],
           occasion: selectedOccasion,
         });
       } catch (error: any) {

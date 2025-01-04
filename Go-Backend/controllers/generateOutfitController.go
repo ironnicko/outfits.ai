@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"mime/multipart"
 	"os"
 	configs "outfits/config"
@@ -15,11 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var data struct {
-	Occasion string   `json:"occasion"`
-	Articles []string `json:"articles"`
-}
-
 var response struct {
 	Embedding string `json:"embedding"`
 }
@@ -27,35 +21,76 @@ var response struct {
 func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, userID uuid.UUID) ([]models.Clothing, error) {
 	var clothings []models.Clothing
 
-	// Create a subquery for cosine similarity
 	subquery := db.Table("vectors").
 		Select("clothing_id, 1 - (embedding <=> ?::vector) AS cos_sim", embedding).
 		Joins("JOIN clothings ON clothings.id = vectors.clothing_id").
 		Where("clothings.clothing_type IN (?)", clothingTypes).
 		Where("clothings.user_id = ?", userID)
 
-	// Execute the main query with the subquery
 	err := db.Table("(?) AS sub", subquery).
 		Select("clothing_id AS id").
-		Where("cos_sim >= ?", 0.35).
+		Where("cos_sim >= ?", 0.2).
 		Order("cos_sim").
 		Scan(&clothings).Error
 
 	return clothings, err
 }
 
-func GenerateOutfit(c *fiber.Ctx) error {
+func GetRelatedTags(db *gorm.DB, clothes []models.Clothing) ([][]models.Tags, error) {
 
+	var ids []uint
+	for _, clothing := range clothes {
+		ids = append(ids, clothing.ID)
+	}
+
+	var fetchedTags []models.Tags
+	if err := db.Where("clothing_id IN ?", ids).Find(&fetchedTags).Error; err != nil {
+		return nil, err
+	}
+
+	tagsMap := make(map[uint][]models.Tags)
+
+	for _, tag := range fetchedTags {
+		tagsMap[tag.ClothingID] = append(tagsMap[tag.ClothingID], tag)
+	}
+
+	var relatedTags [][]models.Tags
+	for _, clothing := range clothes {
+		relatedTags = append(relatedTags, tagsMap[clothing.ID])
+	}
+
+	return relatedTags, nil
+}
+func GetClothingsByIDs(db *gorm.DB, clothes []models.Clothing) ([]models.Clothing, error) {
+	var ids []uint
+	for _, clothing := range clothes {
+		ids = append(ids, clothing.ID)
+	}
+
+	var fetchedClothings []models.Clothing
+	if err := db.Where("id IN ?", ids).Find(&fetchedClothings).Error; err != nil {
+		return nil, err
+	}
+	return fetchedClothings, nil
+}
+
+func GenerateOutfit(c *fiber.Ctx) error {
 	db := configs.DB.Db
 	user := c.Locals("user").(types.UserResponse)
-	respBody := data
-	if err := c.BodyParser(&respBody); err != nil {
+
+	var reqBody struct {
+		Occasion         string            `json:"occasion"`
+		Articles         []string          `json:"articles"`
+		PairWithArticles []models.Clothing `json:"pairWithArticles"`
+	}
+
+	if err := c.BodyParser(&reqBody); err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	articles := respBody.Articles
-	occasion := respBody.Occasion
-	// Get embeddings for the tags
+	articles := reqBody.Articles
+	occasion := reqBody.Occasion
+	pairWithArticles := reqBody.PairWithArticles
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -83,11 +118,72 @@ func GenerateOutfit(c *fiber.Ctx) error {
 	if err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
+
+	var tags [][]models.Tags
 	var clothings []models.Clothing
-	if len(replies) != 0 {
-		db.Find(&clothings, replies)
+	if len(replies) > 0 {
+		clothings, err = GetClothingsByIDs(db, replies)
+		if err != nil {
+			return ErrorRollBack(c, nil, 0, err.Error())
+		}
+		tags, err = GetRelatedTags(db, clothings)
+		if err != nil {
+			return ErrorRollBack(c, nil, 0, err.Error())
+		}
 	}
 
-	fmt.Println(clothings, articles, occasion)
-	return c.Status(fiber.StatusOK).JSON(clothings)
+	if err := writer.Close(); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	return GeneratePairings(c, clothings, tags, pairWithArticles)
+}
+
+func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, tags [][]models.Tags, pairWithArticles []models.Clothing) error {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	clothesJSON, err := json.Marshal(clothes)
+	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	if err := writer.WriteField("clothes", string(clothesJSON)); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	tagsJSON, err := json.Marshal(tags)
+	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	if err := writer.WriteField("tags", string(tagsJSON)); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+	pairWithArticlesJSON, err := json.Marshal(pairWithArticles)
+	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	if err := writer.WriteField("pairWithArticles", string(pairWithArticlesJSON)); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	if err := writer.Close(); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	url := os.Getenv("SEGMENT_URL") + ":8001/generate-outfits"
+
+	outfits, err := SendRequest(url, body, writer)
+	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	var response interface{}
+	if err := json.Unmarshal(outfits, &response); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }
