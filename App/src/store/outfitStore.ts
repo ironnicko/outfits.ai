@@ -5,7 +5,7 @@ export interface SavedOutfit {
   id: string;
   items: SelectedClothing[];
   occasion?: string;
-  createdAt: Date;
+
 }
 
 interface OutfitStore {
@@ -21,7 +21,6 @@ export const useOutfitStore = create<OutfitStore>((set) => ({
       outfits: [...state.outfits, {
         ...outfit,
         id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date()
       }]
     })),
   removeOutfit: (id) =>

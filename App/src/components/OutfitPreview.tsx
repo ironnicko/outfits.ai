@@ -7,10 +7,6 @@ interface OutfitPreviewProps {
   occasion?: string;
 }
 
-function isSelectedClothing(item: any): item is SelectedClothing {
-
-  return item && typeof item === 'object' && 'bottom' in item && 'hat' in item && 'shoe' in item && 'top' in item;
-}
 
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
 
@@ -35,7 +31,7 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
         <Text style={styles.occasionText}>{occasion}</Text>
       )} */}
       <View style={styles.outfitContainer}>
-        {items.map((item: SelectedClothing, index: number) => {
+        {(items || []).map((item: SelectedClothing, index: number) => {
           return (
           <View
             key={index}

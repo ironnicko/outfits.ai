@@ -37,7 +37,10 @@ const OutfitCheckScreen = () => {
   };
 
   useEffect(() => {
-    fetchClothes()
+    const asyncCall = async () => {
+      await fetchClothes()
+    }
+    asyncCall()
   }, [])
 
   const handleImagePicker = () => {

@@ -23,7 +23,7 @@ const categories: Category[] = [
   { ID: 'bottom', Icon: 'lingerie', Label: 'Bottoms' },
   { ID: 'shoe', Icon: 'shoe-formal', Label: 'Shoes' },
   { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
-  { ID: 'accessories', Icon: 'hat-fedora', Label: 'Accessories' },
+  { ID: 'hat', Icon: 'hat-fedora', Label: 'Accessories' },
 ];
 
 const WardrobeScreen = () => {
@@ -50,7 +50,10 @@ const WardrobeScreen = () => {
   };
 
   useEffect(() => {
-    fetchClothes()
+    const asyncCall = async () => {
+      await fetchClothes()
+    }
+    asyncCall()
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {

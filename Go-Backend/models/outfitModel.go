@@ -8,20 +8,17 @@ import (
 
 type Outfit struct {
 	gorm.Model
-
-	Outfitname   string    `gorm:"size:255;uniqueIndex" json:"outfitname" validate:"min=3,max=50"`
-	Outfitup     string    `json:"up" validate:"required"`
-	Up           Clothing  `gorm:"foreignKey:Outfitup;constraint:OnDelete:CASCADE;"`
-	Outfitbottom string    `json:"bottom" validate:"required"`
-	Bottom       Clothing  `gorm:"foreignKey:Outfitbottom;constraint:OnDelete:CASCADE;"`
-	Outfitshoes  *string   `json:"shoes"`
-	Shoes        *Clothing `gorm:"foreignKey:Outfitshoes;constraint:OnDelete:CASCADE;"`
-	Outfithat    *string   `json:"hat"`
-	Hat          *Clothing `gorm:"foreignKey:Outfithat;constraint:OnDelete:CASCADE;"`
-	Outfitdress  *string   `json:"dress"`
-	Dress        *Clothing `gorm:"foreignKey:Outfitdress;constraint:OnDelete:CASCADE;"`
-	UserID       uuid.UUID `json:"userID" gorm:"constraint:OnDelete:CASCADE;"`
-	User         User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Outfitoccasion string    `gorm:"size:255;uniqueIndex" json:"outfitname" validate:"min=3,max=50"`
+	Outfittop      string    `json:"top"`
+	Top            Clothing  `gorm:"foreignKey:Outfittop;constraint:OnDelete:CASCADE;"`
+	Outfitbottom   string    `json:"bottom"`
+	Bottom         Clothing  `gorm:"foreignKey:Outfitbottom;constraint:OnDelete:CASCADE;"`
+	Outfitshoe     string    `json:"shoe"`
+	Shoe           Clothing  `gorm:"foreignKey:Outfitshoe;constraint:OnDelete:CASCADE;"`
+	Outfithat      string    `json:"hat"`
+	Hat            Clothing  `gorm:"foreignKey:Outfithat;constraint:OnDelete:CASCADE;"`
+	UserID         uuid.UUID `json:"userID" gorm:"constraint:OnDelete:CASCADE;"`
+	User           User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
 func (u *Outfit) Validate() error {

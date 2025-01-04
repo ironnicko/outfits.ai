@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Pressable, Image } from 'react-native';
+import { StyleSheet, View, Pressable, Image, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../../components/SafeScreen';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
@@ -33,11 +33,9 @@ const GenerateOutfitsScreen = () => {
     { Type: 'bottom' },
     { Type: 'shoe' }
   ]);
+  const [loading, setLoading] = useState<boolean>(false)
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
-
-
   const setClothes = useClothingStore((state) => state.fetch)
-  
   const fetchClothes = async () => {
     const getToken = token || (await getTokenLocal());
     if (!token) {
@@ -47,7 +45,10 @@ const GenerateOutfitsScreen = () => {
   };
 
   useEffect(() => {
-    fetchClothes()
+    const asyncCall = async () => {
+      await fetchClothes()
+    }
+    asyncCall()
   }, [])
   const clothingItems: SelectedClothing[] = [
     { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
@@ -107,7 +108,11 @@ const GenerateOutfitsScreen = () => {
           isSelected && styles.selectedItem,
           hasWardrobe && styles.wardrobeItem,
         ]}>
-        {hasURL ? (
+        {loading ? 
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="4A6741" />
+        </View>
+        :(hasURL ? (
           <View style={styles.selectedItemContent}>
             <Image 
               source={{ uri: selectedItem.URL || " " }}
@@ -123,13 +128,13 @@ const GenerateOutfitsScreen = () => {
             size={item.Size}
             color={isSelected ? '#fff' : '#4A6741'}
           />
-        )}
+        ))}
       </Pressable>
     );
   };
 
   const handleGenerateOutfit = async () => {
-
+    setLoading(true)
     if (!token) {
       const getToken = await getTokenLocal();
       setToken(getToken || '')
@@ -184,12 +189,15 @@ const GenerateOutfitsScreen = () => {
           outfits.push(outfit_data)
         }
         // TODO: Add carousel in OutfitPreview and pass outfits as 'outfits'
+        console.log(outfits)
         navigation.navigate('OutfitPreview', {
-          outfits: outfits[0],
+          outfits: outfits[1],
           occasion: selectedOccasion,
         });
       } catch (error: any) {
           console.error('Upload error:', error.response?.data || error.message);
+      } finally{
+        setLoading(false);
       }
     }
   };
@@ -218,6 +226,7 @@ const GenerateOutfitsScreen = () => {
 
         <Pressable 
           style={styles.occasionButton}
+          disabled={loading}
           onPress={() => navigation.navigate('OccasionSelect', {
             onSelect: (occasion: string) => setSelectedOccasion(occasion)
           })}>
@@ -233,6 +242,7 @@ const GenerateOutfitsScreen = () => {
               mode="contained"
               style={[styles.button]}
               contentStyle={styles.buttonContent}
+              disabled={loading}
               labelStyle={styles.buttonLabel}
               onPress={handleShowOutfit}>
               Show Outfit
@@ -252,7 +262,7 @@ const GenerateOutfitsScreen = () => {
                 styles.buttonLabel,
                 !isOccasionSelected && styles.buttonLabelDisabled,
               ]}
-              disabled={!isOccasionSelected}
+              disabled={!isOccasionSelected || loading}
               onPress={async() => await handleGenerateOutfit()}>
               Generate Outfit
               <Icon 

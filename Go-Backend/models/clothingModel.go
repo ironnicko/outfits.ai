@@ -12,8 +12,8 @@ type Clothing struct {
 	ClothingType  string    `gorm:"size:255" json:"type" validate:"required,min=3,max=50"`
 	UserID        uuid.UUID `json:"user_id"`
 	User          User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
-	ClothingURL   string    `gorm:"size:300" json:"url" `
-	Tags          []Tags    `gorm:"foreignKey:clothing_id;constraint:OnDelete:CASCADE;constraint:OnUpdate:CASCADE"`
+	ClothingURL   string    `gorm:"size:300" json:"url"`
+	Tags []Tags `gorm:"contraint:onUpdate:CASCADE"`
 }
 
 func (u *Clothing) Validate() error {

@@ -82,7 +82,6 @@ async def embedding(
 @app.post("/generate-outfits")
 async def generate_outfits(
     clothes: str = Form(...),
-    tags: str = Form(...),
     pairWithArticles: str = Form(...)
 ):
 
@@ -109,8 +108,6 @@ async def generate_outfits(
 
     """
     prompt += clothes
-    prompt += "\n\nHere's the tags for them respectively:\n"
-    prompt += tags
     prompt += "\n\nHere's clothing articles that will remain fixed:\n"
     prompt += pairWithArticles
 
@@ -224,7 +221,6 @@ async def upload_file(
         response.update({
             "status": "File received successfully",
             "Embedding": json.dumps(embedding.tolist()[0]),
-            "text": text,
         })
 
         return create_response(response)

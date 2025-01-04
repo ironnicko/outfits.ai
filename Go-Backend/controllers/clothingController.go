@@ -126,7 +126,6 @@ func CreateClothing(c *fiber.Ctx) error {
 		Tags      []string `json:"Tags"`
 		Status    string   `json:"status"`
 		Embedding string   `json:"Embedding"`
-		Text      string   `json:"text"`
 		Type      string   `json:"clothingType"`
 		Color     string   `json:"color"`
 	}
@@ -146,8 +145,8 @@ func CreateClothing(c *fiber.Ctx) error {
 	}
 
 	// Save Vector to the Database
-	query := "INSERT INTO vectors (user_id, clothing_id, embedding, text, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-	if db_error := db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, fastAPIResponse.Text, time.Now(), time.Now()); db_error.Error != nil {
+	query := "INSERT INTO vectors (user_id, clothing_id, embedding, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+	if db_error := db.Exec(query, user.ID, clothing.ID, fastAPIResponse.Embedding, time.Now(), time.Now()); db_error.Error != nil {
 		return ErrorRollBack(c, db, clothing.ID, db_error.Error.Error())
 	}
 
@@ -214,7 +213,7 @@ func GetClothing(c *fiber.Ctx) error {
 	db := configs.DB.Db
 	clothing_id := c.FormValue("clothing_id")
 	clothing := models.Clothing{}
-	db.Where("id = ?", clothing_id).Find(&clothing)
+	db.Where("id = ?", clothing_id).Preload("Tags").Find(&clothing)
 	return c.JSON(clothing)
 
 }

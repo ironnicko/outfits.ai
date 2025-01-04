@@ -36,31 +36,6 @@ func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, 
 	return clothings, err
 }
 
-func GetRelatedTags(db *gorm.DB, clothes []models.Clothing) ([][]models.Tags, error) {
-
-	var ids []uint
-	for _, clothing := range clothes {
-		ids = append(ids, clothing.ID)
-	}
-
-	var fetchedTags []models.Tags
-	if err := db.Where("clothing_id IN ?", ids).Find(&fetchedTags).Error; err != nil {
-		return nil, err
-	}
-
-	tagsMap := make(map[uint][]models.Tags)
-
-	for _, tag := range fetchedTags {
-		tagsMap[tag.ClothingID] = append(tagsMap[tag.ClothingID], tag)
-	}
-
-	var relatedTags [][]models.Tags
-	for _, clothing := range clothes {
-		relatedTags = append(relatedTags, tagsMap[clothing.ID])
-	}
-
-	return relatedTags, nil
-}
 func GetClothingsByIDs(db *gorm.DB, clothes []models.Clothing) ([]models.Clothing, error) {
 	var ids []uint
 	for _, clothing := range clothes {
@@ -119,14 +94,12 @@ func GenerateOutfit(c *fiber.Ctx) error {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	var tags [][]models.Tags
 	var clothings []models.Clothing
 	if len(replies) > 0 {
 		clothings, err = GetClothingsByIDs(db, replies)
 		if err != nil {
 			return ErrorRollBack(c, nil, 0, err.Error())
 		}
-		tags, err = GetRelatedTags(db, clothings)
 		if err != nil {
 			return ErrorRollBack(c, nil, 0, err.Error())
 		}
@@ -136,10 +109,10 @@ func GenerateOutfit(c *fiber.Ctx) error {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	return GeneratePairings(c, clothings, tags, pairWithArticles)
+	return GeneratePairings(c, clothings, pairWithArticles)
 }
 
-func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, tags [][]models.Tags, pairWithArticles []models.Clothing) error {
+func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles []models.Clothing) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
@@ -152,14 +125,6 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, tags [][]models.T
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	tagsJSON, err := json.Marshal(tags)
-	if err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
-
-	if err := writer.WriteField("tags", string(tagsJSON)); err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
 	pairWithArticlesJSON, err := json.Marshal(pairWithArticles)
 	if err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
