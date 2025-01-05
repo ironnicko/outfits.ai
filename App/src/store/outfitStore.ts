@@ -5,7 +5,7 @@ export interface SavedOutfit {
   id: string;
   items: SelectedClothing[];
   occasion?: string;
-
+  createdAt: string
 }
 
 interface OutfitStore {

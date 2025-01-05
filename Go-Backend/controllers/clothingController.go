@@ -162,56 +162,18 @@ func CreateClothing(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusAccepted).Send(respBody)
 }
 
-type RequestTags struct {
-	TagID   uint
-	TagName string
-}
-
-type RequestClothings struct {
-	Color string
-	Type  string
-	URL   string
-	ID    uint
-	Tags  []RequestTags
-}
-
-func CreateResponseClothing(clothing models.Clothing, tags []models.Tags) RequestClothings {
-	response := RequestClothings{}
-	response.Color = clothing.ClothingColor
-	response.Type = clothing.ClothingType
-	response.URL = clothing.ClothingURL
-	response.ID = clothing.ID
-	tagInstance := RequestTags{}
-
-	for _, tag := range tags {
-		tagInstance.TagID = tag.ID
-		tagInstance.TagName = tag.TagName
-		response.Tags = append(response.Tags, tagInstance)
-	}
-
-	return response
-}
-
 func GetClothings(c *fiber.Ctx) error {
 	db := configs.DB.Db
 	user := c.Locals("user").(types.UserResponse)
 	clothings := []models.Clothing{}
-	db.Where("user_id = ?", user.ID.String()).Find(&clothings)
+	db.Where("user_id = ?", user.ID.String()).Preload("Tags").Find(&clothings)
 
-	responseClothings := []RequestClothings{}
-	tags := []models.Tags{}
-	for _, clothing := range clothings {
-		db.Where("clothing_id = ?", clothing.ID).Find(&tags)
-		responseClothing := CreateResponseClothing(clothing, tags)
-		responseClothings = append(responseClothings, responseClothing)
-	}
-
-	return c.JSON(responseClothings)
+	return c.JSON(clothings)
 }
 
 func GetClothing(c *fiber.Ctx) error {
 	db := configs.DB.Db
-	clothing_id := c.FormValue("clothing_id")
+	clothing_id := c.Params("clothing_id")
 	clothing := models.Clothing{}
 	db.Where("id = ?", clothing_id).Preload("Tags").Find(&clothing)
 	return c.JSON(clothing)

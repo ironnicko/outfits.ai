@@ -42,7 +42,7 @@ const SelectClothingItem = () => {
         onSelect(item);
         navigation.goBack();
       }}>
-      <Image source={{uri: item.URL || " "}} style={styles.itemImage} />
+      <Image source={{uri: item.url || " "}} style={styles.itemImage} />
       {selectedItem === (item.ID || '') && (
         <View style={styles.checkmark}>
         </View>
@@ -65,7 +65,7 @@ const SelectClothingItem = () => {
         </View>
 
         <FlatList
-          data={clothes.filter(item => item.Type === type)}
+          data={clothes.filter(item => item.type === type)}
           renderItem={({item} ) => renderItemFunc(item)}
           keyExtractor={(item: Clothes) => item.ID || " "}
           numColumns={numColumns}

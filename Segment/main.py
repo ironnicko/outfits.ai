@@ -85,7 +85,8 @@ async def generate_outfits(
     pairWithArticles: str = Form(...)
 ):
 
-    prompt = """
+
+    part1 = """
     Given lastly are the properties of clothing articles, and you need to make multiple combinations of outfits using the same.
 
     Ensure to use the color property to match them properly as per latest trends.
@@ -101,17 +102,17 @@ async def generate_outfits(
     use the tags given as well in your outfit combinations.
     given articles will be JSON, and you will output in JSON as well.
     if there's no clothing article for a particular type, you may enter a '-1' in there.
-    last set of articles will remain fixed in all combinations. So ensure to create a combination that matches the fixed articles.
+    Last set of articles will remain fixed in all combinations, meaning their ID will be constant in all combinations of their respective types. So ensure to create a combination that matches the fixed articles.
     OUTPUT must be only an array of JSON.
 
     Here's the clothing articles:
 
     """
-    prompt += clothes
-    prompt += "\n\nHere's clothing articles that will remain fixed:\n"
-    prompt += pairWithArticles
+    part2 = clothes
+    part3 = "\n\nHere's clothing articles that will remain fixed:\n"
+    part3 += pairWithArticles
 
-    return await create_combinations(**LLM, prompt=prompt)
+    return await create_combinations(**LLM, prompt=part1 + part2 + part3)
 
 
 @app.post("/mixmatch")

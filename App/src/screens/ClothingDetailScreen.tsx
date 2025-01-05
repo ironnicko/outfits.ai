@@ -4,7 +4,7 @@ import { Text, IconButton } from 'react-native-paper';
 import SafeScreen from '../components/SafeScreen';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/types';
-import { Clothes } from '../store/clothingStore';
+
 
 type RouteProps = RouteProp<RootStackParamList, 'ClothingDetail'>;
 
@@ -12,16 +12,18 @@ const ClothingDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const { item } = route.params;
-
+  console.log(item.Tags)
   const renderTags = () => {
-    const defaultTags = [item.Type || 'null'];
-    if (item.Color) defaultTags.push(item.Color);
+    const defaultTags = (item.Tags || []).map((tag) => tag.tag);
+    defaultTags.push(item.color || "");
+    defaultTags.push(item.type || "");
+   
     
     return (
       <View style={styles.tagsContainer}>
         {defaultTags.map((tag, index) => (
           <Pressable key={index} style={styles.tagPill}>
-            <Text style={styles.tagText}>{tag.toLowerCase()}</Text>
+            <Text style={styles.tagText}>{tag}</Text>
           </Pressable>
         ))}
       </View>
@@ -48,7 +50,7 @@ const ClothingDetailScreen = () => {
         {/* Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: item.URL || '' }}
+            source={{ uri: item.url || '' }}
             style={styles.image}
             resizeMode="contain"
           />
@@ -57,7 +59,7 @@ const ClothingDetailScreen = () => {
         {/* Description */}
         <ScrollView style={styles.descriptionContainer}>
           <Text style={styles.description}>
-            {item.description || `${item.Color || 'White'} ${item.Type || 'clothing item'}`}
+            {`${item.color || 'White'} ${item.type || 'clothing item'}`}
           </Text>
           {renderTags()}
         </ScrollView>

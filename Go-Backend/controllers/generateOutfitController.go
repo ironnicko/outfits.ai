@@ -25,6 +25,7 @@ func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, 
 		Select("clothing_id, 1 - (embedding <=> ?::vector) AS cos_sim", embedding).
 		Joins("JOIN clothings ON clothings.id = vectors.clothing_id").
 		Where("clothings.clothing_type IN (?)", clothingTypes).
+		Where("clothings.deleted_at IS NULL").
 		Where("clothings.user_id = ?", userID)
 
 	err := db.Table("(?) AS sub", subquery).
@@ -43,7 +44,7 @@ func GetClothingsByIDs(db *gorm.DB, clothes []models.Clothing) ([]models.Clothin
 	}
 
 	var fetchedClothings []models.Clothing
-	if err := db.Where("id IN ?", ids).Find(&fetchedClothings).Error; err != nil {
+	if err := db.Where("id IN ?", ids).Preload("Tags").Find(&fetchedClothings).Error; err != nil {
 		return nil, err
 	}
 	return fetchedClothings, nil
@@ -97,9 +98,6 @@ func GenerateOutfit(c *fiber.Ctx) error {
 	var clothings []models.Clothing
 	if len(replies) > 0 {
 		clothings, err = GetClothingsByIDs(db, replies)
-		if err != nil {
-			return ErrorRollBack(c, nil, 0, err.Error())
-		}
 		if err != nil {
 			return ErrorRollBack(c, nil, 0, err.Error())
 		}

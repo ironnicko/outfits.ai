@@ -9,8 +9,7 @@ interface OutfitPreviewProps {
 
 
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
-
-
+  console.log(items)
   const getItemPosition = (type: string) => {
     switch (type) {
       case 'hat':
@@ -32,13 +31,14 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
       )} */}
       <View style={styles.outfitContainer}>
         {(items || []).map((item: SelectedClothing, index: number) => {
+
           return (
           <View
             key={index}
-            style={[styles.itemContainer, getItemPosition((item.Type || item.type) || "")]}>
-            {(item.URL || item.url) ? (
+            style={[styles.itemContainer, getItemPosition(( item.type) || "")]}>
+            {(item.url) ? (
               <Image
-                source={{ uri: (item.URL || item.url)}}
+                source={{ uri: ( item.url)}}
                 style={styles.itemImage}
                 resizeMode="contain"
               />

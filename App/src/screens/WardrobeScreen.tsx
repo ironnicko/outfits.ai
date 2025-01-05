@@ -8,9 +8,10 @@ import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-pick
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
-import { useClothingStore } from '../store/clothingStore';
-import { useNavigation } from '@react-navigation/native';
+import { Clothes, useClothingStore } from '../store/clothingStore';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
+import { RootStackParamList } from '../types/types';
 
 
 
@@ -29,9 +30,10 @@ const categories: Category[] = [
   { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
   { ID: 'hat', Icon: 'hat-fedora', Label: 'Accessories' },
 ];
+type NavigationProps = NavigationProp<RootStackParamList>;
 
 const WardrobeScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProps>();
 
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,7 +56,8 @@ const WardrobeScreen = () => {
     setLoading(false);
   };
 
-  const handleDeleteItem = (item: Clothes) => {
+  const handleDeleteItem = (item: string) => {
+    console.log(item)
     Alert.alert(
       'Delete Item',
       'Are you sure you want to delete this item from your wardrobe?',
@@ -68,7 +71,7 @@ const WardrobeScreen = () => {
           onPress: async () => {
             try {
               setLoading(true);
-              await api.delete(`/api/v1/clothing/delete/${item.ID}`, {
+              await api.delete(`/api/v1/clothing/${item}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
@@ -87,14 +90,11 @@ const WardrobeScreen = () => {
   };
 
   useEffect(() => {
-    const asyncCall = async () => {
-      await fetchClothes()
-    }
-    asyncCall()
+    fetchClothes()
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
-      acc[category.ID] = (category.ID != 'all' ? clothes.filter(item => item.Type === category.ID).length : clothes.length);
+      acc[category.ID] = (category.ID != 'all' ? clothes.filter(item => item.type === category.ID).length : clothes.length);
       return acc;
     }, {} as Record<string, number>);
   }, [clothes]);
@@ -107,8 +107,8 @@ const WardrobeScreen = () => {
 
   const filteredClothes = useMemo(() => {
     return clothes.filter(item => {
-      const matchesCategory = selectedCategory === 'all' || item.Type === selectedCategory;
-      const matchesSearch = (item.Type || "").toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || item.type === selectedCategory;
+      const matchesSearch = (item.type || "").toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && (searchQuery === '' || matchesSearch);
     });
   }, [selectedCategory, searchQuery, clothes]);
@@ -145,7 +145,7 @@ const WardrobeScreen = () => {
 
     try {
       const res = await api.post(
-        '/api/v1/clothing/add-clothing',
+        '/api/v1/clothing',
         formData,
         {
           headers: {
@@ -154,7 +154,8 @@ const WardrobeScreen = () => {
           },
         }
       );
-      console.log('Upload successful', res.data);
+
+
     } catch (error: any) {
       console.error('Upload error:', error.response?.data || error.message);
     }
@@ -168,7 +169,7 @@ const WardrobeScreen = () => {
 
     if (result.assets && result.assets[0]) {
 
-      console.log(result.assets[0]);
+
       setLoading(true)
       await handleUpload(result.assets[0])
       setLoading(false)
@@ -185,7 +186,7 @@ const WardrobeScreen = () => {
 
     if (result.assets) {
       setLoading(true)
-      console.log(result.assets)
+
       for (const file of result.assets){
         await handleUpload(file)
       }
@@ -213,7 +214,7 @@ const WardrobeScreen = () => {
           </View>
           <Icon name="chevron-down" size={24} color="#4A6741" />
         </View>
-
+  
         {/* Categories */}
         <View style={styles.statsContainer}>
           <Text style={styles.totalCount}>{totalItems}</Text>
@@ -222,32 +223,34 @@ const WardrobeScreen = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             style={styles.categoriesScroll}
-            >
-            {categories.map((category) => (
+          >
+            {categories.map((category, index) => (
               <Pressable
-                key={category.ID}
+                key={index} // Ensure key is on the Pressable component
                 onPress={() => setSelectedCategory(category.ID)}
                 style={[
                   styles.categoryBubble,
                   selectedCategory === category.ID && styles.activeCategory,
-                ]}>
+                ]}
+              >
                 <Icon
-
                   name={category.Icon}
                   size={24}
                   color={selectedCategory === category.ID ? '#4A6741' : '#666'}
                 />
-                <Text style={[
-                  styles.categoryCount,
-                  selectedCategory === category.ID && styles.activeCategoryText,
-                ]}>
+                <Text
+                  style={[
+                    styles.categoryCount,
+                    selectedCategory === category.ID && styles.activeCategoryText,
+                  ]}
+                >
                   {categoryCounts[category.ID]}
                 </Text>
               </Pressable>
             ))}
           </ScrollView>
         </View>
-
+  
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Searchbar
@@ -263,42 +266,37 @@ const WardrobeScreen = () => {
             <Icon name="star-outline" size={24} color="#4A6741" />
           </Pressable>
         </View>
-
+  
         {/* Clothing Grid */}
-
-        {/* Added Tags under Clothing Card */}
-
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="4A6741" />
-            </View>
-              ): (
+            <ActivityIndicator size="large" color="#4A6741" />
+          </View>
+        ) : (
           <ScrollView
             style={styles.gridContainer}
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => setRefresh(!refresh)}/>}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => setRefresh(!refresh)} />}
           >
             <View style={styles.grid}>
-              {filteredClothes.map((item) => (
+              {filteredClothes.map((item, index) => (
                 <View
-                  key={item.ID}
+                  key={index} // Ensure key is on the outermost View
                   style={[styles.gridItem, { width: cardWidth }]}
                 >
                   <ClothingCard
-                    imageUrl={item.URL || ""}
+                    imageUrl={item.url || ""}
                     onPress={() => {
-                      navigation.navigate('ClothingDetail', { item })
-                      console.log('Clothing item pressed:', item.ID);
+                      navigation.navigate('ClothingDetail', { item });
                     }}
-                    onLongPress={() => handleDeleteItem(item)}
+                    onLongPress={() => handleDeleteItem(item.ID || " ")}
                   />
                 </View>
               ))}
             </View>
           </ScrollView>
-        )
-        }
-
+        )}
+  
         <FAB
           icon="camera"
           style={styles.fab}
@@ -308,36 +306,40 @@ const WardrobeScreen = () => {
           customSize={56}
           disabled={loading}
         />
-
+  
         {Platform.OS === 'android' && (
           <Portal>
             <Modal
               visible={showImagePickerModal}
               onDismiss={() => setShowImagePickerModal(false)}
-              contentContainerStyle={styles.modalContainer}>
+              contentContainerStyle={styles.modalContainer}
+            >
               <Pressable
                 style={styles.modalOption}
                 onPress={() => {
                   handleCamera();
                   setShowImagePickerModal(false);
-                }}>
+                }}
+              >
                 <Icon name="camera" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Take Picture</Text>
               </Pressable>
-
+  
               <Pressable
                 style={styles.modalOption}
                 onPress={async () => {
                   await handleGallery();
                   setShowImagePickerModal(false);
-                }}>
+                }}
+              >
                 <Icon name="image-multiple" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Select Picture(s)</Text>
               </Pressable>
-
+  
               <Pressable
                 style={[styles.modalOption, styles.cancelOption]}
-                onPress={() => setShowImagePickerModal(false)}>
+                onPress={() => setShowImagePickerModal(false)}
+              >
                 <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
             </Modal>

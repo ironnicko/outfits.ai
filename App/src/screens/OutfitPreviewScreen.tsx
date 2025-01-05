@@ -16,6 +16,7 @@ const OutfitPreviewScreen = () => {
   const route = useRoute<RouteProps>()
   const { selectedItems, occasion, outfits } = route.params;
   const addOutfit = useOutfitStore(state => state.addOutfit);
+  
 
   const handleSaveToLooks = () => {
 

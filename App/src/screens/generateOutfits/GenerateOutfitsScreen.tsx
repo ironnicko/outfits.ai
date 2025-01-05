@@ -13,10 +13,6 @@ import { getTokenLocal } from '../../utils/auth';
 export interface SelectedClothing extends Clothes{
   Icon?: string;
   Size?: number;
-  type? : string
-  url?: string
-  tags?: Tag[]
-  color?: string
 }
 
 
@@ -29,9 +25,9 @@ const GenerateOutfitsScreen = () => {
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
   const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
     // Initialize with default selected items
-    { Type: 'top' },
-    { Type: 'bottom' },
-    { Type: 'shoe' }
+    { type: 'top' },
+    { type: 'bottom' },
+    { type: 'shoe' }
   ]);
   const [loading, setLoading] = useState<boolean>(false)
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
@@ -51,20 +47,20 @@ const GenerateOutfitsScreen = () => {
     asyncCall()
   }, [])
   const clothingItems: SelectedClothing[] = [
-    { Type: 'hat', Icon: 'hat-fedora', Size: 48 },
-    { Type: 'top', Icon: 'tshirt-crew', Size: 64 },
-    { Type: 'bottom', Icon: 'lingerie', Size: 64 },
-    { Type: 'shoe', Icon: 'shoe-formal', Size: 48 },
+    { type: 'hat', Icon: 'hat-fedora', Size: 48 },
+    { type: 'top', Icon: 'tshirt-crew', Size: 64 },
+    { type: 'bottom', Icon: 'lingerie', Size: 64 },
+    { type: 'shoe', Icon: 'shoe-formal', Size: 48 },
   ];
 
   const handleClothingItemPress = (type: string) => {
-    if (selectedItems.find((item: SelectedClothing) => item.Type === type)) {
+    if (selectedItems.find((item: SelectedClothing) => item.type === type)) {
       navigation.navigate('SelectClothingItem', {
         type : type,
         onSelect: (clothing: SelectedClothing) => {
           setSelectedItems((prev: SelectedClothing[]) =>
             prev.map((item: SelectedClothing) =>
-              item.Type === type ? clothing : item,
+              item.type === type ? clothing : item,
             ),
           );
         },
@@ -75,11 +71,11 @@ const GenerateOutfitsScreen = () => {
   };
 
 
-  const toggleItem = (Type: string) => {
+  const toggleItem = (type: string) => {
     setSelectedItems((prev: SelectedClothing[]) =>
-      prev.find(item => item.Type === Type)
-        ? prev.filter(item => item.Type !== Type)
-        : [...prev, { Type }],
+      prev.find(item => item.type === type)
+        ? prev.filter(item => item.type !== type)
+        : [...prev, { type }],
     );
   };
 
@@ -93,16 +89,16 @@ const GenerateOutfitsScreen = () => {
   const isOccasionSelected = selectedOccasion !== 'Select Occasion';
 
   const renderClothingItem = (item: SelectedClothing) => {
-    const selectedItem = selectedItems.find(si => si.Type === item.Type);
+    const selectedItem = selectedItems.find(si => si.type === item.type);
     const isSelected = !!selectedItem;
     const hasWardrobe = !!selectedItem;
-    const hasURL = !!selectedItem?.URL;
+    const hasURL = !!selectedItem?.url;
 
     return (
       <Pressable
-        key={item.Type}
-        onPress={() => handleClothingItemPress(item.Type || "")}
-        onLongPress={() => toggleItem(item.Type || "")}
+        key={item.type}
+        onPress={() => handleClothingItemPress(item.type || "")}
+        onLongPress={() => toggleItem(item.type || "")}
         style={[
           styles.clothingItem,
           isSelected && styles.selectedItem,
@@ -115,7 +111,7 @@ const GenerateOutfitsScreen = () => {
         :(hasURL ? (
           <View style={styles.selectedItemContent}>
             <Image 
-              source={{ uri: selectedItem.URL || " " }}
+              source={{ uri: selectedItem.url || " " }}
               style={styles.selectedItemImage}
             />
             <View style={styles.checkmark}>
@@ -146,7 +142,7 @@ const GenerateOutfitsScreen = () => {
       for(let item of selectedItems){
         // Find out what clothing article needs to be queried
         if (item.Tags == undefined){
-          pairingArticles.push(item.Type || " ")
+          pairingArticles.push(item.type || " ")
         } else {
           pairWithArticles.push({ID : item.ID, Tags: item.Tags })
         }
@@ -169,15 +165,14 @@ const GenerateOutfitsScreen = () => {
         if (res.status != 200){
           throw Error(res.statusText)
         }
-        const outfits = []
+
+        const outfit_set = new Set()
         for (let outfit of res.data){
           var outfit_data: any = []
           for(let key in outfit){
             const id = outfit[key]
-            const formData = new FormData()
-            formData.append('clothing_id', id)
-            outfit_data.push((await api.post(
-            '/api/v1/clothing',formData,
+            outfit_data.push((await api.get(
+            `/api/v1/clothing/${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -186,12 +181,13 @@ const GenerateOutfitsScreen = () => {
             }
             )).data)
           }
-          outfits.push(outfit_data)
+          outfit_set.add(outfit_data)
         }
+        const outfits = Array.from(outfit_set)
         // TODO: Add carousel in OutfitPreview and pass outfits as 'outfits'
-        console.log(outfits)
+
         navigation.navigate('OutfitPreview', {
-          outfits: outfits[1],
+          outfits: outfits[0],
           occasion: selectedOccasion,
         });
       } catch (error: any) {
