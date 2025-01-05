@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, ActivityIndicator, RefreshControl } from 'react-native';
 import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,7 +8,7 @@ import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-pick
 import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { getTokenLocal } from '../utils/auth';
-import { Clothes, useClothingStore } from '../store/clothingStore';
+import { useClothingStore } from '../store/clothingStore';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 import { RootStackParamList } from '../types/types';
@@ -108,7 +108,8 @@ const WardrobeScreen = () => {
   const filteredClothes = useMemo(() => {
     return clothes.filter(item => {
       const matchesCategory = selectedCategory === 'all' || item.type === selectedCategory;
-      const matchesSearch = (item.type || "").toLowerCase().includes(searchQuery.toLowerCase());
+      const low_case_items = item.Tags?.map((tag) => tag.tag.toLowerCase())
+      const matchesSearch = (low_case_items || "").includes(searchQuery.toLowerCase());
       return matchesCategory && (searchQuery === '' || matchesSearch);
     });
   }, [selectedCategory, searchQuery, clothes]);

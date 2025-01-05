@@ -1,12 +1,12 @@
 import { SelectedClothing } from "../screens/generateOutfits/GenerateOutfitsScreen";
 import { Clothes } from '../store/clothingStore';
+import { SavedOutfit } from "../store/outfitStore";
 
 export type RootStackParamList = {
   Home: undefined;
   OutfitPreview: {
-    selectedItems?: SelectedClothing[];
     occasion?: string;
-    outfits?: any;
+    outfits: SavedOutfit[] | Clothes[];
   };
   MyLooks: undefined;
   Login: undefined;

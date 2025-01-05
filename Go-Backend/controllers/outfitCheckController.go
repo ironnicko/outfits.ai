@@ -35,15 +35,10 @@ func OutfitCheck(c *fiber.Ctx) error {
 	if err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
-	var fastAPIResponse struct {
-		Score        int    `json:"Score"`
-		DoingWell    string `json:"DoingWell"`
-		NotDoingWell string `json:"NotDoingWell"`
-		Improvements string `json:"Improvements"`
-	}
-	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
+	response := make(map[string]interface{})
+	if err := json.Unmarshal(respBody, &response); err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fastAPIResponse)
+	return c.Status(fiber.StatusOK).JSON(response)
 }

@@ -1,15 +1,48 @@
 import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
+import { SavedOutfit } from '../store/outfitStore';
+import { Clothes } from '../store/clothingStore';
 import { SelectedClothing } from '../screens/generateOutfits/GenerateOutfitsScreen';
 
 interface OutfitPreviewProps {
-  items: SelectedClothing[];
+  // Multiple Outfits or Single Outfit
+  items: SavedOutfit[] | SelectedClothing[];
   occasion?: string;
 }
 
+function isSavedOutfit(item: SavedOutfit[] | SelectedClothing[]): item is SavedOutfit[] {
+  return (
+  (item as SavedOutfit[])[0].OutfitHat !== undefined ||
+  (item as SavedOutfit[])[0].OutfitTop !== undefined|| 
+  (item as SavedOutfit[])[0].Outfitbottom !== undefined ||
+  (item as SavedOutfit[])[0].OutfitShoe !== undefined
+  );
+}
+
+// Only for single outfit or list of SelectedClothing
 
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
-  console.log(items)
+  var finalItems: SelectedClothing[] = []
+
+  
+  // Change it back to items 
+  if (isSavedOutfit(items)){
+    if (items[0].OutfitHat?.url  != ''){
+      finalItems.push(items[0].OutfitHat || {type : "hat"})
+    }
+    if (items[0].OutfitShoe?.url  != ''){
+      finalItems.push(items[0].OutfitShoe || {type : "shoe"})
+    }
+    if (items[0].OutfitTop?.url  != ''){
+      finalItems.push(items[0].OutfitTop || {type : "top"})
+    }
+    if (items[0].Outfitbottom?.url  != ''){
+      finalItems.push(items[0].Outfitbottom || {type : "bottom"})
+    }
+  } else {
+    finalItems = items
+  }
+  console.log(finalItems)
   const getItemPosition = (type: string) => {
     switch (type) {
       case 'hat':
@@ -30,7 +63,7 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
         <Text style={styles.occasionText}>{occasion}</Text>
       )} */}
       <View style={styles.outfitContainer}>
-        {(items || []).map((item: SelectedClothing, index: number) => {
+        {(finalItems).map((item: SelectedClothing, index: number) => {
 
           return (
           <View
@@ -49,7 +82,6 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,

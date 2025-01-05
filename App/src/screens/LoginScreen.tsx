@@ -31,7 +31,7 @@ const LoginScreen = () => {
       });
       setTokenState(res.data.token);
 
-      const username = (await api.get('/api/v1/user/user-info', {
+      const username = (await api.get('/api/v1/user', {
         headers:{
           Authorization: `Bearer ${res.data.token}`
         }

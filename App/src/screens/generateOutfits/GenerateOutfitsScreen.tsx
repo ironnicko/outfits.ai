@@ -165,29 +165,10 @@ const GenerateOutfitsScreen = () => {
         if (res.status != 200){
           throw Error(res.statusText)
         }
-
-        const outfit_set = new Set()
-        for (let outfit of res.data){
-          var outfit_data: any = []
-          for(let key in outfit){
-            const id = outfit[key]
-            outfit_data.push((await api.get(
-            `/api/v1/clothing/${id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-type': 'multipart/form-data',
-              },
-            }
-            )).data)
-          }
-          outfit_set.add(outfit_data)
-        }
-        const outfits = Array.from(outfit_set)
+        const outfits = res.data
         // TODO: Add carousel in OutfitPreview and pass outfits as 'outfits'
-
         navigation.navigate('OutfitPreview', {
-          outfits: outfits[0],
+          outfits: outfits,
           occasion: selectedOccasion,
         });
       } catch (error: any) {
@@ -200,7 +181,7 @@ const GenerateOutfitsScreen = () => {
 
   const handleShowOutfit = () => {
     if (hasAnySelectedArticle) {
-      navigation.navigate('OutfitPreview', {selectedItems});
+      navigation.navigate('OutfitPreview', {outfits: selectedItems});
     }
   };
 

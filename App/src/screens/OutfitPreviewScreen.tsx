@@ -14,12 +14,12 @@ type RouteProps = RouteProp<RootStackParamList, 'OutfitPreview'>;
 const OutfitPreviewScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>()
-  const { selectedItems, occasion, outfits } = route.params;
+  const { occasion, outfits } = route.params;
   const addOutfit = useOutfitStore(state => state.addOutfit);
   
 
   const handleSaveToLooks = () => {
-
+    console.log(outfits, occasion)
   };
 
   const handleExport = () => {
@@ -46,7 +46,7 @@ const OutfitPreviewScreen = () => {
 
       {/* Outfit Preview */}
       <View style={styles.previewContainer}>
-        <OutfitPreview items={selectedItems || outfits} occasion={occasion} />
+        <OutfitPreview items={outfits} occasion={occasion} />
       </View>
 
       {/* Action Buttons */}

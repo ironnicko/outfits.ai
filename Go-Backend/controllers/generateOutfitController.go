@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"os"
 	configs "outfits/config"
@@ -112,6 +113,7 @@ func GenerateOutfit(c *fiber.Ctx) error {
 
 func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles []models.Clothing) error {
 	body := &bytes.Buffer{}
+	db := configs.DB.Db
 	writer := multipart.NewWriter(body)
 
 	clothesJSON, err := json.Marshal(clothes)
@@ -142,11 +144,27 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles 
 	if err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
-
-	var response interface{}
-	if err := json.Unmarshal(outfits, &response); err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
+	var responses []struct {
+		Top    int64 `json:"top"`
+		Bottom int64 `json:"bottom"`
+		Shoe   int64 `json:"shoe"`
+		Hat    int64 `json:"hat"`
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response)
+	if err := json.Unmarshal(outfits, &responses); err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+	outfitS := []models.Outfit{}
+
+	for id, resp := range responses {
+		outfit := models.Outfit{}
+		fmt.Println(id)
+		db.Preload("tags").Where("id = ?", resp.Top).Find(&outfit.OutfitTop)
+		db.Preload("tags").Where("id = ?", resp.Bottom).Find(&outfit.Outfitbottom)
+		db.Preload("tags").Where("id = ?", resp.Hat).Find(&outfit.OutfitHat)
+		db.Preload("tags").Where("id = ?", resp.Shoe).Find(&outfit.OutfitShoe)
+		outfitS = append(outfitS, outfit)
+	}
+
+	return c.Status(fiber.StatusOK).JSON(outfitS)
 }

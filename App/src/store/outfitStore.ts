@@ -2,10 +2,13 @@ import { create } from 'zustand';
 import { SelectedClothing } from '../screens/generateOutfits/GenerateOutfitsScreen';
 
 export interface SavedOutfit {
-  id: string;
-  items: SelectedClothing[];
+  ID?: string;
+  OutfitTop?: SelectedClothing;
+  Outfitbottom?: SelectedClothing;
+  OutfitHat?: SelectedClothing;
+  OutfitShoe?: SelectedClothing;
   occasion?: string;
-  createdAt: string
+  createdAt?: string;
 }
 
 interface OutfitStore {
@@ -25,6 +28,6 @@ export const useOutfitStore = create<OutfitStore>((set) => ({
     })),
   removeOutfit: (id) =>
     set((state) => ({
-      outfits: state.outfits.filter(outfit => outfit.id !== id)
+      outfits: state.outfits.filter(outfit => outfit.ID !== id)
     })),
 })); 

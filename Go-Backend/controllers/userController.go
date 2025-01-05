@@ -109,14 +109,11 @@ func LogoutUser(c *fiber.Ctx) error {
 func UserInfo(c *fiber.Ctx) error {
 	userObj := c.Locals("user").(types.UserResponse)
 	db := configs.DB.Db
-	user := models.User{}
-	db.Where("id = ?", userObj.ID.String()).Find(&user)
+	user := make(map[string]interface{})
+	db.Table("users").Where("id = ?", userObj.ID.String()).Select("id, username").Find(&user)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  true,
 		"message": "User Information",
-		"result": fiber.Map{
-			"id":       userObj.ID.String(),
-			"username": user.Username,
-		},
+		"result":  user,
 	})
 }

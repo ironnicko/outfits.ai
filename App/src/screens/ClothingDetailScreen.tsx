@@ -12,7 +12,6 @@ const ClothingDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>();
   const { item } = route.params;
-  console.log(item.Tags)
   const renderTags = () => {
     const defaultTags = (item.Tags || []).map((tag) => tag.tag);
     defaultTags.push(item.color || "");

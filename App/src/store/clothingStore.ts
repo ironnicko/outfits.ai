@@ -12,6 +12,9 @@ export interface Clothes {
     url?: string
     Tags?: Tag[]
     color?: string
+    CreatedAt?: string
+    DeletedAt?: string
+    UpdatedAt?: string
 }
 
 const mockClothes: Clothes[] = [
