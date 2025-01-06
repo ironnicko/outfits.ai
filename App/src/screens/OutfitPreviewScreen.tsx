@@ -1,76 +1,105 @@
-import React from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Pressable, Dimensions, ScrollView } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
 import { useOutfitStore } from '../store/outfitStore';
 import { RootStackParamList } from '../types/types';
-import {  RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 
 type RouteProps = RouteProp<RootStackParamList, 'OutfitPreview'>;
 
 const OutfitPreviewScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>()
-  const { occasion, outfits } = route.params;
+//   this is for when we are selecting a particular article and want to generate/ or want to select items and just show outfit
+  const {occasion, outfits } = route.params;   
+  const [activeIndex, setActiveIndex] = useState(0);
+  const width = Dimensions.get('window').width;
   const addOutfit = useOutfitStore(state => state.addOutfit);
   
 
   const handleSaveToLooks = () => {
     console.log(outfits, occasion)
   };
+  // Mock 5 outfits for demonstration
+  const mockOutfits = Array(5).fill(outfits);
 
-  const handleExport = () => {
-    // TODO: Implement export functionality
-    console.log('Exporting...');
+  const handleScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const index = Math.round(contentOffset / width);
+    setActiveIndex(index);
+  };
+
+  const renderCarouselIndicators = () => {
+    return (
+      <View style={styles.indicatorContainer}>
+        {mockOutfits.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.indicator,
+              index === activeIndex && styles.indicatorActive,
+            ]}
+          />
+        ))}
+      </View>
+    );
   };
 
   return (
     <SafeScreen>
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <IconButton
-          icon="chevron-left"
-          size={24}
-          onPress={() => navigation.goBack()}
-        />
-        <IconButton
-          icon="information"
-          size={24}
-          onPress={() => console.log('Show info')}
-        />
-      </View>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <IconButton
+            icon="chevron-left"
+            size={24}
+            onPress={() => navigation.goBack()}
+          />
+          <IconButton
+            icon="information"
+            size={24}
+            onPress={() => console.log('Show info')}
+          />
+        </View>
 
-      {/* Outfit Preview */}
-      <View style={styles.previewContainer}>
-        <OutfitPreview items={outfits} occasion={occasion} />
-      </View>
+        <View style={styles.previewContainer}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
+            {mockOutfits.map((item, index) => (
+              <View key={index} style={[styles.slide, { width }]}>
+                <OutfitPreview items={item} occasion={occasion} />
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.actionButtons}>
+            <Pressable style={styles.ratingButton}>
+                <Icon name="thumb-up-outline" size={24} color="#000" />
+            </Pressable>
+            <Pressable style={styles.ratingButton}>
+                <Icon name="thumb-down-outline" size={24} color="#000" />
+            </Pressable>
+          </View>
+          {renderCarouselIndicators()}
+        </View>
 
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <Pressable style={styles.ratingButton}>
-          <Icon name="thumb-up-outline" size={24} color="#000" />
-        </Pressable>
-        <Pressable style={styles.ratingButton}>
-          <Icon name="thumb-down-outline" size={24} color="#000" />
-        </Pressable>
+        <View style={styles.bottomButtons}>
+          <Pressable style={styles.saveButton} onPress={() => {}}>
+            <Icon name="dots-horizontal" size={20} color="#fff" />
+            <Text style={styles.saveButtonText}>Save to Looks</Text>
+          </Pressable>
+          <Pressable style={styles.exportButton} onPress={() => {}}>
+            <Text style={styles.exportButtonText}>Export</Text>
+            <Icon name="export-variant" size={20} color="#000" />
+          </Pressable>
+        </View>
       </View>
-
-      {/* Bottom Buttons */}
-      <View style={styles.bottomButtons}>
-        <Pressable style={styles.saveButton} onPress={handleSaveToLooks}>
-          <Icon name="dots-horizontal" size={20} color="#fff" />
-          <Text style={styles.saveButtonText}>Save to Looks</Text>
-        </Pressable>
-        <Pressable style={styles.exportButton} onPress={handleExport}>
-          <Text style={styles.exportButtonText}>Export</Text>
-          <Icon name="export-variant" size={20} color="#000" />
-        </Pressable>
-      </View>
-    </View>
     </SafeScreen>
   );
 };
@@ -88,7 +117,7 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     flex: 1,
-    justifyContent: 'center',
+    position: 'relative',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -141,6 +170,34 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D9D9D9',
+    marginHorizontal: 4,
+  },
+  indicatorActive: {
+    backgroundColor: '#4A6741',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  slide: {
+    width: Dimensions.get('window').width,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
