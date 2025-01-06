@@ -10,8 +10,9 @@ export interface Clothes {
     ID?: string;
     type?: string
     url?: string
-    Tags?: Tag[]
+    Tags?: Tag[] | null
     color?: string
+    User?: any
     CreatedAt?: string
     DeletedAt?: string
     UpdatedAt?: string

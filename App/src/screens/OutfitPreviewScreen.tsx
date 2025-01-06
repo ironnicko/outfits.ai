@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Pressable, Dimensions, ScrollView } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -6,7 +6,11 @@ import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
 import { RootStackParamList } from '../types/types';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { SavedOutfit } from '../store/outfitStore';
+import { convertClothes, convertSavedOutfit, convertSavedOutfitUpload, isSavedOutfit, SavedOutfit } from '../store/outfitStore';
+import { Clothes, useClothingStore } from '../store/clothingStore';
+import { AuthState, useAuthStore } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
+import { api } from '../utils/api';
 
 type RouteProps = RouteProp<RootStackParamList, 'OutfitPreviewScreen'>;
 
@@ -17,10 +21,40 @@ const OutfitPreviewScreen = () => {
   var {occasion, outfits } = route.params;   
   const [activeIndex, setActiveIndex] = useState(0);
   const width = Dimensions.get('window').width;
+  const setClothes = useClothingStore((state) => state.fetch)
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const fetchClothes = async () => {
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
 
-  const handleSaveToLooks = () => {
-    (outfits[activeIndex] as SavedOutfit).occasion = occasion
-    console.log((outfits[activeIndex] as SavedOutfit).occasion)
+  };
+
+  useEffect(() => {
+    fetchClothes()
+  }, [])
+
+
+  const handleSaveToLooks = async () => {
+      outfits.forEach(async (outfit)=>{  
+      const finalItems: SavedOutfit = (!isSavedOutfit(outfit) ? convertClothes(outfit) : convertSavedOutfitUpload(outfit))
+      finalItems.occasion = occasion
+      try {
+        const res = await api.post(
+          'api/v1/outfit',
+          finalItems,
+          {
+            headers: {
+              'Authorization' : `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+      } catch (error: any) {
+        console.error('Upload error:', error.response?.data || error.message);
+      }
+    })
+    console.log("Uploaded Successfully!")
   };
 
   const handleScroll = (event: any) => {

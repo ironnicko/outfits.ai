@@ -40,8 +40,8 @@ func main() {
 	api := app.Group("/api/v1")
 	routes.SetUpUserRoutes(api)
 	routes.SetUpClothingRoutes(api)
+	routes.SetUpOutfitRoutes(api)
 	port := os.Getenv("PORT")
 	app.Listen(":" + port)
-
 
 }

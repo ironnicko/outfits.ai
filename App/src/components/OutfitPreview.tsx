@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
-import { SavedOutfit } from '../store/outfitStore';
+import { isSavedOutfit, SavedOutfit, convertSavedOutfit } from '../store/outfitStore';
 import { Clothes } from '../store/clothingStore';
 
 
@@ -10,37 +10,11 @@ interface OutfitPreviewProps {
   occasion?: string;
 }
 
-function isSavedOutfit(item: SavedOutfit | Clothes[]): item is SavedOutfit {
-  return (
-  (item as SavedOutfit).OutfitHat !== undefined ||
-  (item as SavedOutfit).OutfitTop !== undefined|| 
-  (item as SavedOutfit).Outfitbottom !== undefined ||
-  (item as SavedOutfit).OutfitShoe !== undefined
-  );
-}
-
 // Only for single outfit or list of SelectedClothing
 
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
-  var finalItems: Clothes[] = []
+  const finalItems: Clothes[] = (isSavedOutfit(items) ? convertSavedOutfit(items) : items)
 
-
-  if (isSavedOutfit(items)){
-    if (items.OutfitHat?.url  != ''){
-      finalItems.push(items.OutfitHat || {type : "hat"})
-    }
-    if (items.OutfitShoe?.url  != ''){
-      finalItems.push(items.OutfitShoe || {type : "shoe"})
-    }
-    if (items.OutfitTop?.url  != ''){
-      finalItems.push(items.OutfitTop || {type : "top"})
-    }
-    if (items.Outfitbottom?.url  != ''){
-      finalItems.push(items.Outfitbottom || {type : "bottom"})
-    }
-  } else {
-    finalItems = items
-  }
   const getItemPosition = (type: string) => {
     switch (type) {
       case 'hat':

@@ -8,17 +8,16 @@ import (
 
 type Outfit struct {
 	gorm.Model
-	Occasion     string    `gorm:"size:255" json:"outfitname" validate:"min=3,max=50"`
-	Top          uint      `json:"top"`
-	OutfitTop    Clothing  `gorm:"foreignKey:Top;constraint:OnDelete:CASCADE;"`
-	Bottom       uint      `json:"bottom"`
-	Outfitbottom Clothing  `gorm:"foreignKey:Bottom;constraint:OnDelete:CASCADE;"`
-	Shoe         uint      `json:"shoe"`
-	OutfitShoe   Clothing  `gorm:"foreignKey:Shoe;constraint:OnDelete:CASCADE;"`
-	Hat          uint      `json:"hat"`
-	OutfitHat    Clothing  `gorm:"foreignKey:Hat;constraint:OnDelete:CASCADE;"`
+	Occasion     string    `gorm:"size:255" json:"occasion" validate:"min=3,max=50"`
+	Top          *uint     `json:"top"`
+	OutfitTop    *Clothing `gorm:"foreignKey:Top;constraint:OnDelete:CASCADE;"`
+	Bottom       *uint     `json:"bottom"`
+	OutfitBottom *Clothing `gorm:"foreignKey:Bottom;constraint:OnDelete:CASCADE;"`
+	Shoe         *uint     `json:"shoe"`
+	OutfitShoe   *Clothing `gorm:"foreignKey:Shoe;constraint:OnDelete:CASCADE;"`
+	Hat          *uint     `json:"hat"`
+	OutfitHat    *Clothing `gorm:"foreignKey:Hat;constraint:OnDelete:CASCADE;"`
 	UserID       uuid.UUID `json:"userID" gorm:"constraint:OnDelete:CASCADE;"`
-	User         User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
 func (u *Outfit) Validate() error {

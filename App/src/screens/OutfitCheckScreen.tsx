@@ -28,19 +28,14 @@ const OutfitCheckScreen = () => {
   
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
   const fetchClothes = async () => {
-    const getToken = token || (await getTokenLocal());
-    if (!token) {
-      setToken(getToken || "")
-    }
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
 
-    setClothes(getToken|| "");
   };
 
   useEffect(() => {
-    const asyncCall = async () => {
-      await fetchClothes()
-    }
-    asyncCall()
+    fetchClothes()
   }, [])
 
   const handleImagePicker = () => {
@@ -74,7 +69,7 @@ const handleUpload = async (file: Asset) => {
 
     try {
       const res = await api.post(
-        'api/v1/clothing/outfitcheck',
+        'api/v1/outfit/outfitcheck',
         formData,
         {
           headers: {

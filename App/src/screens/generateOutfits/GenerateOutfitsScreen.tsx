@@ -146,7 +146,7 @@ const GenerateOutfitsScreen = () => {
       }
       try {
         const res = await api.post(
-          '/api/v1/clothing/generate-outfits',
+          '/api/v1/outfit/generate-outfits',
           {
             articles : pairingArticles,
             occasion: selectedOccasion,

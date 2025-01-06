@@ -1,23 +1,75 @@
-import React from 'react';
-import { StyleSheet, View, FlatList, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, FlatList, Pressable, RefreshControl, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import SafeScreen from '../components/SafeScreen';
-import { useOutfitStore } from '../store/outfitStore';
+
 import OutfitPreview from '../components/OutfitPreview';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { SavedOutfit } from "../store/outfitStore"
+import { SavedOutfit, useOutfitStore } from "../store/outfitStore"
 import { RootStackParamList } from '../types/types';
+import { AuthState, useAuthStore } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
+import { api } from '../utils/api';
 
 type NavigationProps = NavigationProp<RootStackParamList>;
 
+
+
 const MyLooksScreen = () => {
   const navigation = useNavigation<NavigationProps>();
-  const outfits: SavedOutfit[] = useOutfitStore(state => state.outfits);
+  const [loading, setLoading] = useState(true);
+  const [refresh, setRefresh] = useState(false);
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const outfits = useOutfitStore((state) => state.outfits)
+  const setOutfits = useOutfitStore((state) => state.fetch)
+  const fetchOutfits = async () => {
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    await setOutfits(getToken || token|| "")
+    setLoading(false)
+  };
 
+  const handleDeleteItem = (item: string) => {
+    Alert.alert(
+      'Delete Item',
+      'Are you sure you want to delete this item from your looks?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await api.delete(`/api/v1/outfit/${item}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              setRefresh(!refresh);
+            } catch (error) {
+              console.error('Delete error:', error);
+            } finally {
+              setLoading(false);
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+    );
+  };
+  
+  
+  useEffect(() => {
+    fetchOutfits()
+  }, [refresh])
   const renderOutfit = (item : SavedOutfit) => (
-
+    
     <Pressable 
       style={styles.outfitCard}
+      onLongPress={() =>{handleDeleteItem(item.ID || "")}}
       onPress={() => navigation.navigate('OutfitPreviewScreen', {
         outfits: [item],
         occasion: item.occasion
@@ -25,25 +77,30 @@ const MyLooksScreen = () => {
       <OutfitPreview items={item} occasion={item.occasion} />
       <Text style={styles.occasionText}>{item.occasion || 'No occasion'}</Text>
       <Text style={styles.dateText}>
-        {new Date(item.createdAt || "").toLocaleDateString()}
+        {new Date(item.CreatedAt || "").toLocaleDateString()}
       </Text>
     </Pressable>
   );
 
   return (
     <SafeScreen>
-      <View style={styles.container}>
+      <View 
+         style={styles.container}>
         <Text style={styles.title}>My Looks</Text>
-        {outfits.length === 0 ? (
+        {(outfits || []).length === 0 ? (
           <View style={styles.emptyState}>
             <Text>No saved outfits yet</Text>
           </View>
         ) : (
           <FlatList
+
             data={outfits}
             renderItem={({item} ) => renderOutfit(item)}
             keyExtractor={item => item.ID || ""}
             contentContainerStyle={styles.listContainer}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {
+              setRefresh(!refresh)
+            }} />}
           />
         )}
       </View>

@@ -160,7 +160,7 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles 
 		outfit := models.Outfit{}
 		fmt.Println(id)
 		db.Preload("tags").Where("id = ?", resp.Top).Find(&outfit.OutfitTop)
-		db.Preload("tags").Where("id = ?", resp.Bottom).Find(&outfit.Outfitbottom)
+		db.Preload("tags").Where("id = ?", resp.Bottom).Find(&outfit.OutfitBottom)
 		db.Preload("tags").Where("id = ?", resp.Hat).Find(&outfit.OutfitHat)
 		db.Preload("tags").Where("id = ?", resp.Shoe).Find(&outfit.OutfitShoe)
 		outfitS = append(outfitS, outfit)
