@@ -27,6 +27,28 @@ export type RootStackParamList = {
   ClothingDetail: {
     item: Clothes;
   };
+  OutfitCheckResult: {
+    result: {
+      DoingWell: string;
+      Improvements: string;
+      NotDoingWell: string;
+      Score: number;
+    };
+    imageUri: string;
+  };
+  MixAndMatchResult: {
+    result: {
+      rating: number;
+      recommendation: string;
+      similarItems: {
+        id: string;
+        imageUrl: string;
+        url?: string;
+      }[];
+      explanation: string;
+    };
+    imageUri: string;
+  };
 };
 
 export type MainTabParamList = {

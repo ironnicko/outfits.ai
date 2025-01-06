@@ -79,6 +79,10 @@ const handleUpload = async (file: Asset) => {
         }
       );
       console.log('Upload successful', res.data);
+      navigation.navigate('OutfitCheckResult', { 
+        result: res.data,
+        imageUri: file.uri 
+      });
     } catch (error: any) {
       console.error('Upload error:', error.response?.data || error.message);
     }

@@ -12,6 +12,8 @@ import { RootStackParamList } from '../types/types';
 import ProtectedRoute from '../components/ProtectedRoute';
 import MyLooksScreen from '../screens/MyLooksScreen';
 import ClothingDetailScreen from '../screens/ClothingDetailScreen';
+import OutfitCheckResultScreen from '../screens/OutfitCheckResultScreen';
+import MixAndMatchResultScreen from '../screens/MixAndMatchResultScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -40,6 +42,9 @@ const RootNavigator = () => {
       <Stack.Screen name="OutfitPreviewScreen" component={withProtectedRoute(OutfitPreviewScreen)} />
       <Stack.Screen name="MyLooks" component={withProtectedRoute(MyLooksScreen)} />
       <Stack.Screen name="ClothingDetail" component={withProtectedRoute(ClothingDetailScreen)} />
+      <Stack.Screen name="OutfitCheckResult" component={withProtectedRoute(OutfitCheckResultScreen)} />
+      <Stack.Screen name="MixAndMatchResult" component={withProtectedRoute(MixAndMatchResultScreen)} />
+
 
     </Stack.Navigator>
   );

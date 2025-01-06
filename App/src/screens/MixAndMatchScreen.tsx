@@ -1,39 +1,34 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, ScrollView, Image, Pressable, Platform, ActionSheetIOS} from 'react-native';
 import {Text, Button, IconButton} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {Asset, CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { api } from '../utils/api';
+import { AuthState } from '../store/authStore';
+import { getTokenLocal } from '../utils/auth';
+import { useAuthStore } from '../store/authStore';
+import { useClothingStore } from '../store/clothingStore';
 
 const MixAndMatchScreen = () => {
+
   const navigation = useNavigation();
+
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
+  const setClothes = useClothingStore((state) => state.fetch)
+  
+  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const fetchClothes = async () => {
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
 
-  const handleCamera = async () => {
-    const result = await launchCamera({
-      mediaType: 'photo',
-      quality: 1,
-    });
-
-    if (result.assets && result.assets[0]) {
-      // Handle the captured image
-      console.log(result.assets[0]);
-    }
   };
 
-  const handleGallery = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      selectionLimit: 1,
-      quality: 1,
-    });
-
-    if (result.assets && result.assets[0]) {
-      // Handle the selected image
-      console.log(result.assets[0]);
-    }
-  };
+  useEffect(() => {
+    fetchClothes()
+  }, [])
 
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
@@ -44,14 +39,92 @@ const MixAndMatchScreen = () => {
         },
         buttonIndex => {
           if (buttonIndex === 1) {
-            handleCamera();
+            openCamera();
           } else if (buttonIndex === 2) {
-            handleGallery();
+            openGallery();
           }
         },
       );
     } else {
       setShowImagePickerModal(true);
+    }
+  };
+
+const handleUpload = async (file: Asset) => {
+    const formData = new FormData();
+    const image = {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.fileName || 'image.jpg'
+    }
+    formData.append('file', image);
+
+    try {
+      const res = await api.post(
+        'api/v1/outfit/outfitcheck',
+        formData,
+        {
+          headers: {
+            'Authorization' : `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('Upload successful', res.data);
+      navigation.navigate('MixAndMatchResult', { 
+        result: res.data,
+        imageUri: file.uri 
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error.response?.data || error.message);
+    }
+}
+
+  const openGallery = async () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+      selectionLimit: 1,
+      quality: 1,
+    };
+
+    try {
+      const response = await launchImageLibrary(options);
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets[0]) {
+        await handleUpload(response.assets[0]);
+
+      }
+    } catch (error) {
+      console.log('Error picking image: ', error);
+    }
+  };
+
+  const openCamera = async () => {
+    const options:CameraOptions = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+      saveToPhotos: true
+    };
+
+    try {
+      const response = await launchCamera(options);
+      if (response.didCancel) {
+        console.log('User cancelled camera');
+      } else if (response.errorCode) {
+        console.log('Camera Error: ', response.errorMessage);
+      } else if (response.assets && response.assets[0]) {
+        await handleUpload(response.assets[0]);
+      }
+    } catch (error) {
+      console.log('Error using camera: ', error);
     }
   };
 
