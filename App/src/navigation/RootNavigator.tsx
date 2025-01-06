@@ -37,7 +37,7 @@ const RootNavigator = () => {
       <Stack.Screen name="OccasionSelect" component={withProtectedRoute(OccasionSelectScreen)} />
       <Stack.Screen name="SelectClothingItem" component={withProtectedRoute(SelectClothingItem)} />
       <Stack.Screen name="MixAndMatch" component={withProtectedRoute(MixAndMatchScreen)} />
-      <Stack.Screen name="OutfitPreview" component={withProtectedRoute(OutfitPreviewScreen)} />
+      <Stack.Screen name="OutfitPreviewScreen" component={withProtectedRoute(OutfitPreviewScreen)} />
       <Stack.Screen name="MyLooks" component={withProtectedRoute(MyLooksScreen)} />
       <Stack.Screen name="ClothingDetail" component={withProtectedRoute(ClothingDetailScreen)} />
 

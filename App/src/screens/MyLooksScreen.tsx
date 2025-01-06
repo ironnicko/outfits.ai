@@ -18,14 +18,14 @@ const MyLooksScreen = () => {
 
     <Pressable 
       style={styles.outfitCard}
-      onPress={() => navigation.navigate('OutfitPreview', {
-        selectedItems: item.items,
+      onPress={() => navigation.navigate('OutfitPreviewScreen', {
+        outfits: [item],
         occasion: item.occasion
       })}>
-      <OutfitPreview items={item.items} occasion={item.occasion} />
+      <OutfitPreview items={item} occasion={item.occasion} />
       <Text style={styles.occasionText}>{item.occasion || 'No occasion'}</Text>
       <Text style={styles.dateText}>
-        {new Date(item.createdAt).toLocaleDateString()}
+        {new Date(item.createdAt || "").toLocaleDateString()}
       </Text>
     </Pressable>
   );
@@ -42,7 +42,7 @@ const MyLooksScreen = () => {
           <FlatList
             data={outfits}
             renderItem={({item} ) => renderOutfit(item)}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.ID || ""}
             contentContainerStyle={styles.listContainer}
           />
         )}

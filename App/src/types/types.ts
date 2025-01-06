@@ -6,7 +6,11 @@ export type RootStackParamList = {
   Home: undefined;
   OutfitPreview: {
     occasion?: string;
-    outfits: SavedOutfit[] | Clothes[];
+    outfits: SavedOutfit | Clothes[];
+  };
+  OutfitPreviewScreen: {
+    occasion?: string;
+    outfits: SavedOutfit[] | Clothes[][];
   };
   MyLooks: undefined;
   Login: undefined;

@@ -167,7 +167,7 @@ const GenerateOutfitsScreen = () => {
         }
         const outfits = res.data
         // TODO: Add carousel in OutfitPreview and pass outfits as 'outfits'
-        navigation.navigate('OutfitPreview', {
+        navigation.navigate('OutfitPreviewScreen', {
           outfits: outfits,
           occasion: selectedOccasion,
         });
@@ -181,7 +181,7 @@ const GenerateOutfitsScreen = () => {
 
   const handleShowOutfit = () => {
     if (hasAnySelectedArticle) {
-      navigation.navigate('OutfitPreview', {outfits: selectedItems});
+      navigation.navigate('OutfitPreviewScreen', {outfits: [selectedItems]});
     }
   };
 

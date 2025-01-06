@@ -4,38 +4,37 @@ import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
-import { useOutfitStore } from '../store/outfitStore';
+import { SavedOutfit, useOutfitStore } from '../store/outfitStore';
 import { RootStackParamList } from '../types/types';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { SelectedClothing } from './generateOutfits/GenerateOutfitsScreen';
+import { Clothes } from '../store/clothingStore';
 
-type RouteProps = RouteProp<RootStackParamList, 'OutfitPreview'>;
+type RouteProps = RouteProp<RootStackParamList, 'OutfitPreviewScreen'>;
 
 const OutfitPreviewScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProps>()
 //   this is for when we are selecting a particular article and want to generate/ or want to select items and just show outfit
-  const {occasion, outfits } = route.params;   
+  var {occasion, outfits } = route.params;   
   const [activeIndex, setActiveIndex] = useState(0);
   const width = Dimensions.get('window').width;
   const addOutfit = useOutfitStore(state => state.addOutfit);
-  
 
   const handleSaveToLooks = () => {
     console.log(outfits, occasion)
   };
-  // Mock 5 outfits for demonstration
-  const mockOutfits = Array(5).fill(outfits);
 
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / width);
+    const index = Math.floor(contentOffset / width);
     setActiveIndex(index);
   };
 
   const renderCarouselIndicators = () => {
     return (
       <View style={styles.indicatorContainer}>
-        {mockOutfits.map((_, index) => (
+        {outfits.map((_, index) => (
           <View
             key={index}
             style={[
@@ -72,7 +71,7 @@ const OutfitPreviewScreen = () => {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-            {mockOutfits.map((item, index) => (
+            {outfits.map((item, index) => (
               <View key={index} style={[styles.slide, { width }]}>
                 <OutfitPreview items={item} occasion={occasion} />
               </View>

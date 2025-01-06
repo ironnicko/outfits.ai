@@ -2,42 +2,41 @@ import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import { SavedOutfit } from '../store/outfitStore';
 import { Clothes } from '../store/clothingStore';
-import { SelectedClothing } from '../screens/generateOutfits/GenerateOutfitsScreen';
+
 
 interface OutfitPreviewProps {
   // Multiple Outfits or Single Outfit
-  items: SavedOutfit[] | SelectedClothing[];
+  items: SavedOutfit | Clothes[];
   occasion?: string;
 }
 
-function isSavedOutfit(item: SavedOutfit[] | SelectedClothing[]): item is SavedOutfit[] {
+function isSavedOutfit(item: SavedOutfit | Clothes[]): item is SavedOutfit {
   return (
-  (item as SavedOutfit[])[0].OutfitHat !== undefined ||
-  (item as SavedOutfit[])[0].OutfitTop !== undefined|| 
-  (item as SavedOutfit[])[0].Outfitbottom !== undefined ||
-  (item as SavedOutfit[])[0].OutfitShoe !== undefined
+  (item as SavedOutfit).OutfitHat !== undefined ||
+  (item as SavedOutfit).OutfitTop !== undefined|| 
+  (item as SavedOutfit).Outfitbottom !== undefined ||
+  (item as SavedOutfit).OutfitShoe !== undefined
   );
 }
 
 // Only for single outfit or list of SelectedClothing
 
 const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
-  var finalItems: SelectedClothing[] = []
+  var finalItems: Clothes[] = []
 
-  
-  // Change it back to items 
+
   if (isSavedOutfit(items)){
-    if (items[0].OutfitHat?.url  != ''){
-      finalItems.push(items[0].OutfitHat || {type : "hat"})
+    if (items.OutfitHat?.url  != ''){
+      finalItems.push(items.OutfitHat || {type : "hat"})
     }
-    if (items[0].OutfitShoe?.url  != ''){
-      finalItems.push(items[0].OutfitShoe || {type : "shoe"})
+    if (items.OutfitShoe?.url  != ''){
+      finalItems.push(items.OutfitShoe || {type : "shoe"})
     }
-    if (items[0].OutfitTop?.url  != ''){
-      finalItems.push(items[0].OutfitTop || {type : "top"})
+    if (items.OutfitTop?.url  != ''){
+      finalItems.push(items.OutfitTop || {type : "top"})
     }
-    if (items[0].Outfitbottom?.url  != ''){
-      finalItems.push(items[0].Outfitbottom || {type : "bottom"})
+    if (items.Outfitbottom?.url  != ''){
+      finalItems.push(items.Outfitbottom || {type : "bottom"})
     }
   } else {
     finalItems = items
@@ -63,7 +62,7 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
         <Text style={styles.occasionText}>{occasion}</Text>
       )} */}
       <View style={styles.outfitContainer}>
-        {(finalItems).map((item: SelectedClothing, index: number) => {
+        {(finalItems).map((item: Clothes, index: number) => {
 
           return (
           <View
