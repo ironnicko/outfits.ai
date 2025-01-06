@@ -4,11 +4,9 @@ import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import OutfitPreview from '../components/OutfitPreview';
 import SafeScreen from '../components/SafeScreen';
-import { SavedOutfit, useOutfitStore } from '../store/outfitStore';
 import { RootStackParamList } from '../types/types';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { SelectedClothing } from './generateOutfits/GenerateOutfitsScreen';
-import { Clothes } from '../store/clothingStore';
+import { SavedOutfit } from '../store/outfitStore';
 
 type RouteProps = RouteProp<RootStackParamList, 'OutfitPreviewScreen'>;
 
@@ -19,10 +17,10 @@ const OutfitPreviewScreen = () => {
   var {occasion, outfits } = route.params;   
   const [activeIndex, setActiveIndex] = useState(0);
   const width = Dimensions.get('window').width;
-  const addOutfit = useOutfitStore(state => state.addOutfit);
 
   const handleSaveToLooks = () => {
-    console.log(outfits, occasion)
+    (outfits[activeIndex] as SavedOutfit).occasion = occasion
+    console.log((outfits[activeIndex] as SavedOutfit).occasion)
   };
 
   const handleScroll = (event: any) => {
@@ -89,7 +87,7 @@ const OutfitPreviewScreen = () => {
         </View>
 
         <View style={styles.bottomButtons}>
-          <Pressable style={styles.saveButton} onPress={() => {}}>
+          <Pressable style={styles.saveButton} onPress={handleSaveToLooks}>
             <Icon name="dots-horizontal" size={20} color="#fff" />
             <Text style={styles.saveButtonText}>Save to Looks</Text>
           </Pressable>

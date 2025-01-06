@@ -47,13 +47,12 @@ const HomeScreen = () => {
   
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
   const fetchClothes = async () => {
-    const getToken = token || (await getTokenLocal());
-    if (!token) {
-      setToken(getToken || "")
-    }
-
-    setClothes(getToken|| "");
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
   };
+
+  
 
   useEffect(() => {
     fetchClothes()

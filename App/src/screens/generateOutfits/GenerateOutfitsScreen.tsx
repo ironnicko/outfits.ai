@@ -29,22 +29,19 @@ const GenerateOutfitsScreen = () => {
     { type: 'bottom' },
     { type: 'shoe' }
   ]);
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
   const setClothes = useClothingStore((state) => state.fetch)
   const fetchClothes = async () => {
-    const getToken = token || (await getTokenLocal());
-    if (!token) {
-      setToken(getToken || "")
-    }
-    setClothes(getToken|| "");
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
+    setLoading(false)
   };
 
+
   useEffect(() => {
-    const asyncCall = async () => {
-      await fetchClothes()
-    }
-    asyncCall()
+      fetchClothes()
   }, [])
   const clothingItems: SelectedClothing[] = [
     { type: 'hat', Icon: 'hat-fedora', Size: 48 },
@@ -181,7 +178,7 @@ const GenerateOutfitsScreen = () => {
 
   const handleShowOutfit = () => {
     if (hasAnySelectedArticle) {
-      navigation.navigate('OutfitPreviewScreen', {outfits: [selectedItems]});
+      navigation.navigate('OutfitPreviewScreen', {occasion: selectedOccasion, outfits: [selectedItems]});
     }
   };
 

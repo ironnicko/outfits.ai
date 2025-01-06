@@ -41,7 +41,6 @@ const OutfitPreview = ({ items, occasion }: OutfitPreviewProps) => {
   } else {
     finalItems = items
   }
-  console.log(finalItems)
   const getItemPosition = (type: string) => {
     switch (type) {
       case 'hat':

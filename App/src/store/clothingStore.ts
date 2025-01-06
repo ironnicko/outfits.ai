@@ -40,8 +40,8 @@ export const useClothingStore = create<ClothingState>((set) => ({
             });
             const data: Clothes[] = response.data;
             set({ clothes: data });
-        } catch (error) {
-            console.error("Failed to fetch clothes:", error);
+        } catch (error: any) {
+            console.error("Failed to fetch clothes:", error.message);
         }
     },
     clear: () => {

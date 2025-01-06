@@ -47,17 +47,13 @@ const WardrobeScreen = () => {
 
 
   const fetchClothes = async () => {
-    if (!token) {
-      const getToken = await getTokenLocal();
-      setToken(getToken || '')
-    }
-
-    setClothes(token || "");
+    const getToken = await getTokenLocal();
+    setToken(getToken || token)
+    setClothes(getToken || "");
     setLoading(false);
   };
 
   const handleDeleteItem = (item: string) => {
-    console.log(item)
     Alert.alert(
       'Delete Item',
       'Are you sure you want to delete this item from your wardrobe?',
@@ -90,6 +86,7 @@ const WardrobeScreen = () => {
   };
 
   useEffect(() => {
+
     fetchClothes()
   }, [refresh])
   const categoryCounts = useMemo(() => {
@@ -158,7 +155,7 @@ const WardrobeScreen = () => {
 
 
     } catch (error: any) {
-      console.error('Upload error:', error.response?.data || error.message);
+      console.error('Upload error:', error.message);
     }
   }
 
@@ -188,7 +185,7 @@ const WardrobeScreen = () => {
     if (result.assets) {
       setLoading(true)
 
-      for (const file of result.assets){
+      for (const file of result.assets) {
         await handleUpload(file)
       }
       setLoading(false)
@@ -215,7 +212,7 @@ const WardrobeScreen = () => {
           </View>
           <Icon name="chevron-down" size={24} color="#4A6741" />
         </View>
-  
+
         {/* Categories */}
         <View style={styles.statsContainer}>
           <Text style={styles.totalCount}>{totalItems}</Text>
@@ -251,7 +248,7 @@ const WardrobeScreen = () => {
             ))}
           </ScrollView>
         </View>
-  
+
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Searchbar
@@ -267,7 +264,7 @@ const WardrobeScreen = () => {
             <Icon name="star-outline" size={24} color="#4A6741" />
           </Pressable>
         </View>
-  
+
         {/* Clothing Grid */}
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -277,7 +274,9 @@ const WardrobeScreen = () => {
           <ScrollView
             style={styles.gridContainer}
             showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => setRefresh(!refresh)} />}
+            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {
+              setRefresh(!refresh)
+            }} />}
           >
             <View style={styles.grid}>
               {filteredClothes.map((item, index) => (
@@ -297,7 +296,7 @@ const WardrobeScreen = () => {
             </View>
           </ScrollView>
         )}
-  
+
         <FAB
           icon="camera"
           style={styles.fab}
@@ -307,7 +306,7 @@ const WardrobeScreen = () => {
           customSize={56}
           disabled={loading}
         />
-  
+
         {Platform.OS === 'android' && (
           <Portal>
             <Modal
@@ -325,7 +324,7 @@ const WardrobeScreen = () => {
                 <Icon name="camera" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Take Picture</Text>
               </Pressable>
-  
+
               <Pressable
                 style={styles.modalOption}
                 onPress={async () => {
@@ -336,7 +335,7 @@ const WardrobeScreen = () => {
                 <Icon name="image-multiple" size={24} color="#4A6741" />
                 <Text style={styles.modalOptionText}>Select Picture(s)</Text>
               </Pressable>
-  
+
               <Pressable
                 style={[styles.modalOption, styles.cancelOption]}
                 onPress={() => setShowImagePickerModal(false)}
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     overflow: 'hidden',
     justifyContent: 'center',
-    alignItems: 'center',  
+    alignItems: 'center',
   },
   activeCategoryText: {
     color: '#4A6741',
