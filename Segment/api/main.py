@@ -4,7 +4,19 @@ import uvicorn
 from .dependencies import lifespan
 from .routers import outfits, clothing
 
-app = FastAPI(lifespan=lifespan)
+description = """
+Outfit.ai APIs
+
+Allows for Creating :
+- Outfits
+- Clothing
+"""
+
+app = FastAPI(
+    title="outfit-ai",
+    description=description,
+    lifespan=lifespan
+)
 
 
 app.add_middleware(

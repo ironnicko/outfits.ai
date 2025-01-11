@@ -4,7 +4,8 @@ from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3
 from fastapi import File, UploadFile, Form, HTTPException, APIRouter
 
 router = APIRouter(
-    prefix="/clothing"
+    prefix="/clothing",
+    tags=["clothes"]
 )
 
 

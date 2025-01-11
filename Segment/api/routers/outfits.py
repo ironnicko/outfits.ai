@@ -4,7 +4,8 @@ from backend_process import gpt_request, remove_bg, get_embeddings, create_combi
 from fastapi import File, UploadFile, Form, HTTPException, APIRouter
 
 router = APIRouter(
-    prefix="/outfit"
+    prefix="/outfit",
+    tags=["outfits"]
 )
 
 
@@ -64,7 +65,7 @@ async def generate_outfits(
 
 
 @router.post("/get-opinion")
-async def getopinion(
+async def get_opinion(
     clothing: str = Form(...),
     clothes: str = Form(...)
 ):
@@ -91,7 +92,7 @@ async def getopinion(
 
 
 @router.post("/mixandmatch")
-async def mixmatch(
+async def mix_and_match(
     file: UploadFile = File(...),
 
 ):
@@ -120,7 +121,7 @@ async def mixmatch(
 
 
 @router.post("/outfitcheck")
-async def outfitcheck(
+async def outfit_check(
     file: UploadFile = File(...),
 ):
     try:

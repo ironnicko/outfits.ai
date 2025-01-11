@@ -192,9 +192,8 @@ const WardrobeScreen = () => {
     if (result.assets) {
       setLoading(true)
 
-      for (const file of result.assets) {
-        await handleUpload(file)
-      }
+      const uploadPromises = result.assets.map(file => handleUpload(file));
+      await Promise.all(uploadPromises);
       setLoading(false)
       setRefresh(!refresh)
     }

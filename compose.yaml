@@ -18,6 +18,8 @@ services:
     build:
       context: Segment/
       dockerfile: Dockerfile
+      platforms: 
+        - linux/arm64
     environment:
       - HF_HOME=/var/lib/.u2net/
     ports:
@@ -35,6 +37,8 @@ services:
     build:
       context: Go-Backend/
       dockerfile: Dockerfile
+      platforms: 
+        - linux/arm64
     env_file:
       - ./.env
     environment:
