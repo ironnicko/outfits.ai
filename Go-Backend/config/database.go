@@ -5,6 +5,7 @@ import (
 	"os"
 	"outfits/models"
 
+	"github.com/supabase-community/auth-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,18 +18,28 @@ type Dbinstance struct {
 
 // Global Variable It will hold database instance throughout the application
 var DB Dbinstance
+var SupabaseClient auth.Client
+
+func CreateUsersTable(db *gorm.DB) error {
+	return db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			email VARCHAR(255),
+			password VARCHAR(255),
+			username VARCHAR(255),
+			id UUID  PRIMARY KEY,
+			FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE
+		);
+	`).Error
+}
 
 func ConnectDb() {
-	user := " user=" + os.Getenv("DB_USERNAME")
-	port := " port=" + os.Getenv("DB_PORT")
-	dbname := " dbname=" + os.Getenv("DB_NAME")
-	passw := " password=" + os.Getenv("DB_PASSWORD")
-	host := "localhost"
-	if os.Getenv("PRODUCTION") == "prod" {
-		host = " host=" + os.Getenv("DB_HOST")
-	}
-	timezone := " TimeZone=" + os.Getenv("TIMEZONE")
-	dsn := host + passw + dbname + port + user + timezone + " sslmode=disable"
+	user := os.Getenv("DB_USERNAME")
+	passw := os.Getenv("DB_PASSWORD")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+	host := os.Getenv("DB_HOST")
+
+	dsn := "postgresql://" + user + ":" + passw + "@" + host + ":" + port + "/" + dbname
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -40,10 +51,20 @@ func ConnectDb() {
 
 	log.Println("DATABASE CONNECTED")
 	db.Logger = logger.Default.LogMode(logger.Info)
-	// log.Println("running migrations")
+	log.Println("running migrations")
+
+	if err := CreateUsersTable(db); err != nil {
+		log.Fatalf("failed to create users table: %v", err)
+	}
+
 	// Auto Migration Of Models
-	db.AutoMigrate(&models.Clothing{}, &models.User{}, &models.UserToken{}, &models.Outfit{})
+	err = db.AutoMigrate(&models.Vector{}, &models.Tags{}, &models.Clothing{}, &models.User{}, &models.Outfit{})
 	DB = Dbinstance{
 		Db: db,
 	}
+	SupabaseClient = auth.New(os.Getenv("URL"), os.Getenv("ANON"))
+	if err != nil {
+		log.Printf("Failed to automigrate")
+	}
+
 }

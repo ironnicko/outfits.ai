@@ -2,14 +2,14 @@ package models
 
 import (
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	Username string `gorm:"size:255;uniqueIndex" json:"username" validate:"required,min=3,max=50"`
-	Email    string `gorm:"size:255;uniqueIndex" json:"email" validate:"required,email"`
-	Password string `gorm:"size:255" json:"password" validate:"required,min=7"`
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey;size:255;uniqueIndex;" json:"id"`
+	Username string    `gorm:"size:255;uniqueIndex" json:"username"`
 }
 
 func (u *User) Validate() error {
