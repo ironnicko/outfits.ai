@@ -40,7 +40,7 @@
     "@react-native-community/cli-platform-android": "latest",
     "@react-native-community/cli-platform-ios": "latest",
     "@react-native/babel-preset": "0.76.5",
-    "@react-native/eslint-config": "0.76.5",
+    "@react-native/eslint-config": "0.76.6",
     "@react-native/metro-config": "0.76.6",
     "@react-native/typescript-config": "0.76.5",
     "@types/react": "^18.2.6",
