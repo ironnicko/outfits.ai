@@ -1,12 +1,22 @@
 import json
 from ..dependencies import prompt, EMBED, LLM, create_response
 from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3
-from fastapi import File, UploadFile, Form, HTTPException, APIRouter
+from fastapi import BackgroundTasks, File, UploadFile, Form, HTTPException, APIRouter
 
 router = APIRouter(
     prefix="/clothing",
     tags=["clothes"]
 )
+
+
+async def run_sam(file, meta_data):
+    if meta_data["type"] != "shoe":
+        print("Running Background Task...")
+        try:
+            rem_bg_image: str = await remove_bg(file, meta_data, "sam")
+            await upload_s3(rem_bg_image, meta_data)
+        except:
+            return
 
 
 @router.post("/embedding")
@@ -20,6 +30,7 @@ async def embedding(
 
 @router.post("/upload")
 async def upload_file(
+    background_task: BackgroundTasks,
     file: UploadFile = File(...),
     user_ID: str = Form(...),
     clothing_ID: str = Form(...),
@@ -33,19 +44,18 @@ async def upload_file(
         if not file_content:
             raise HTTPException(
                 status_code=400, detail="Uploaded file is empty")
-
         print("Starting background removal...")
         rem_bg_image: str = await remove_bg(file_content, meta_data)
-        print("Generating tags...")
 
+        print("Generating tags...")
         response: dict = await gpt_request(**LLM, prompt=prompt, img=rem_bg_image, filename=file.filename)
-        print("Successfully processed the file and generated tags")
         print(response)
         meta_data["type"] = response["clothingType"]
 
         if meta_data["type"] == "others":
             return create_response({"error": "invalid clothing type"}, status_code=400)
 
+        print("Uploading to S3")
         await upload_s3(rem_bg_image, meta_data)
 
         text = " ".join(response["Tags"])
@@ -55,6 +65,8 @@ async def upload_file(
             "status": "File received successfully",
             "Embedding": json.dumps(embedding.tolist()[0]),
         })
+
+        background_task.add_task(run_sam, file_content, meta_data)
 
         return create_response(response)
     except HTTPException as http_exc:

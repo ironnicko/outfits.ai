@@ -16,7 +16,7 @@ The 'type' must fall under the following categories:
 top, bottom, shoe, hat, others
 
 Don't generate less than 5 Tags and no more than 12.
-Tags must be about the clothing itself rather than the contents in the clothing.
+Tags must be about the clothing rather than the contents in the image.
 
 Except 'Tags' nothing else will be an array.
 

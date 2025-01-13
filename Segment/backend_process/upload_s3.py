@@ -10,8 +10,7 @@ load_dotenv()
 async def upload_s3(in_mem_file, metadata):
 
     in_mem_file = BytesIO(in_mem_file)
-    print("Uploading to S3")
-
+    
     file_name = f"{metadata['cid']}.png"
     bucket_name = os.getenv("BUCKET_NAME")
     session = aioboto3.Session()

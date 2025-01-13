@@ -142,6 +142,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		if err := db.Create(&tag).Error; err != nil {
 			return ErrorRollBack(c, db, clothing.ID, err.Error())
 		}
+		clothing.Tags = append(clothing.Tags, tag)
 	}
 
 	// Save Vector to the Database
@@ -159,7 +160,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		return ErrorRollBack(c, db, clothing.ID, db_error.Error.Error())
 	}
 
-	return c.Status(fiber.StatusAccepted).Send(respBody)
+	return c.Status(fiber.StatusAccepted).JSON(clothing)
 }
 
 func GetClothings(c *fiber.Ctx) error {

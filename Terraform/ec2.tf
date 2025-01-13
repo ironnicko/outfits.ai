@@ -14,7 +14,7 @@ resource "aws_security_group" "main" {
   }
 
   dynamic "ingress" {
-    for_each = [22, 80, 443, 3000, 8000, 8001]
+    for_each = [22, 80, 443, 3000, 8000]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
@@ -30,7 +30,7 @@ resource "aws_security_group" "main" {
 
 resource "aws_instance" "my_vm" {
   ami           = var.instance_ami
-  instance_type = "t4g.small"
+  instance_type = "r6g.large"
   key_name      = "vockey"
 
   vpc_security_group_ids = [aws_security_group.main.id]

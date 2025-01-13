@@ -22,6 +22,7 @@ services:
         - linux/arm64
     environment:
       - HF_HOME=/var/lib/.u2net/
+      - PRODUCTION=prod
     ports:
       - "8001:8001"
     env_file:
