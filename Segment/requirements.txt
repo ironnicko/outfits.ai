@@ -4,7 +4,7 @@ aiofiles==24.1.0
 aiohappyeyeballs==2.4.4
 aiohttp==3.11.11
 aioitertools==0.12.0
-aioquic==0.9.25
+aioquic==1.2.0
 aiosignal==1.3.2
 annotated-types==0.7.0
 anyio==4.8.0
