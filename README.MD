@@ -6,7 +6,11 @@ outfits.ai is a sophisticated mobile application designed to revolutionize wardr
 
 ### Check out the video demonstration below:
 
-[![Watch the video](https://img.youtube.com/vi/your_video_id/0.jpg)](https://drive.google.com/file/d/1LLCnsV0EO8NgbomlRtyiIhbHDGzDUd4V/view)
+<video width="320" height="240" controls>
+  <source src="https://raw.githubusercontent.com/ironnicko/outfits.ai/main/outfits.ai.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+
 
 
 ## 🌟 Features

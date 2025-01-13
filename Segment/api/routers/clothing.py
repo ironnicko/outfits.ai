@@ -66,7 +66,7 @@ async def upload_file(
             "Embedding": json.dumps(embedding.tolist()[0]),
         })
 
-        background_task.add_task(run_sam, file_content, meta_data)
+        # background_task.add_task(run_sam, file_content, meta_data)
 
         return create_response(response)
     except HTTPException as http_exc:

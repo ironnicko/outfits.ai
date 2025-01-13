@@ -31,32 +31,31 @@ const categories: Category[] = [
 
 const WardrobeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-
-
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [check, setCheck] = useState(true);
   const [refresh, setRefresh] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const setClothes = useClothingStore((state) => state.fetch)
+  const fetchClothes = useClothingStore((state) => state.fetch)
   const clothes = useClothingStore((state) => state.clothes);
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
 
   const renderItem = ({ item } : {item : Clothes}) => (
     <View style={[styles.gridItem, { width: cardWidth }]}>
-      <ClothingCard
+      {!item.url?<LoadingScreen/>:(<ClothingCard
         imageUrl={item.url || ""}
         onPress={() => {
           navigation.navigate('ClothingDetail', { item });
         }}
         onLongPress={() => handleDeleteItem(item.ID || " ")}
-      />
+      />)}
     </View>
   );
 
-  const fetchClothes = async () => {
+  const setClothes = async () => {
 
-    setClothes(token || "");
+    fetchClothes(token || "");
     setLoading(false);
   };
 
@@ -93,8 +92,17 @@ const WardrobeScreen = () => {
   };
 
   useEffect(() => {
+    setClothes()
 
-    fetchClothes()
+    if (check){
+      const checkInterval = setInterval(async () => {
+        const getClothes = await fetchClothes(token || " ");
+        if (getClothes.every((clothing) => !!clothing.url)){
+          setCheck(false)
+        }
+      }, 2500);
+      return () => clearInterval(checkInterval);
+    }
   }, [refresh])
   const categoryCounts = useMemo(() => {
     return categories.reduce((acc, category) => {
@@ -191,7 +199,7 @@ const WardrobeScreen = () => {
 
     if (result.assets) {
       setLoading(true)
-
+      setCheck(true)
       const uploadPromises = result.assets.map(file => handleUpload(file));
       await Promise.all(uploadPromises);
       setLoading(false)

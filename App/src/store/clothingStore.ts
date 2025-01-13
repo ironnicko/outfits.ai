@@ -26,7 +26,7 @@ const mockClothes: Clothes[] = [
 
 interface ClothingState {
     clothes: Clothes[];
-    fetch: (token: string) => Promise<void>;
+    fetch: (token: string) => Promise<Clothes[]>;
     clear: () => void;
 }
 
@@ -41,9 +41,11 @@ export const useClothingStore = create<ClothingState>((set) => ({
             });
             const data: Clothes[] = response.data;
             set({ clothes: data });
+            return data
         } catch (error: any) {
             console.error("Failed to fetch clothes:", error.message);
         }
+        return mockClothes
     },
     clear: () => {
         set({ clothes: mockClothes })
