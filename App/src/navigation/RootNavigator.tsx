@@ -75,7 +75,9 @@ const RootNavigator = () => {
             handleSignOut();
             break;
           case 'TOKEN_REFRESHED':
+            setIsAuthenticated(false);
             await handleSignIn(session);
+            setIsAuthenticated(true);
             break;
         }
       }

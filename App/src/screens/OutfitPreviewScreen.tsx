@@ -19,43 +19,57 @@ const OutfitPreviewScreen = () => {
   var {occasion, outfits, saveToLooks} = route.params;   
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [save, setSave] = useState(false)
+
   const width = Dimensions.get('window').width;
   const setOutfits = useOutfitStore((state) => state.fetch)
   const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const [save, setSave] = useState(false)
+  const [maintainOutfitSaved, setMaintainOutfitSaved] = useState<Set<number>>(new Set<number>())
 
   useEffect(() => {
     setLoading(false);
   }, [])
 
 
-  const handleSaveToLooks = async () => {
-      setLoading(true);
-      outfits.forEach(async (outfit)=>{  
-      const finalItems: SavedOutfit = (!isSavedOutfit(outfit) ? convertClothes(outfit) : convertSavedOutfitUpload(outfit))
-      finalItems.occasion = occasion
-      
-      try {
-        const res = await api.post(
-          'api/v1/outfit',
-          finalItems,
-          {
-            headers: {
-              'Authorization' : `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        await setOutfits(token || "")
-        setSave(true)
-      } catch (error: any) {
-        console.error('Upload error:', error.response?.data || error.message);
-      } finally{
-        setLoading(false)
-      }
-    })
+  const handleSaveAll = async () => {
+      const upload = outfits.map(async (_, index)=>{  
+        handleSave(index)
+      })
+      await Promise.all(upload)
+
+      setSave(true)
     console.log("Uploaded Successfully!")
   };
+
+  const handleSave = async (index: number) => {
+    setLoading(true);
+    const outfit = outfits[index];
+    const finalItem: SavedOutfit = (!isSavedOutfit(outfit) ? convertClothes(outfit) : convertSavedOutfitUpload(outfit))
+    finalItem.occasion = occasion
+    try {
+      const res = await api.post(
+        'api/v1/outfit',
+        finalItem,
+        {
+          headers: {
+            'Authorization' : `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      await setOutfits(token || "")
+      maintainOutfitSaved.add(index)
+      setMaintainOutfitSaved(maintainOutfitSaved)
+    } catch (error: any) {
+      console.error('Upload error:', error.response?.data || error.message);
+    } finally{
+      setLoading(false)
+    }
+  }
+
+  const checkSaved = () => {
+    return maintainOutfitSaved.has(activeIndex)
+  }
 
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
@@ -122,13 +136,16 @@ const OutfitPreviewScreen = () => {
         </View>
 
         <View style={styles.bottomButtons}>
-          {saveToLooks?(<Pressable style={styles.saveButton} onPress={handleSaveToLooks} disabled={save}>
+          {
+          saveToLooks?
+          (<Pressable style={styles.saveButton} onPress={async() => await handleSaveAll()} disabled={(maintainOutfitSaved.size == outfits.length) || save}>
             <Icon name="dots-horizontal" size={20} color="#fff" />
-            <Text style={styles.saveButtonText}>{save ? "Saved":"Save to Looks"}</Text>
-          </Pressable>): <></>}
-          <Pressable style={styles.exportButton} onPress={() => {}}>
-            <Text style={styles.exportButtonText}>Export</Text>
-            <Icon name="export-variant" size={20} color="#000" />
+            <Text style={styles.saveButtonText}>{(maintainOutfitSaved.size == outfits.length) || save ? "Saved":"Save All"}</Text>
+          </Pressable>)
+          : <></>
+          }
+          <Pressable style={styles.exportButton} onPress={async () => await handleSave(activeIndex)} disabled={(checkSaved()||save)}>
+            <Text style={styles.exportButtonText}>{(checkSaved()||save)?"Saved":"Save"}</Text>
           </Pressable>
         </View>
     </SafeScreen>

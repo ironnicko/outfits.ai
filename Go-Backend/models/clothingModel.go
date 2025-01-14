@@ -13,7 +13,7 @@ type Clothing struct {
 	UserID        uuid.UUID `json:"user_id"`
 	User          User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 	ClothingURL   string    `gorm:"size:300" json:"url"`
-	Tags []Tags `gorm:"contraint:onUpdate:CASCADE"`
+	Tags          []Tags    `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (u *Clothing) Validate() error {

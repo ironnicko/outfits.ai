@@ -17,6 +17,7 @@ top, bottom, shoe, hat, others
 
 Don't generate less than 5 Tags and no more than 12.
 Tags must be about the clothing rather than the contents in the image.
+Make the tags as specific as possible, try not to be generic like eg: men's fashion. The preceeding example is something that shouldn't be a tag.
 
 Except 'Tags' nothing else will be an array.
 

@@ -193,7 +193,7 @@ const WardrobeScreen = () => {
   const handleGallery = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
-      selectionLimit: 0,
+      selectionLimit: 5,
       quality: 1,
     });
 

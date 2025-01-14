@@ -36,14 +36,14 @@ async def generate_outfits(
         description: <provide description for why this outfit goes together well. Keep it concise and under 150 words.>
     },
     ...]
-    make sure you don't exceed more than 10 combinations, no repetition, and only use the given clothing articles.
+    make sure you don't exceed more than 10 combinations, no repetition.
+    only use the given clothing articles, meaning, ID must be from the given only.
     use the tags given as well in your outfit combinations.
     given articles will be JSON, and you will output in JSON as well.
     if there's no clothing article for a particular type, you may enter a '-1' in there.
     Last set of articles will remain fixed in all combinations, meaning their ID will be constant in all combinations of their respective types. So ensure to create a combination that matches the fixed articles.
     OUTPUT must be only an array of JSON.
-    the ordering of these outfits must be based on how relevant they are to the occasion which will be given.
-    if some clothing doesn't match well based on the occasion you can skip it.
+    if some clothing doesn't match well based on the occasion you can skip it. Ex: pants can't me worn for working out.
     Try not to give single clothing outfit recommendations if possible.
     Here's the clothing articles:
 

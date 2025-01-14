@@ -31,7 +31,7 @@ func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, 
 	err := db.Table("(?) AS sub", subquery).
 		Select("clothing_id AS id").
 		Where("cos_sim >= ?", 0.2).
-		Order("cos_sim").
+		Order("cos_sim DESC").
 		Scan(&clothings).Error
 
 	return clothings, err
