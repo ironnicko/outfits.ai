@@ -1,17 +1,21 @@
 services:
   rembg:
-    image: danielgatis/rembg
+    build:
+      context: Segment/
+      dockerfile: Dockerfile-rembg
     platform: linux/arm64
-    environment:
-      - U2NET_HOME=/var/lib/.u2net/
     ports:
       - "7001:7001"
     volumes:
       - pgdata:/var/lib/.u2net/
-    command: >
-      s --host 0.0.0.0 --port 7001 --log_level info
     networks:
       - outfits-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:7001"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
   segment:
     image: ironnicko1413/outfits.ai-segment:latest
@@ -31,6 +35,12 @@ services:
       - pgdata:/var/lib/.u2net/
     networks:
       - outfits-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8001"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
 
   backend:
@@ -44,33 +54,18 @@ services:
       - ./.env
     environment:
       - PRODUCTION=prod
-
     networks:
       - outfits-ai-network
     ports:
       - "8000:8000"
+    depends_on:
+      segment:
+        condition: service_healthy
+        restart: true
+      rembg:
+        condition: service_healthy
+        restart: true
 
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
-    # links:
-    #   - postgres
-
-  # postgres:
-  #   image: pgvector/pgvector:pg17
-  #   container_name: postgres
-  #   env_file:
-  #     - ./.env
-  #   ports:
-  #     - "5432:5432"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 1s
-  #     retries: 5
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   networks:
-  #     - outfits-ai-network
   # frontend:
   #   image: ironnicko1413/outfits.ai-frontend:latest
   #   build:

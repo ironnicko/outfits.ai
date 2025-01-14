@@ -1,0 +1,9 @@
+FROM danielgatis/rembg
+
+RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV U2NET_HOME=/var/lib/.u2net/
+
+EXPOSE 7001
+
+CMD ["s", "--host", "0.0.0.0", "--port", "7001", "--log_level", "info"]
