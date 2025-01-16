@@ -6,27 +6,17 @@ import {useNavigation} from '@react-navigation/native';
 import {Asset, CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import { AuthState } from '../store/authStore';
 import { useAuthStore } from '../store/authStore';
-import { Clothes, useClothingStore } from '../store/clothingStore';
+import {  useClothingStore } from '../store/clothingStore';
 import { MixMatchItems, NavigationProp } from '../types/types';
 import { api } from '../utils/api';
 import { LoadingScreen } from '../components/LoadingScreen';
-import ClothingCard from '../components/ClothingCard';
 
 
 const MixAndMatchScreen = () => {
-
-  const screenWidth = Dimensions.get('window').width;
-  const padding = 16;
-  const gap = 20;
-  const numColumns = 2;
-  const cardWidth = (screenWidth - (padding * 5) - (gap * (numColumns - 1))) / numColumns;
   const navigation = useNavigation<NavigationProp>();
-  const [file, setFile] = useState<Asset>()
-  const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const setClothes = useClothingStore((state) => state.fetch)
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
-
+  const token = useAuthStore((state: AuthState) => state.token)
 
   
   const fetchClothes = async () => {
@@ -53,8 +43,6 @@ const MixAndMatchScreen = () => {
           }
         },
       );
-    } else {
-      setShowImagePickerModal(true);
     }
   };
 
@@ -107,7 +95,6 @@ const handleUpload = async (file: Asset) => {
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets[0]) {
-        setFile(response.assets[0])
         await handleUpload(response.assets[0]);
 
       }
@@ -132,7 +119,6 @@ const handleUpload = async (file: Asset) => {
       } else if (response.errorCode) {
         console.log('Camera Error: ', response.errorMessage);
       } else if (response.assets && response.assets[0]) {
-        setFile(response.assets[0])
         await handleUpload(response.assets[0]);
       }
     } catch (error) {
