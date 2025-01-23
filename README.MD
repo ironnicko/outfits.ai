@@ -15,6 +15,7 @@ outfits.ai is a sophisticated mobile application designed to revolutionize wardr
 - **Smart Recommendations**: AI-powered outfit suggestions
 - **Cross-Device Sync**: Seamless experience across platforms
 - **Inventory Tracking**: Monitor clothing items and usage
+- **[TO DO] Auto-Cart Addition**: Add your shopping cart items into the app without having to upload
 
 ## 🚀 Technologies
 
