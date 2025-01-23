@@ -3,10 +3,10 @@ import { StyleSheet, View, Image, TouchableOpacity, Dimensions, FlatList, Scroll
 import { Text } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { NavigationProp, RootStackParamList } from '../types/types';
-import SafeScreen from '../components/SafeScreen';
-import { Clothes } from '../store/clothingStore';
-import ClothingCard from '../components/ClothingCard';
+import { NavigationProp, RootStackParamList } from '../../types/types';
+import SafeScreen from '../../components/SafeScreen';
+import { Clothes } from '../../store/clothingStore';
+import ClothingCard from '../../components/ClothingCard';
 
 
 type RouteProps = RouteProp<RootStackParamList, 'MixAndMatchResult'>;

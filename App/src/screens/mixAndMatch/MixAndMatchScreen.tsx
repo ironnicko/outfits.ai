@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, ScrollView, Platform, ActionSheetIOS, Dimensions} from 'react-native';
 import {Text, Button, IconButton} from 'react-native-paper';
-import SafeScreen from '../components/SafeScreen';
+import SafeScreen from '../../components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
 import {Asset, CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import { AuthState } from '../store/authStore';
-import { useAuthStore } from '../store/authStore';
-import {  useClothingStore } from '../store/clothingStore';
-import { MixMatchItems, NavigationProp } from '../types/types';
-import { api } from '../utils/api';
-import { LoadingScreen } from '../components/LoadingScreen';
+import { AuthState } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore';
+import {  useClothingStore } from '../../store/clothingStore';
+import { MixMatchItems, NavigationProp } from '../../types/types';
+import { api } from '../../utils/api';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 
 const MixAndMatchScreen = () => {

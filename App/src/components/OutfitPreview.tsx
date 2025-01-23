@@ -77,9 +77,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   hatPosition: {
-    top: '5%',
+    top: '0%',
     left: '50%',
     transform: [{ translateX: -90 }],
+    padding: "auto"
   },
   topPosition: {
     top: '22%',

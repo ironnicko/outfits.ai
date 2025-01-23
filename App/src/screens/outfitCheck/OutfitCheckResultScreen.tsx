@@ -3,8 +3,8 @@ import { StyleSheet, View, Image, Pressable, ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { RootStackParamList } from '../types/types';
-import SafeScreen from '../components/SafeScreen';
+import { RootStackParamList } from '../../types/types';
+import SafeScreen from '../../components/SafeScreen';
 
 type RouteProps = RouteProp<RootStackParamList, 'OutfitCheckResult'>;
 

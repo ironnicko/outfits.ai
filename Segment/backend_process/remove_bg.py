@@ -4,7 +4,7 @@ import aiohttp
 from dotenv import dotenv_values
 from os import listdir, environ
 from PIL import Image
-
+from io import BytesIO
 
 check_local = ".env.local" in listdir()
 
@@ -12,6 +12,17 @@ config = {
     **environ,
     **dotenv_values(".env" + ["", ".local"][check_local]),
 }
+
+
+def type_resize(image: str, type: str) -> None:
+    if type == "shoe":
+        img = Image.open(BytesIO(image))
+        img = img.resize((450, 450), Image.LANCZOS)
+        file_bytes = io.BytesIO()
+        img.save(file_bytes, "png")
+        file_bytes = file_bytes.getvalue()
+        image = file_bytes
+    return image
 
 
 async def send_post_request(url, file_bytes, metadata, model):

@@ -10,11 +10,11 @@ import {
   CameraOptions,
 } from 'react-native-image-picker';
 import {useNavigation} from '@react-navigation/native';
-import SafeScreen from '../components/SafeScreen';
-import { api } from '../utils/api';
-import { AuthState, useAuthStore } from '../store/authStore';
-import { LoadingScreen } from '../components/LoadingScreen';
-import { NavigationProp } from '../types/types';
+import SafeScreen from '../../components/SafeScreen';
+import { api } from '../../utils/api';
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { LoadingScreen } from '../../components/LoadingScreen';
+import { NavigationProp } from '../../types/types';
 
 
 const OutfitCheckScreen = () => {
@@ -154,7 +154,7 @@ const handleUpload = async (file: Asset) => {
           <View style={styles.examplesContainer}>
             <View style={styles.imageContainer}>
               <Image
-                source={require('../assets/example-w.png')}
+                source={require('../../assets/example-w.png')}
                 style={styles.exampleImage}
               />
               <View style={styles.wrongIndicator}>
@@ -164,7 +164,7 @@ const handleUpload = async (file: Asset) => {
 
             <View style={styles.imageContainer}>
               <Image
-                source={require('../assets/example-r.png')}
+                source={require('../../assets/example-r.png')}
                 style={styles.exampleImage}
               />
               <View style={styles.correctIndicator}>
