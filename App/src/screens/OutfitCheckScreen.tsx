@@ -22,7 +22,7 @@ const OutfitCheckScreen = () => {
 
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const token = useAuthStore((state: AuthState) => state.token)
 
 
   const handleImagePicker = () => {

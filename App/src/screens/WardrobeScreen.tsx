@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, RefreshControl, FlatList } from 'react-native';
 import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -33,13 +33,13 @@ const WardrobeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [check, setCheck] = useState(true);
+  const check = useRef(true);
   const [refresh, setRefresh] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
   const fetchClothes = useClothingStore((state) => state.fetch)
   const clothes = useClothingStore((state) => state.clothes);
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const token = useAuthStore((state: AuthState) => state.token)
 
   const renderItem = ({ item } : {item : Clothes}) => (
     <View style={[styles.gridItem, { width: cardWidth }]}>
@@ -94,14 +94,17 @@ const WardrobeScreen = () => {
   useEffect(() => {
     setClothes()
 
-    if (check){
+    if (check.current == true){
       const checkInterval = setInterval(async () => {
         const getClothes = await fetchClothes(token || " ");
+        console.log("In...")
         if (getClothes.every((clothing) => !!clothing.url)){
-          setCheck(false)
+          check.current = false
+          clearInterval(checkInterval)
         }
       }, 2500);
       return () => clearInterval(checkInterval);
+    } else{
     }
   }, [refresh])
   const categoryCounts = useMemo(() => {
@@ -184,6 +187,7 @@ const WardrobeScreen = () => {
 
 
       setLoading(true)
+      check.current = true
       await handleUpload(result.assets[0])
       setLoading(false)
       setRefresh(!refresh)
@@ -199,7 +203,7 @@ const WardrobeScreen = () => {
 
     if (result.assets) {
       setLoading(true)
-      setCheck(true)
+      check.current = true
       const uploadPromises = result.assets.map(file => handleUpload(file));
       await Promise.all(uploadPromises);
       setLoading(false)

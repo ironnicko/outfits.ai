@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: rembg
+  name: rembg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: rembg
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.35.0 (HEAD)
+      labels:
+        io.kompose.service: rembg
+    spec:
+      containers:
+        - image: ironnicko1413/outfits.ai-rembg:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - http://localhost:7001
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+          name: rembg
+          ports:
+            - containerPort: 7001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/.u2net
+              name: pgdata
+      restartPolicy: Always
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: pgdata

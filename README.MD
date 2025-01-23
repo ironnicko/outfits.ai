@@ -6,7 +6,7 @@ outfits.ai is a sophisticated mobile application designed to revolutionize wardr
 
 ### Check out the video demonstration below:
 
-[![Video Title](https://i9.ytimg.com/vi/Hv4JNLxeppo/mqdefault.jpg?sqp=CLzalbwG-oaymwEmCMACELQB8quKqQMa8AEB-AHUBoAC4AOKAgwIABABGGUgZShlMA8%3D&rs=AOn4CLACm2AZNEDBMRj1AQ1Nb4uNlGDypA&retry=4)](https://www.youtube.com/watch?v=Hv4JNLxeppo)
+[![Video Title](https://i9.ytimg.com/vi/Hv4JNLxeppo/mqdefault.jpg?sqp=CLzalbwG-oaymwEmCMACELQB8quKqQMa8AEB-AHUBoAC4AOKAgwIABABGGUgZShlMA8%3D&rs=AOn4CLACm2AZNEDBMRj1AQ1Nb4uNlGDypA&retry=4)](https://www.youtube.com/watch?v=ML2DYIvcke8)
 
 ## 🌟 Features
 

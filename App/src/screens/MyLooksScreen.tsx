@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, FlatList, Pressable, RefreshControl, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import SafeScreen from '../components/SafeScreen';
@@ -12,15 +12,19 @@ import { NavigationProp } from '../types/types';
 
 const MyLooksScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [loading, setLoading] = useState(true);
+
   const [refresh, setRefresh] = useState(false);
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const token = useAuthStore((state: AuthState) => state.token)
   const outfits = useOutfitStore((state) => state.outfits)
   const setOutfits = useOutfitStore((state) => state.fetch)
+  const deletingLooks = useRef<Set<string>>(new Set<string>())
   const fetchOutfits = async () => {
     await setOutfits(token|| "")
-    setLoading(false)
   };
+  
+  useEffect(() => {
+    fetchOutfits()
+  }, [refresh])
 
   const handleDeleteItem = (item: string) => {
     Alert.alert(
@@ -35,7 +39,6 @@ const MyLooksScreen = () => {
           text: 'Delete',
           onPress: async () => {
             try {
-              setLoading(true);
               await api.delete(`/api/v1/outfit/${item}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -44,8 +47,6 @@ const MyLooksScreen = () => {
               setRefresh(!refresh);
             } catch (error) {
               console.error('Delete error:', error);
-            } finally {
-              setLoading(false);
             }
           },
           style: 'destructive',
@@ -54,12 +55,11 @@ const MyLooksScreen = () => {
     );
   };
   
-  
-  useEffect(() => {
-    fetchOutfits()
-  }, [refresh])
-  const renderOutfit = (item : SavedOutfit) => (
-    
+  const renderOutfit = (item : SavedOutfit) => {
+    if (deletingLooks.current.has(item.ID || "")){
+      return <LoadingScreen />
+    }
+    return (
     <Pressable 
       style={styles.outfitCard}
       onLongPress={() =>{handleDeleteItem(item.ID || "")}}
@@ -74,33 +74,28 @@ const MyLooksScreen = () => {
         {new Date(item.CreatedAt || "").toLocaleDateString()}
       </Text>
     </Pressable>
-  );
+  )};
 
   return (
     <SafeScreen>
-      {loading? <LoadingScreen /> : (
-        <>
-        <View 
-         style={styles.container}>
-        <Text style={styles.title}>My Looks</Text>
-        {(outfits || []).length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text>No saved outfits yet</Text>
-          </View>
-        ) : 
-          <FlatList
-            data={outfits}
-            renderItem={({item} ) => renderOutfit(item)}
-            keyExtractor={item => item.ID || ""}
-            contentContainerStyle={styles.listContainer}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={() => {
-              setRefresh(!refresh)
-            }} />}
-            />}
-            </View>
-          </>
-          )
-        }
+      <View 
+        style={styles.container}>
+      <Text style={styles.title}>My Looks</Text>
+      {(outfits || []).length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text>No saved outfits yet</Text>
+        </View>
+      ) : 
+        <FlatList
+          data={outfits}
+          renderItem={({item} ) => renderOutfit(item)}
+          keyExtractor={item => item.ID || ""}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={() => {
+            setRefresh(!refresh)
+          }} />}
+          />}
+        </View>
     </SafeScreen>
   );
 };

@@ -1,5 +1,6 @@
 services:
   rembg:
+    image: ironnicko1413/outfits.ai-rembg:latest
     build:
       context: Segment/
       dockerfile: Dockerfile-rembg

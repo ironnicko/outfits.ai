@@ -19,7 +19,7 @@ export interface SelectedClothing extends Clothes{
 const GenerateOutfitsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const token = useAuthStore((state: AuthState) => state.token)
   const [selectedItems, setSelectedItems] = useState<SelectedClothing[]>([
     // Initialize with default selected items
     { type: 'top' },

@@ -8,6 +8,8 @@ silueta.onnx
 *har_and_cookies
 outfits.ai.mp4
 
+env-configmap.yaml
+
 # C extensions
 *.so
 *variables.tf

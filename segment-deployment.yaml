@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.35.0 (HEAD)
+  labels:
+    io.kompose.service: segment
+  name: segment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: segment
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.35.0 (HEAD)
+      labels:
+        io.kompose.service: segment
+    spec:
+      containers:
+        - env:
+            - name: ANON
+              valueFrom:
+                configMapKeyRef:
+                  key: ANON
+                  name: env
+            - name: BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: BUCKET_NAME
+                  name: env
+            - name: BUCKET_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: BUCKET_PREFIX
+                  name: env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: env
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_NAME
+                  name: env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: env
+            - name: HF_HOME
+              value: /var/lib/.u2net/
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: JWT_SECRET
+                  name: env
+            - name: MODEL
+              valueFrom:
+                configMapKeyRef:
+                  key: MODEL
+                  name: env
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: PORT
+                  name: env
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: env
+            - name: PRODUCTION
+              value: prod
+            - name: REM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: REM_HOST
+                  name: env
+            - name: SEGMENT_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: SEGMENT_URL
+                  name: env
+            - name: TIMEZONE
+              valueFrom:
+                configMapKeyRef:
+                  key: TIMEZONE
+                  name: env
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  key: URL
+                  name: env
+            - name: VITE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: VITE_PORT
+                  name: env
+          image: ironnicko1413/outfits.ai-segment:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - http://localhost:8001
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+          name: segment
+          ports:
+            - containerPort: 8001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/.u2net
+              name: pgdata
+      restartPolicy: Always
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: pgdata

@@ -51,7 +51,7 @@ const SettingsScreen =  () => {
         {
           text: 'Sign Out',
           onPress: async () => {
-            await supabase.auth.signOut() 
+            await supabase.auth.signOut()
           },
           style: 'destructive',
         },

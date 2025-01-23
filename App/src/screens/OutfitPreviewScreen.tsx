@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, View, Pressable, Dimensions, ScrollView } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,18 +18,12 @@ const OutfitPreviewScreen = () => {
 //   this is for when we are selecting a particular article and want to generate/ or want to select items and just show outfit
   var {occasion, outfits, saveToLooks} = route.params;   
   const [activeIndex, setActiveIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-
   const width = Dimensions.get('window').width;
   const setOutfits = useOutfitStore((state) => state.fetch)
-  const [token, setToken] = useState(useAuthStore((state: AuthState) => state.token));
+  const token = useAuthStore((state: AuthState) => state.token);
   const [save, setSave] = useState(false)
-  const [maintainOutfitSaved, setMaintainOutfitSaved] = useState<Set<number>>(new Set<number>())
-
-  useEffect(() => {
-    setLoading(false);
-  }, [])
-
+  const [refresh, setRefresh] = useState(false);
+  const maintainOutfitSaved = useRef<Set<number>>(new Set<number>())
 
   const handleSaveAll = async () => {
       const upload = outfits.map(async (_, index)=>{  
@@ -42,7 +36,7 @@ const OutfitPreviewScreen = () => {
   };
 
   const handleSave = async (index: number) => {
-    setLoading(true);
+
     const outfit = outfits[index];
     const finalItem: SavedOutfit = (!isSavedOutfit(outfit) ? convertClothes(outfit) : convertSavedOutfitUpload(outfit))
     finalItem.occasion = occasion
@@ -57,18 +51,22 @@ const OutfitPreviewScreen = () => {
           },
         }
       );
-      await setOutfits(token || "")
-      maintainOutfitSaved.add(index)
-      setMaintainOutfitSaved(maintainOutfitSaved)
+      if (res.status == 202){
+        await setOutfits(token || "")
+        maintainOutfitSaved.current.add(index)
+        setRefresh(!refresh)
+
+      } else{
+        throw Error("Upload wasn't successful")
+      }
     } catch (error: any) {
       console.error('Upload error:', error.response?.data || error.message);
     } finally{
-      setLoading(false)
     }
   }
 
   const checkSaved = () => {
-    return maintainOutfitSaved.has(activeIndex)
+    return maintainOutfitSaved.current.has(activeIndex)
   }
 
   const handleScroll = (event: any) => {
@@ -136,18 +134,30 @@ const OutfitPreviewScreen = () => {
         </View>
 
         <View style={styles.bottomButtons}>
-          {
-          saveToLooks?
-          (<Pressable style={styles.saveButton} onPress={async() => await handleSaveAll()} disabled={(maintainOutfitSaved.size == outfits.length) || save}>
-            <Icon name="dots-horizontal" size={20} color="#fff" />
-            <Text style={styles.saveButtonText}>{(maintainOutfitSaved.size == outfits.length) || save ? "Saved":"Save All"}</Text>
-          </Pressable>)
-          : <></>
-          }
-          <Pressable style={styles.exportButton} onPress={async () => await handleSave(activeIndex)} disabled={(checkSaved()||save)}>
-            <Text style={styles.exportButtonText}>{(checkSaved()||save)?"Saved":"Save"}</Text>
-          </Pressable>
-        </View>
+    {saveToLooks ? (
+        <>
+            <Pressable
+                style={styles.saveButton}
+                onPress={handleSaveAll}
+                disabled={(maintainOutfitSaved.current.size === outfits.length) || save}
+            >
+                <Icon name="dots-horizontal" size={20} color="#fff" />
+                <Text style={styles.saveButtonText}>
+                    {(maintainOutfitSaved.current.size === outfits.length) || save ? "Saved" : "Save All"}
+                </Text>
+            </Pressable>
+            <Pressable
+                style={styles.exportButton}
+                onPress={() => handleSave(activeIndex)}
+                disabled={(checkSaved() || save)}
+            >
+                <Text style={styles.exportButtonText}>
+                    {(checkSaved() || save) ? "Saved" : "Save"}
+                </Text>
+            </Pressable>
+        </>
+    ) : null}
+</View>
     </SafeScreen>
   );
 };
