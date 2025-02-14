@@ -44,17 +44,17 @@
 
     - name: Copy ENV file
       copy:
-        src: ../.env
+        src: ../../.env
         dest: /home/ec2-user
 
     - name: Copy Compose file
       copy:
-        src: ../compose.yaml
+        src: ../../compose.yml
         dest: /home/ec2-user/compose.yaml
 
     - name: Copy Script file
       copy:
-        src: ../ip.sh
+        src: ../../ip.sh
         dest: /home/ec2-user/
 
     - name: Run the Script
