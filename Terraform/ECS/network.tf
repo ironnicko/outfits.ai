@@ -10,10 +10,10 @@ resource "aws_internet_gateway" "main" {
 
 # Create public subnets
 resource "aws_subnet" "public_subnet" {
-  count             = length(var.public_subnet_cidrs)
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = element(var.public_subnet_cidrs, count.index)
-  availability_zone = element(data.aws_availability_zones.available.names, count.index)
+  count                   = length(var.public_subnet_cidrs)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = element(var.public_subnet_cidrs, count.index)
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
   map_public_ip_on_launch = true
 }
 
@@ -32,7 +32,7 @@ resource "aws_eip" "nat" {
 
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
-  subnet_id    = aws_subnet.public_subnet[0].id  # Place NAT Gateway in a public subnet
+  subnet_id     = aws_subnet.public_subnet[0].id # Place NAT Gateway in a public subnet
 }
 
 # Create route table for public subnets

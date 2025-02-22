@@ -26,7 +26,7 @@ func DeleteClothing(c *fiber.Ctx) error {
 		})
 	}
 	objectKey := "clothing/" + clothing.UserID.String() + "/" + clothing.ClothingType + "/" + clothingID + ".png"
-	if err := deleteS3Object(os.Getenv("BUCKET_NAME"), objectKey); err != nil {
+	if err := DeleteS3Object(os.Getenv("BUCKET_NAME"), objectKey); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete clothing item",
 		})
@@ -42,7 +42,7 @@ func DeleteClothing(c *fiber.Ctx) error {
 	})
 }
 
-func deleteS3Object(bucketName, objectKey string) error {
+func DeleteS3Object(bucketName, objectKey string) error {
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-south-2"),

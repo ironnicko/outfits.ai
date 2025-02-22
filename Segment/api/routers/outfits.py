@@ -43,7 +43,7 @@ async def generate_outfits(
     if there's no clothing article for a particular type, you may enter a '-1' in there.
     Last set of articles will remain fixed in all combinations, meaning their ID will be constant in all combinations of their respective types. So ensure to create a combination that matches the fixed articles.
     OUTPUT must be only an array of JSON.
-    if some clothing doesn't match well based on the occasion you can skip it. Ex: pants can't me worn for working out.
+    if some clothing doesn't match well based on the occasion you can skip it. Ex: pants can't be worn for working out.
     Try not to give single clothing outfit recommendations if possible.
     Here's the clothing articles:
 

@@ -70,7 +70,7 @@ const MixAndMatchResultScreen = () => {
 
         <View style={styles.recommendationContainer}>
           <Icon 
-            name={data.rating > 3 ? "thumb-up" : "thumb-down"} 
+            name={data.rating > 3 ? "thumb-up" : (data.rating == 3 ? "dots-horizontal":"thumb-down")} 
             size={48} 
             color="#000" 
           />
