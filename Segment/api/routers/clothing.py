@@ -2,6 +2,7 @@ import json
 from ..dependencies import prompt, EMBED, LLM, create_response
 from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3, type_resize
 from fastapi import BackgroundTasks, File, UploadFile, Form, HTTPException, APIRouter
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter(
     prefix="/clothing",
@@ -14,7 +15,7 @@ async def run_sam(file, meta_data):
         print("Running Background Task...")
         try:
             rem_bg_image: str = await remove_bg(file, meta_data, "sam")
-            await upload_s3(rem_bg_image, meta_data)
+            upload_s3(rem_bg_image, meta_data)
         except:
             return
 
@@ -55,8 +56,7 @@ async def upload_file(
         if meta_data["type"] == "others":
             return create_response({"error": "invalid clothing type"}, status_code=400)
         rem_bg_image = type_resize(rem_bg_image, meta_data)
-        print("Uploading to S3")
-        await upload_s3(rem_bg_image, meta_data)
+        background_task.add_task(upload_s3, rem_bg_image, meta_data)
 
         text = " ".join(response["Tags"])
         embedding = await get_embeddings([text], **EMBED)

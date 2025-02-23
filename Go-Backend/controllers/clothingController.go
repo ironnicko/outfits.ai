@@ -41,11 +41,9 @@ func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType strin
 	io.Copy(part, fileBuffer)
 
 	writer.WriteField("user_ID", strUID.String())
-
 	writer.WriteField("clothing_ID", strCID)
-
-	// Close the writer to finalize the multipart form
 	writer.Close()
+	
 	return nil
 }
 
