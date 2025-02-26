@@ -51,11 +51,11 @@ const ClosetView = () => {
         className="min-w-[200px] flex-shrink-0 bg-white rounded-lg shadow-md p-4"
       >
         <img
-          src={item.url}
+          src={item.URL}
           alt={`Clothing ${item.ID}`}
           className="h-32 w-full object-cover rounded-lg mb-2"
         />
-        <h2 className="font-semibold">{item.type}</h2>
+        <h2 className="font-semibold">{item.Type}</h2>
         <p>Style: {item.Style || "N/A"}</p>
         <p>Color: {item.Color || "N/A"}</p>
       </div>

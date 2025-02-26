@@ -29,7 +29,7 @@ func JWTProtected() fiber.Handler {
 			})
 		}
 
-		// Now safely access the parts
+		// Safely access the parts
 		scheme := parts[0]
 		if scheme != "Bearer" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -61,10 +61,8 @@ func JWTProtected() fiber.Handler {
 			}
 		}
 
-		// Store user information in the context
 		c.Locals("client", userClient)
 		c.Locals("user", *user)
-		// Proceed to the next handler
 		return c.Next()
 	}
 }

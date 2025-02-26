@@ -1,6 +1,6 @@
 import json
 from ..dependencies import prompt, EMBED, LLM, create_response
-from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3, type_resize
+from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3, type_resize, get_color
 from fastapi import BackgroundTasks, File, UploadFile, Form, HTTPException, APIRouter
 
 router = APIRouter(
@@ -14,9 +14,19 @@ async def run_sam(file, meta_data):
         print("Running Background Task...")
         try:
             rem_bg_image: str = await remove_bg(file, meta_data, "sam")
-            await upload_s3(rem_bg_image, meta_data)
+            upload_s3(rem_bg_image, meta_data)
         except:
             return
+
+
+@router.post("/color")
+async def color(
+    file: UploadFile = File(...),
+    x: str = Form(...),
+    y: str = Form(...),
+):
+    color = await get_color(file, int(x), int(y))
+    return create_response({"red": color[0], "blue": color[1], "green": color[2]})
 
 
 @router.post("/embedding")
@@ -55,8 +65,7 @@ async def upload_file(
         if meta_data["type"] == "others":
             return create_response({"error": "invalid clothing type"}, status_code=400)
         rem_bg_image = type_resize(rem_bg_image, meta_data)
-        print("Uploading to S3")
-        await upload_s3(rem_bg_image, meta_data)
+        background_task.add_task(upload_s3, rem_bg_image, meta_data)
 
         text = " ".join(response["Tags"])
         embedding = await get_embeddings([text], **EMBED)

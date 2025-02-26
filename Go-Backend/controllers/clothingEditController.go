@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	configs "outfits/config"
 	"outfits/models"
@@ -11,6 +14,38 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gofiber/fiber/v2"
 )
+
+func ForwardRequest(c *fiber.Ctx, url string) ([]byte, error) {
+	contentType := string(c.Request().Header.ContentType())
+	body := c.Body()
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return []byte{}, c.Status(500).SendString(err.Error())
+	}
+
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("User-Agent", string(c.Request().Header.UserAgent()))
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, c.Status(502).SendString(err.Error())
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, c.Status(500).SendString(err.Error())
+	}
+
+	return responseBody, c.Status(fiber.StatusAccepted).Send(responseBody)
+}
+
+func GetColor(c *fiber.Ctx) error {
+	url := os.Getenv("SEGMENT_URL") + ":8001/clothing/color"
+	_, req := ForwardRequest(c, url)
+	return req
+}
 
 func DeleteClothing(c *fiber.Ctx) error {
 	db := configs.DB.Db
@@ -26,7 +61,7 @@ func DeleteClothing(c *fiber.Ctx) error {
 		})
 	}
 	objectKey := "clothing/" + clothing.UserID.String() + "/" + clothing.ClothingType + "/" + clothingID + ".png"
-	if err := deleteS3Object(os.Getenv("BUCKET_NAME"), objectKey); err != nil {
+	if err := DeleteS3Object(os.Getenv("BUCKET_NAME"), objectKey); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete clothing item",
 		})
@@ -42,7 +77,7 @@ func DeleteClothing(c *fiber.Ctx) error {
 	})
 }
 
-func deleteS3Object(bucketName, objectKey string) error {
+func DeleteS3Object(bucketName, objectKey string) error {
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("ap-south-2"),

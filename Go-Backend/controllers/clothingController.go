@@ -30,22 +30,17 @@ func ErrorRollBack(c *fiber.Ctx, db *gorm.DB, clothingID uint, errorMessage stri
 	return nil
 }
 func CreateMultiPartFormBody(strUID uuid.UUID, strCID string, clothingType string, writer *multipart.Writer, fileBuffer *bytes.Buffer, fileHeader *multipart.FileHeader) error {
-	// Create a new multipart request to send the file to the FastAPI server
 
 	part, err := writer.CreateFormFile("file", fileHeader.Filename)
 	if err != nil {
 		return err
 	}
-
-	// Copy the file buffer to the multipart form part
 	io.Copy(part, fileBuffer)
 
 	writer.WriteField("user_ID", strUID.String())
-
 	writer.WriteField("clothing_ID", strCID)
-
-	// Close the writer to finalize the multipart form
 	writer.Close()
+
 	return nil
 }
 
@@ -93,7 +88,8 @@ func CreateClothing(c *fiber.Ctx) error {
 		return ErrorRollBack(c, db, clothing.ID, err.Error())
 	}
 
-	go func() error { // Open the file in memory
+	go func() error {
+		// Open the file in memory
 		file, err := fileHeader.Open()
 		if err != nil {
 			db.Delete(&models.Clothing{}, clothing.ID)
@@ -184,4 +180,17 @@ func GetClothing(c *fiber.Ctx) error {
 	db.Where("id = ?", clothing_id).Preload("Tags").Find(&clothing)
 	return c.JSON(clothing)
 
+}
+
+func GetClothingsByIDs(db *gorm.DB, clothes []models.Clothing) ([]models.Clothing, error) {
+	var ids []uint
+	for _, clothing := range clothes {
+		ids = append(ids, clothing.ID)
+	}
+
+	var fetchedClothings []models.Clothing
+	if err := db.Where("id IN ?", ids).Preload("Tags").Find(&fetchedClothings).Error; err != nil {
+		return nil, err
+	}
+	return fetchedClothings, nil
 }

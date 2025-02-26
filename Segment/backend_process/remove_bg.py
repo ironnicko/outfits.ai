@@ -14,6 +14,11 @@ config = {
 }
 
 
+async def get_color(file, x, y):
+    file_bytes = await file.read()
+    return Image.open(BytesIO(file_bytes)).getpixel((x, y))
+
+
 def type_resize(image: str, type: str) -> None:
     if type == "shoe":
         img = Image.open(BytesIO(image))

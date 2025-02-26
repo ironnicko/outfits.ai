@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"mime/multipart"
 	"os"
 	configs "outfits/config"
@@ -18,40 +17,8 @@ func MixAndMatchController(c *fiber.Ctx) error {
 	user := c.Locals("user").(types.UserResponse)
 	db := configs.DB.Db
 
-	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
-
-	file, err := fileHeader.Open()
-	if err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
-	defer file.Close()
-
-	var fileBuffer bytes.Buffer
-	_, err = io.Copy(&fileBuffer, file)
-	if err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-
-	part, err := writer.CreateFormFile("file", fileHeader.Filename)
-	if err != nil {
-		return err
-	}
-
-	io.Copy(part, &fileBuffer)
-
-	writer.Close()
-
 	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/mixandmatch"
-	respBody, err := SendRequest(url, body, writer)
-	if err != nil {
-		return ErrorRollBack(c, nil, 0, err.Error())
-	}
+	respBody, _ := ForwardRequest(c, url)
 
 	var fastAPIResponse struct {
 		Tags      []string `json:"Tags"`

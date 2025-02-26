@@ -6,6 +6,12 @@ resource "aws_cloudwatch_log_group" "ecs_log_group" {
   name = "ecs-log-group"
 }
 
+resource "aws_service_discovery_private_dns_namespace" "outfits" {
+  name        = "Outfits"
+  description = "Namespace for Outfits services"
+  vpc         = aws_vpc.main.id
+}
+
 resource "aws_ecs_task_definition" "segment" {
   family                   = "segment-task"
   requires_compatibilities = ["FARGATE"]
@@ -28,18 +34,18 @@ resource "aws_ecs_task_definition" "segment" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.ecs_log_group.name
-        "awslogs-region"       = var.aws_region  # Change to your region
+        "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
     }
     environmentFiles = [
       {
-        value = "arn:aws:s3:::outfits.ai-bucket/test.env"
+        value = var.s3_env
         type  = "s3"
       }
     ]
     portMappings = [{
-      name  = "segment"
+      name          = "segment"
       containerPort = 8001
       hostPort      = 8001
       protocol      = "tcp"
@@ -70,18 +76,18 @@ resource "aws_ecs_task_definition" "backend" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.ecs_log_group.name
-        "awslogs-region"       = var.aws_region  # Change to your region
+        "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
     }
     environmentFiles = [
       {
-        value = "arn:aws:s3:::outfits.ai-bucket/test.env"
+        value = var.s3_env
         type  = "s3"
       }
     ]
     portMappings = [{
-      name  = "backend"
+      name          = "backend"
       containerPort = 8000
       hostPort      = 8000
       protocol      = "tcp"
@@ -112,18 +118,18 @@ resource "aws_ecs_task_definition" "rembg" {
       logDriver = "awslogs"
       options = {
         "awslogs-group"         = aws_cloudwatch_log_group.ecs_log_group.name
-        "awslogs-region"       = var.aws_region  # Change to your region
+        "awslogs-region"        = var.aws_region
         "awslogs-stream-prefix" = "ecs"
       }
     }
     environmentFiles = [
       {
-        value = "arn:aws:s3:::outfits.ai-bucket/test.env"
+        value = var.s3_env
         type  = "s3"
       }
     ]
     portMappings = [{
-      name  = "rembg"
+      name          = "rembg"
       containerPort = 7001
       hostPort      = 7001
       protocol      = "tcp"
@@ -132,10 +138,10 @@ resource "aws_ecs_task_definition" "rembg" {
 }
 
 
-resource "aws_ecs_service" "segment_service" {
-  name            = "segment-service"
+resource "aws_ecs_service" "rembg_service" {
+  name            = "rembg-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.segment.arn
+  task_definition = aws_ecs_task_definition.rembg.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
@@ -145,6 +151,19 @@ resource "aws_ecs_service" "segment_service" {
     assign_public_ip = true
   }
 
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_private_dns_namespace.outfits.arn
+
+    service {
+      port_name      = "rembg"
+      discovery_name = "rembg"
+      client_alias {
+        port     = 7001
+        dns_name = "rembg"
+      }
+    }
+  }
 }
 
 resource "aws_ecs_service" "backend_service" {
@@ -160,12 +179,16 @@ resource "aws_ecs_service" "backend_service" {
     assign_public_ip = true
   }
 
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_private_dns_namespace.outfits.arn
+  }
 }
 
-resource "aws_ecs_service" "rembg_service" {
-  name            = "rembg-service"
+resource "aws_ecs_service" "segment_service" {
+  name            = "segment-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.rembg.arn
+  task_definition = aws_ecs_task_definition.segment.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
@@ -175,4 +198,18 @@ resource "aws_ecs_service" "rembg_service" {
     assign_public_ip = true
   }
 
+
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_private_dns_namespace.outfits.arn
+
+    service {
+      port_name      = "segment"
+      discovery_name = "segment"
+      client_alias {
+        port     = 8001
+        dns_name = "segment"
+      }
+    }
+  }
 }
