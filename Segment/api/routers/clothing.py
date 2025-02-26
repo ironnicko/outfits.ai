@@ -1,8 +1,7 @@
 import json
 from ..dependencies import prompt, EMBED, LLM, create_response
-from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3, type_resize
+from backend_process import gpt_request, remove_bg, get_embeddings, upload_s3, type_resize, get_color
 from fastapi import BackgroundTasks, File, UploadFile, Form, HTTPException, APIRouter
-from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter(
     prefix="/clothing",
@@ -18,6 +17,16 @@ async def run_sam(file, meta_data):
             upload_s3(rem_bg_image, meta_data)
         except:
             return
+
+
+@router.post("/color")
+async def color(
+    file: UploadFile = File(...),
+    x: str = Form(...),
+    y: str = Form(...),
+):
+    color = await get_color(file, int(x), int(y))
+    return create_response({"red": color[0], "blue": color[1], "green": color[2]})
 
 
 @router.post("/embedding")
