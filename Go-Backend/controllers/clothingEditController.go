@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
-	"mime/multipart"
+	"net/http"
 	"os"
 	configs "outfits/config"
 	"outfits/models"
@@ -16,55 +15,36 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func ForwardRequest(c *fiber.Ctx, url string) ([]byte, error) {
+	contentType := string(c.Request().Header.ContentType())
+	body := c.Body()
+
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return []byte{}, c.Status(500).SendString(err.Error())
+	}
+
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("User-Agent", string(c.Request().Header.UserAgent()))
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, c.Status(502).SendString(err.Error())
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, c.Status(500).SendString(err.Error())
+	}
+
+	return responseBody, c.Status(fiber.StatusAccepted).Send(responseBody)
+}
+
 func GetColor(c *fiber.Ctx) error {
-	x, y := c.FormValue("x"), c.FormValue("y")
-
-	fileheader, err := c.FormFile("file")
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to open the file",
-		})
-	}
-	file, err := fileheader.Open()
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	var fileBuffer bytes.Buffer
-	_, err = io.Copy(&fileBuffer, file)
-	if err != nil {
-		return err
-	}
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", fileheader.Filename)
-	if err != nil {
-		return err
-	}
-
-	// Copy the file buffer to the multipart form part
-	io.Copy(part, &fileBuffer)
-
-	writer.WriteField("x", x)
-	writer.WriteField("y", y)
-	writer.Close()
 	url := os.Getenv("SEGMENT_URL") + ":8001/clothing/color"
-	respBody, err := SendRequest(url, body, writer)
-	if err != nil {
-		return err
-	}
-	var fastAPIResponse struct {
-		Red   int `json:"red"`
-		Blue  int `json:"blue"`
-		Green int `json:"green"`
-	}
-	if err := json.Unmarshal(respBody, &fastAPIResponse); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to deserialize the response",
-		})
-	}
-	return c.Status(fiber.StatusAccepted).JSON(fastAPIResponse)
+	_, req := ForwardRequest(c, url)
+	return req
 }
 
 func DeleteClothing(c *fiber.Ctx) error {

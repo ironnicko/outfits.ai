@@ -37,19 +37,6 @@ func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, 
 	return clothings, err
 }
 
-func GetClothingsByIDs(db *gorm.DB, clothes []models.Clothing) ([]models.Clothing, error) {
-	var ids []uint
-	for _, clothing := range clothes {
-		ids = append(ids, clothing.ID)
-	}
-
-	var fetchedClothings []models.Clothing
-	if err := db.Where("id IN ?", ids).Preload("Tags").Find(&fetchedClothings).Error; err != nil {
-		return nil, err
-	}
-	return fetchedClothings, nil
-}
-
 func GenerateOutfit(c *fiber.Ctx) error {
 	db := configs.DB.Db
 	user := c.Locals("user").(types.UserResponse)
