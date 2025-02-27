@@ -15,6 +15,7 @@ func SetUpOutfitRoutes(group fiber.Router) {
 	clothingRoute.Get("/", middleware.JWTProtected(), controllers.GetOutfits)
 	clothingRoute.Post("/", middleware.JWTProtected(), controllers.CreateOutfit)
 	clothingRoute.Post("/outfitcheck", middleware.JWTProtected(), controllers.OutfitCheck)
+	clothingRoute.Post("/colortherapy", middleware.JWTProtected(), controllers.ColorTherapyController)
 	clothingRoute.Post("/generate-outfits", middleware.JWTProtected(), controllers.GenerateOutfit)
 	clothingRoute.Post("/mixandmatch", middleware.JWTProtected(), controllers.MixAndMatchController)
 
