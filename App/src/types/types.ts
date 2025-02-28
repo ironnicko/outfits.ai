@@ -59,6 +59,16 @@ export type RootStackParamList = {
     imageUri: string | undefined;
   };
   ColorTherapyLanding: undefined;
+  ColorAnalysisResult: {
+    result: {
+      color: string;
+      explanation: string;
+      imageUri: string;
+    };
+  };
+  ColorPaletteScreen: {
+    colors: string[];
+  };
 
 };
 

@@ -27,6 +27,8 @@ import ColorTheoryScreen from '../screens/colourTheory/ColorTherapy';
 import InstructionsScreen from '../screens/colourTheory/InstructionScreen';
 import MainNavigator from './mainNavigator';
 import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
+import ColorAnalysisResultScreen from '../screens/colourTheory/ColorAnalysisResults';
+import ColorPaletteScreen from '../screens/colourTheory/ColorPaletteScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -172,6 +174,8 @@ const RootNavigator = () => {
             <Stack.Screen name="ColorTheory" component={ColorTheoryScreen} />
             <Stack.Screen name="InstructionsScreen" component={InstructionsScreen} />
             <Stack.Screen name="ColorTherapyLanding" component={SelfieAnalysisScreen} />
+            <Stack.Screen name="ColorAnalysisResult" component={ColorAnalysisResultScreen} />
+            <Stack.Screen name="ColorPaletteScreen" component={ColorPaletteScreen} />
           </>
         )}
       </Stack.Navigator>

@@ -91,7 +91,7 @@ const InstructionScreen = () => {
       // if (res.status !== 200) {
       //   throw Error(res.statusText);
       // }
-      // console.log(res.data)
+      console.log(res.data)
       navigation.navigate("ColorAnalysisResult", { data: res.data});
     } catch (error: any) {
       console.error('Upload error:', error.message);
