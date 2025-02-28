@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, View, Pressable, Dimensions, ScrollView } from 'react-native';
+import { 
+  StyleSheet, View, Pressable, Dimensions, ScrollView, Modal, TouchableWithoutFeedback 
+} from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import OutfitPreview from '../components/OutfitPreview';
@@ -24,6 +26,10 @@ const OutfitPreviewScreen = () => {
   const [refresh, setRefresh] = useState(false);
   const maintainOutfitSaved = useRef<Set<number>>(new Set<number>());
 
+  // Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalText, setModalText] = useState('');
+  
   const handleSaveAll = async () => {
     const upload = outfits.map(async (_, index) => {
       handleSave(index);
@@ -85,12 +91,16 @@ const OutfitPreviewScreen = () => {
         <View style={styles.header}>
           <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
           <IconButton
-            icon="information"
+            icon="information-outline"
             size={24}
-            iconColor="#843CA7" // Accent Color Applied
-            onPress={() =>
-              console.log(isSavedOutfit(outfits[activeIndex]) ? outfits[activeIndex].description : '')
-            }
+            iconColor="#843CA7"
+            onPress={() => {
+              const description = isSavedOutfit(outfits[activeIndex]) 
+                ? outfits[activeIndex].description 
+                : "No description available";
+              setModalText(description);
+              setModalVisible(true);
+            }}
           />
         </View>
 
@@ -134,6 +144,22 @@ const OutfitPreviewScreen = () => {
           </>
         ) : null}
       </View>
+
+      {/* Description Modal */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalText}>{modalText}</Text>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeScreen>
   );
 };
@@ -141,7 +167,7 @@ const OutfitPreviewScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA', // Updated Background
+    backgroundColor: '#FAFAFA',
   },
   header: {
     flexDirection: 'row',
@@ -153,22 +179,6 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 24,
-  },
-  ratingButton: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 24,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
   bottomButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -179,16 +189,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: -2 },
     shadowRadius: 4,
-    elevation: 4, // Shadow Effect Added
+    elevation: 4,
   },
   saveButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#843CA7', // Accent Color
+    backgroundColor: '#843CA7',
     padding: 16,
-    borderRadius: 32, // Large Rounded Buttons
+    borderRadius: 32,
     gap: 8,
   },
   saveButtonText: {
@@ -203,43 +213,39 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 32, // Large Rounded Buttons
+    borderRadius: 32,
     borderWidth: 1.5,
-    borderColor: '#843CA7', // Accent Color for Border
+    borderColor: '#843CA7',
     gap: 8,
   },
   exportButtonText: {
-    color: '#843CA7', // Accent Color for Text
+    color: '#843CA7',
     fontSize: 16,
     fontWeight: '600',
   },
-  indicatorContainer: {
-    flexDirection: 'row',
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#D9D9D9',
-    marginHorizontal: 4,
+  modalContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 10,
+    maxWidth: '80%',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
-  indicatorActive: {
-    backgroundColor: '#843CA7', // Accent Color for Active Indicator
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  slide: {
-    width: Dimensions.get('window').width,
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+  modalText: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
   },
 });
 
