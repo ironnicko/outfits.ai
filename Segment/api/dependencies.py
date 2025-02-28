@@ -3,6 +3,7 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import JSONResponse
 import g4f
 from sentence_transformers import SentenceTransformer
+import torch
 
 
 EMBED = {}
@@ -29,9 +30,21 @@ The reply must be plain-text.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # During Start-Up
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        print("Using CUDA")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+        print("Using MPS")
+    else:
+        device = torch.device("cpu")
+        print("Using CPU")
 
+    EMBED["device"] = device
     EMBED["model"] = SentenceTransformer(
         'sentence-transformers/all-MiniLM-L6-v2')
+
+    EMBED["model"].to(device)
     LLM["client"] = g4f.AsyncClient(provider=g4f.Provider.Blackbox)
     yield
     # During Shut-Down

@@ -120,6 +120,57 @@ async def mix_and_match(
         return create_response({"error": "An unexpected error occurred."}, status_code=500)
 
 
+@router.post("/colortherapy")
+async def color_therapy(
+    file: UploadFile = File(...),
+    Data: str = Form(...)
+):
+    try:
+        file_content = await file.read()
+        if not file_content:
+            raise HTTPException(
+                status_code=400, detail="Uploaded file is empty")
+        prompt = """
+        Provided below is the image of a person, based on Color Therapy principles, i.e based on their facial structure, skin color, hair color, eye color, suggest them outfits from the clothes data given below. Suggestion must only include the ID's of clothes.
+
+        
+        An outfit contains the following types of clothing article: 
+        - top
+        - bottom
+        - shoe
+        - hat
+
+        you will output the outfit combinations like the following:
+        [
+        {
+            top : <ID of a top clothing article>, 
+            bottom : <ID of a bottom clothing article>,
+            shoe: <ID of a shoe clothing article>, 
+            hat: <ID of a hat>,
+            description: <provide description for why this outfit goes well for them with respect to Color Therapy Principles. Keep it concise and under 150 words.>
+        },
+        ...]
+        make sure you don't exceed more than 10 combinations, no repetition.
+        only use the given clothing articles, meaning, ID must be from the given only.
+        given articles will be JSON.
+        if there's no clothing article for a particular type, you may enter a '-1' in there.
+        Try not to give single clothing outfit recommendations if possible.
+
+        The reply must be an array of JSON.
+
+        Here's the Clothing Articles:
+        """
+        response: dict = await gpt_request(**LLM, prompt=prompt+Data, img=file_content, filename=file.filename)
+
+        return response
+
+    except HTTPException as http_exc:
+        return create_response({"error": http_exc.detail}, status_code=http_exc.status_code)
+    except Exception as e:
+        print(f"Error during upload processing: {e}")
+        return create_response({"error": "An unexpected error occurred."}, status_code=500)
+
+
 @router.post("/outfitcheck")
 async def outfit_check(
     file: UploadFile = File(...),

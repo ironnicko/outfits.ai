@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"mime/multipart"
 	"os"
 	configs "outfits/config"
 	"outfits/models"
@@ -27,6 +31,59 @@ func CreateOutfit(c *fiber.Ctx) error {
 	})
 }
 
+func ColorTherapyController(c *fiber.Ctx) error {
+	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/colortherapy"
+	db := configs.DB.Db
+	user := c.Locals("user").(types.UserResponse)
+
+	Data := []models.Clothing{}
+
+	if err := db.Preload("Tags").
+		Where("user_id = ?", user.ID.String()).Find(&Data).Error; err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(400).SendString("Missing file in request")
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+	defer src.Close()
+
+	fileWriter, err := writer.CreateFormFile("file", file.Filename)
+	if err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	if _, err = io.Copy(fileWriter, src); err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	jsonData, err := json.Marshal(Data)
+	if err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	if err := writer.WriteField("Data", string(jsonData)); err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	writer.Close()
+
+	responseBody, err := SendRequest(url, body, writer)
+	if err != nil {
+		return c.Status(500).SendString(err.Error())
+	}
+
+	return c.Status(fiber.StatusAccepted).Send(responseBody)
+}
 func OutfitCheck(c *fiber.Ctx) error {
 	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/outfitcheck"
 	_, req := ForwardRequest(c, url)
