@@ -6,7 +6,10 @@ async def gpt_request(client, img, filename, prompt):
         [img, filename],
     ] if img else None
     response = await client.chat.completions.create(
-        [{"content": prompt, "role": "user"}], "", images=images)
+        [{"content": prompt, "role": "user"}], 
+        model="gpt-4o-mini",
+        images=images,
+        )
     response = response.choices[0].message.content
 
     response = response.lstrip("```json").rstrip("```")

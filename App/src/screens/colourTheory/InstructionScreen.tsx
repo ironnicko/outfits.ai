@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 const InstructionScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
+  const [loading, setLoading] = useState(false);
   const token = useAuthStore((state: AuthState) => state.token);
   
 
@@ -65,8 +65,8 @@ const InstructionScreen = () => {
       } catch (error) {
         console.log('Error picking image: ', error);
       }
-    };
-
+    }
+;
   const handleSumbit = async (file: Asset) => {
     const formData = new FormData();
     const image = {
@@ -75,7 +75,7 @@ const InstructionScreen = () => {
       name: file.fileName || 'image.jpg'
     };
     formData.append('file', image);
-    // setLoading(true);
+    setLoading(true);
 
     try {
       const res = await api.post(
@@ -88,14 +88,15 @@ const InstructionScreen = () => {
           },
         }
       );
-      if (res.status !== 200) {
-        throw Error(res.statusText);
-      }
+      // if (res.status !== 200) {
+      //   throw Error(res.statusText);
+      // }
+      // console.log(res.data)
       navigation.navigate("ColorAnalysisResult", { data: res.data});
     } catch (error: any) {
-      console.error('Upload error:', error.response?.data || error.message);
+      console.error('Upload error:', error.message);
     } finally {
-      // setLoading(false);
+      setLoading(false);
     }
   };
 

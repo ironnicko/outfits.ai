@@ -133,35 +133,36 @@ async def color_therapy(
         prompt = """
         Analyze the provided image to determine the user's seasonal color type (Spring, Summer, Autumn, or Winter) based on their skin tone, undertone, hair color, and eye color. Then, generate a custom clothing color palette with hex codes that complement their season.
 
-        ### **Steps for Analysis:**
-        1. **Skin Analysis**:
+        ### Steps for Analysis:
+        1. Skin Analysis:
         - Detect the skin tone (Fair, Light, Medium, Tan, Deep).
         - Identify undertones (Warm, Cool, Neutral, Olive).
         
-        2. **Hair Analysis**:
+        2. Hair Analysis:
         - Identify the natural hair color.
         - Determine whether the hair has warm, cool, or neutral tones.
 
-        3. **Eye Analysis**:
+        3. Eye Analysis:
         - Identify the user's eye color.
         - Determine if it has warm or cool tones.
 
-        4. **Determine Seasonal Color Type**:
+        4. Determine Seasonal Color Type:
         - Based on the above features, classify the user into one of the four Korean seasonal color types:
-            - **Spring** (Warm & Light)
-            - **Summer** (Cool & Light)
-            - **Autumn** (Warm & Deep)
-            - **Winter** (Cool & Deep)
+            - Spring (Warm & Light)
+            - Summer (Cool & Light)
+            - Autumn (Warm & Deep)
+            - Winter (Cool & Deep)
 
-        5. **Generate a Custom Color Palette**:
-        - Provide a **clothing color palette** with **at least 10 colors** best suited for the user's season.
+        5. Generate a Custom Color Palette:
+        - Provide a clothing color palette with at least 10 colors best suited for the user's season.
         - Each color should include:
-            - **Name** (e.g., Soft Peach, Cool Lilac)
-            - **Hex Code** (e.g., `#F4A7B9`)
+            - Name (e.g., Soft Peach, Cool Lilac)
+            - Hex Code (e.g., `#F4A7B9`)
 
-        6. **Output the Results in JSON Format**:
-        - The JSON should have the following structure:
-            ```json
+        Output the Results in JSON Format:
+        - The OUTPUT must be an array of JSON with the following structure and no other text:
+        ex:
+        [
             {
             "seasonal_color_type": "Spring",
             "skin_tone": "Light",
@@ -178,11 +179,13 @@ async def color_therapy(
                 {"name": "Light Periwinkle", "hex": "#C3CDE6"},
                 {"name": "Sunflower Yellow", "hex": "#FFC300"}
             ]
-            }
-            ```
+            },
+            ...
+        ]
+
 
         """
-        response: dict = await gpt_request(**LLM, prompt=prompt+Data, img=file_content, filename=file.filename)
+        response: dict = await gpt_request(**LLM, prompt=prompt, img=file_content, filename=file.filename)
 
         return response
 
