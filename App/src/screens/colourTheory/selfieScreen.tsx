@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
+import {IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
 const SelfieAnalysisScreen = () => {
@@ -8,6 +9,11 @@ const SelfieAnalysisScreen = () => {
   return (
     <View style={styles.container}>
       {/* Title & Description */}
+      <View style={styles.header}>
+          {navigation.canGoBack() && (
+              <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
+            )}
+        </View>
       <Text style={styles.title}>It’s time to unlock your style formula!</Text>
       <Text style={styles.description}>
         With a selfie, we will analyze your facial features and complexion to determine your 
@@ -42,6 +48,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',  // Updated background color
     paddingHorizontal: 20,
     justifyContent: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    marginBottom: 16,
+    alignContent:'center'
   },
   title: {
     fontSize: 22,

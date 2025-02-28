@@ -41,7 +41,7 @@ const GenerateOutfitsScreen = () => {
   const clothingItems: SelectedClothing[] = [
     { type: 'hat', Icon: 'hat-fedora', Size: 48 },
     { type: 'top', Icon: 'tshirt-crew', Size: 64 },
-    { type: 'bottom', Icon: 'lingerie', Size: 64 },
+    { type: 'bottom', Icon: '../../assets/pants.svg', Size: 64 },
     { type: 'shoe', Icon: 'shoe-formal', Size: 48 },
   ];
 
@@ -85,7 +85,7 @@ const GenerateOutfitsScreen = () => {
     const isSelected = !!selectedItem;
     const hasWardrobe = !!selectedItem;
     const hasURL = !!selectedItem?.url;
-
+  
     return (
       <Pressable
         key={item.type}
@@ -95,28 +95,27 @@ const GenerateOutfitsScreen = () => {
           styles.clothingItem,
           isSelected && styles.selectedItem,
           hasWardrobe && styles.wardrobeItem,
-        ]}>
-        {loading ? 
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-        :(hasURL ? (
+        ]}
+      >
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        ) : hasURL ? (
           <View style={styles.selectedItemContent}>
-            <Image 
-              source={{ uri: selectedItem.url || " " }}
-              style={styles.selectedItemImage}
-            />
+            <Image source={{ uri: selectedItem.url || " " }} style={styles.selectedItemImage} />
             <View style={styles.checkmark}>
-              <Icon name="check" size={16} color="#fff"/>
+              <Icon name="check" size={16} color="#fff" />
             </View>
           </View>
-        ) : (
-          <Icon
-            name={item.Icon || ""}
-            size={item.Size}
-            color={isSelected ? '#fff' : '#843CA7'}
+        ) : item.type === "bottom" ? (
+          <Image
+            source={require("../../assets/pants.png")} // Load pants as normal image
+            style={{ width: item.Size, height: item.Size, tintColor: isSelected ? "#fff" : "#843CA7" }}
           />
-        ))}
+        ) : (
+          <Icon name={item.Icon || ""} size={item.Size} color={isSelected ? "#fff" : "#843CA7"} />
+        )}
       </Pressable>
     );
   };
@@ -256,6 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     marginBottom: 16,
+    alignContent:'center'
   },
   headerText: {
     color: '#666',

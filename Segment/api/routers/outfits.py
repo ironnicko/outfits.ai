@@ -131,34 +131,56 @@ async def color_therapy(
             raise HTTPException(
                 status_code=400, detail="Uploaded file is empty")
         prompt = """
-        Provided below is the image of a person, based on Color Therapy principles, i.e based on their facial structure, skin color, hair color, eye color, suggest them outfits from the clothes data given below. Suggestion must only include the ID's of clothes.
+        Analyze the provided image to determine the user's seasonal color type (Spring, Summer, Autumn, or Winter) based on their skin tone, undertone, hair color, and eye color. Then, generate a custom clothing color palette with hex codes that complement their season.
 
+        ### **Steps for Analysis:**
+        1. **Skin Analysis**:
+        - Detect the skin tone (Fair, Light, Medium, Tan, Deep).
+        - Identify undertones (Warm, Cool, Neutral, Olive).
         
-        An outfit contains the following types of clothing article: 
-        - top
-        - bottom
-        - shoe
-        - hat
+        2. **Hair Analysis**:
+        - Identify the natural hair color.
+        - Determine whether the hair has warm, cool, or neutral tones.
 
-        you will output the outfit combinations like the following:
-        [
-        {
-            top : <ID of a top clothing article>, 
-            bottom : <ID of a bottom clothing article>,
-            shoe: <ID of a shoe clothing article>, 
-            hat: <ID of a hat>,
-            description: <provide description for why this outfit goes well for them with respect to Color Therapy Principles. Keep it concise and under 150 words.>
-        },
-        ...]
-        make sure you don't exceed more than 10 combinations, no repetition.
-        only use the given clothing articles, meaning, ID must be from the given only.
-        given articles will be JSON.
-        if there's no clothing article for a particular type, you may enter a '-1' in there.
-        Try not to give single clothing outfit recommendations if possible.
+        3. **Eye Analysis**:
+        - Identify the user's eye color.
+        - Determine if it has warm or cool tones.
 
-        The reply must be an array of JSON.
+        4. **Determine Seasonal Color Type**:
+        - Based on the above features, classify the user into one of the four Korean seasonal color types:
+            - **Spring** (Warm & Light)
+            - **Summer** (Cool & Light)
+            - **Autumn** (Warm & Deep)
+            - **Winter** (Cool & Deep)
 
-        Here's the Clothing Articles:
+        5. **Generate a Custom Color Palette**:
+        - Provide a **clothing color palette** with **at least 10 colors** best suited for the user's season.
+        - Each color should include:
+            - **Name** (e.g., Soft Peach, Cool Lilac)
+            - **Hex Code** (e.g., `#F4A7B9`)
+
+        6. **Output the Results in JSON Format**:
+        - The JSON should have the following structure:
+            ```json
+            {
+            "seasonal_color_type": "Spring",
+            "skin_tone": "Light",
+            "undertone": "Warm",
+            "hair_color": "Golden Brown",
+            "eye_color": "Hazel",
+            "clothing_color_palette": [
+                {"name": "Soft Peach", "hex": "#FFDAB9"},
+                {"name": "Warm Coral", "hex": "#FF6F61"},
+                {"name": "Golden Beige", "hex": "#F5DEB3"},
+                {"name": "Apricot", "hex": "#E9967A"},
+                {"name": "Mint Green", "hex": "#98FB98"},
+                {"name": "Sky Blue", "hex": "#87CEEB"},
+                {"name": "Light Periwinkle", "hex": "#C3CDE6"},
+                {"name": "Sunflower Yellow", "hex": "#FFC300"}
+            ]
+            }
+            ```
+
         """
         response: dict = await gpt_request(**LLM, prompt=prompt+Data, img=file_content, filename=file.filename)
 

@@ -144,10 +144,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowRadius: 6,
+    shadowOpacity: 0.4, // Increased opacity
+    shadowOffset: { width: 0, height: 3 }, // More shadow at the bottom
+    elevation: 8, // Higher elevation for Android
   },
   bannerText: {
     fontSize: 18,
@@ -175,11 +176,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden', // Allow cropping
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowRadius: 6,
+    shadowOpacity: 0.4, // Increased for better visibility
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
   },
 
   // RIGHT COLUMN
@@ -196,11 +197,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowRadius: 6,
+    shadowOpacity: 0.4, // More opacity for better visibility
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
   },
   mixMatchBox: {
     backgroundColor: '#FFFFFF',
@@ -209,11 +210,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowRadius: 6,
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
   },
 
   // FULL-WIDTH: COLOUR ANALYSIS
@@ -224,12 +225,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',
-    shadowRadius: 5,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
-
+    shadowColor: "#000",
+    shadowRadius: 6,
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
+    
   },
 
   // TEXT INSIDE BOXES
@@ -248,32 +249,33 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 5,
     right: 3,
-    width: 125, // Adjust based on need
-    height: 100, // Adjust based on need
+    width: 125, 
+    height: 100, 
     resizeMode: 'contain',
   },
   CheckOutfitImage: {
     position: 'absolute',
     bottom: -1,
     right: -3,
-    width: 90, // Adjust based on need
-    height:85, // Adjust based on need
+    width: 90,
+    height: 85,
     resizeMode: 'contain',
   },
   MixandMatchImage: {
     position: 'absolute',
     bottom: -1,
     right: -3,
-    width: 90, // Adjust based on need
-    height:85, // Adjust based on need
+    width: 90,
+    height: 85,
     resizeMode: 'contain',
   },
   ColourAnalysisImage: {
     position: 'absolute',
     bottom: -3,
     right: -5,
-    width: 100, // Adjust based on need
-    height:100, // Adjust based on need
-    resizeMode: 'contain',
+    width: 100,
+    height: 100,
+    resizeMode: 'cover',
+    
   },
 });

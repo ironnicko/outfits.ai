@@ -2,64 +2,122 @@ import React, { useState } from 'react';
 import { 
   View, Text, Image, StyleSheet, Pressable, Platform, ActionSheetIOS, Modal 
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary, ImageLibraryOptions,CameraOptions } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { api } from "../../utils/api";
+import { Asset } from "react-native-image-picker";
+import { AuthState, useAuthStore } from "../../store/authStore";
+import { NavigationProp } from '../../types/types';
+import { useNavigation } from '@react-navigation/native';
+
+
+
 
 const InstructionScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState('');
+  const token = useAuthStore((state: AuthState) => state.token);
+  
 
-  const openFrontCamera = () => {
-    launchCamera(
-      {
-        mediaType: 'photo',
-        cameraType: 'front',
-        saveToPhotos: false,
-      },
-      (response) => {
-        if (response.assets && response.assets.length > 0) {
-          const imageUri = response.assets[0].uri;
-          setSelectedImage(imageUri);
-          navigation.navigate("ColorTheory", { imageUri }); // Pass imageUri directly
-        }
+  const openCamera = async () => {
+    const options: CameraOptions = {
+      mediaType: "photo",
+      includeBase64: false,
+      saveToPhotos: true,
+      cameraType: "front",
+    };
+  
+    try {
+      const response = await launchCamera(options);
+      if (response.didCancel) {
+        console.log("User cancelled camera");
+      } else if (response.errorCode) {
+        console.log("Camera Error: ", response.errorMessage);
+      } else if (response.assets && response.assets[0]) {
+        await handleSumbit(response.assets[0]);
       }
-    );
+    } catch (error) {
+      console.log("Error using camera: ", error);
+    }
   };
   
-  const openGallery = () => {
-    launchImageLibrary(
-      {
+  
+  const openGallery = async () => {
+      const options: ImageLibraryOptions = {
         mediaType: 'photo',
-      },
-      (response) => {
-        if (response.assets && response.assets.length > 0) {
-          const imageUri = response.assets[0].uri;
-          setSelectedImage(imageUri);
-          navigation.navigate("ColorTheory", { imageUri }); // Pass imageUri directly
+        includeBase64: false,
+        maxHeight: 2000,
+        maxWidth: 2000,
+        selectionLimit: 1,
+        quality: 1,
+      };
+  
+      try {
+        const response = await launchImageLibrary(options);
+        if (response.didCancel) {
+          console.log('User cancelled image picker');
+        } else if (response.errorCode) {
+          console.log('ImagePicker Error: ', response.errorMessage);
+        } else if (response.assets && response.assets[0]) {
+          await handleSumbit(response.assets[0]);
         }
+      } catch (error) {
+        console.log('Error picking image: ', error);
       }
-    );
+    };
+
+  const handleSumbit = async (file: Asset) => {
+    const formData = new FormData();
+    const image = {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.fileName || 'image.jpg'
+    };
+    formData.append('file', image);
+    // setLoading(true);
+
+    try {
+      const res = await api.post(
+        '/api/v1/outfit/colortherapy',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-type': 'multipart/form-data',
+          },
+        }
+      );
+      if (res.status !== 200) {
+        throw Error(res.statusText);
+      }
+      navigation.navigate("ColorAnalysisResult", { data: res.data});
+    } catch (error: any) {
+      console.error('Upload error:', error.response?.data || error.message);
+    } finally {
+      // setLoading(false);
+    }
   };
+
   
 
   // Handle button click based on platform
   const handleScanFacePress = () => {
     if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Take a Selfie', 'Select from Gallery'],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) openFrontCamera();
-          else if (buttonIndex === 2) openGallery();
+          ActionSheetIOS.showActionSheetWithOptions(
+            {
+              options: ['Cancel', 'Take Picture', 'Select Picture(s)'],
+              cancelButtonIndex: 0,
+            },
+            buttonIndex => {
+              if (buttonIndex === 1) {
+                openCamera();
+              } else if (buttonIndex === 2) {
+                openGallery();
+              }
+            },
+          );
         }
-      );
-    } else {
-      setModalVisible(true); // Open modal for Android
-    }
   };
 
   return (
@@ -103,7 +161,7 @@ const InstructionScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Pressable style={styles.modalOption} onPress={() => { openFrontCamera(); setModalVisible(false); }}>
+            <Pressable style={styles.modalOption} onPress={() => { openCamera(); setModalVisible(false); }}>
               <Icon name="camera" size={24} color="#843CA7" />
               <Text style={styles.modalText}>Take a Selfie</Text>
             </Pressable>

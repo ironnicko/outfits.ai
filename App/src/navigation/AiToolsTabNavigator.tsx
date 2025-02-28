@@ -7,9 +7,9 @@ import { useTheme } from 'react-native-paper';
 import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScreen';
 import OutfitCheckScreen from '../screens/outfitCheck/OutfitCheckScreen';
 import MixAndMatchScreen from '../screens/mixAndMatch/MixAndMatchScreen';
-import ColorTheoryScreen from '../screens/colourTheory/ColorTherapy';
 
 import useNavigationStore from '../store/useNavigationStore';
+import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
 
 const AiTab = createBottomTabNavigator();
 
@@ -83,10 +83,10 @@ const AiToolsTabNavigator: React.FC = () => {
           } as BottomTabNavigationOptions}
         />
         <AiTab.Screen
-          name="ColorTheory"
-          component={ColorTheoryScreen}
+          name="Color Analysis"
+          component={SelfieAnalysisScreen}
           options={{
-            title: 'Color Theory',
+            title: 'Color Analysis',
             tabBarIcon: ({ color, size }) => <Icon name="palette" size={size} color={color} />,
           } as BottomTabNavigationOptions}
         />

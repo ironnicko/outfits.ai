@@ -7,6 +7,7 @@ import useNavigationStore from '../store/useNavigationStore';
 import HomeScreen from '../screens/HomeScreen';
 import InstructionsScreen from '../screens/colourTheory/InstructionScreen';
 import WardrobeScreen from '../screens/WardrobeScreen';
+import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
 
 const MainTab = createBottomTabNavigator();
 
@@ -67,7 +68,7 @@ const MainTabNavigator: React.FC = () => {
       />
       <MainTab.Screen
         name="ColorAnalysis"
-        component={InstructionsScreen}
+        component={SelfieAnalysisScreen}
         options={{
           title: 'Color Analysis',
           tabBarIcon: ({ color, size }) => <Icon name="palette" size={size} color={color} />,
