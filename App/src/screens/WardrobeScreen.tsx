@@ -1,7 +1,20 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, ActionSheetIOS, Platform, Dimensions, RefreshControl, FlatList } from 'react-native';
-import { Text, Searchbar, FAB, Portal, Modal } from 'react-native-paper';
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  Pressable,
+  ActionSheetIOS,
+  Platform,
+  Dimensions,
+  RefreshControl,
+  FlatList,
+  Alert,
+  Modal, // <--- Use RN's built-in Modal for Android image picker
+  Text as RNText,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { FAB } from 'react-native-paper'; // Remove if you don't use react-native-paper
 import SafeScreen from '../components/SafeScreen';
 import ClothingCard from '../components/ClothingCard';
 import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-picker';
@@ -9,461 +22,457 @@ import { api } from '../utils/api';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { Clothes, useClothingStore } from '../store/clothingStore';
 import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { NavigationProp } from '../types/types';
-
-type Category = {
-  Icon: string;
-  Label: string;
-  ID: string;
-};
-
-
-const categories: Category[] = [
-  { ID: 'all', Icon: 'hanger', Label: 'All' },
-  { ID: 'top', Icon: 'tshirt-crew', Label: 'Tops' },
-  { ID: 'bottom', Icon: 'lingerie', Label: 'Bottoms' },
-  { ID: 'shoe', Icon: 'shoe-formal', Label: 'Shoes' },
-  { ID: 'bags', Icon: 'briefcase', Label: 'Bags' },
-  { ID: 'hat', Icon: 'hat-fedora', Label: 'Accessories' },
-];
+import MyLooksScreen from './MyLooksScreen';
 
 const WardrobeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const [activeTab, setActiveTab] = useState<'Pieces' | 'Outfits'>('Pieces');
+
+  // For multi-select filters
+  const [filterType, setFilterType] = useState<string[]>([]);
+  const [filterColor, setFilterColor] = useState<string[]>([]);
+
+  // For dropdown states
+  const [dropdownVisible, setDropdownVisible] = useState<'type' | 'color' | null>(null);
+
+  // For loading & refreshing
   const [loading, setLoading] = useState(true);
-  const check = useRef(true);
   const [refresh, setRefresh] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const check = useRef(true);
+
+  // For image picker on Android
   const [showImagePickerModal, setShowImagePickerModal] = useState(false);
-  const fetchClothes = useClothingStore((state) => state.fetch)
+
+  // Clothing store
+  const fetchClothes = useClothingStore((state) => state.fetch);
   const clothes = useClothingStore((state) => state.clothes);
-  const token = useAuthStore((state: AuthState) => state.token)
+  const token = useAuthStore((state: AuthState) => state.token);
 
-  const renderItem = ({ item } : {item : Clothes}) => (
-    <View style={[styles.gridItem, { width: cardWidth }]}>
-      {!item.url?<LoadingScreen/>:(<ClothingCard
-        imageUrl={item.url || ""}
-        onPress={() => {
-          navigation.navigate('ClothingDetail', { item });
-        }}
-        onLongPress={() => handleDeleteItem(item.ID || " ")}
-      />)}
-    </View>
-  );
-
-  const setClothes = async () => {
-
-    fetchClothes(token || "");
-    setLoading(false);
-  };
-
-  const handleDeleteItem = (item: string) => {
-    Alert.alert(
-      'Delete Item',
-      'Are you sure you want to delete this item from your wardrobe?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              await api.delete(`/api/v1/clothing/${item}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-              setRefresh(!refresh);
-            } catch (error) {
-              console.error('Delete error:', error);
-            } finally {
-              setLoading(false);
-            }
-          },
-          style: 'destructive',
-        },
-      ],
-    );
-  };
-
+  // On mount
   useEffect(() => {
-    setClothes()
-
-    if (check.current == true){
+    loadClothes();
+    if (check.current) {
       const checkInterval = setInterval(async () => {
-        const getClothes = await fetchClothes(token || " ");
-        console.log("In...")
-        if (getClothes.every((clothing) => !!clothing.url)){
-          check.current = false
-          clearInterval(checkInterval)
+        const getClothes = await fetchClothes(token || '');
+        console.log('Checking clothes...');
+        if (getClothes.every((c) => !!c.url)) {
+          check.current = false;
+          clearInterval(checkInterval);
         }
       }, 2500);
       return () => clearInterval(checkInterval);
-    } else{
     }
-  }, [refresh])
-  const categoryCounts = useMemo(() => {
-    return categories.reduce((acc, category) => {
-      acc[category.ID] = (category.ID != 'all' ? clothes.filter(item => item.type === category.ID).length : clothes.length);
-      return acc;
-    }, {} as Record<string, number>);
-  }, [clothes]);
+  }, [refresh]);
 
+  const loadClothes = async () => {
+    await fetchClothes(token || '');
+    setLoading(false);
+  };
 
-  const totalItems = useMemo(() => {
-    return clothes.length;
-  }, [clothes]);
+  // Unique type & color
+  const uniqueTypes = useMemo(
+    () => [...new Set(clothes.map((item) => item.type))].filter(Boolean) as string[],
+    [clothes]
+  );
+  const uniqueColors = useMemo(
+    () => [...new Set(clothes.map((item) => item.color))].filter(Boolean) as string[],
+    [clothes]
+  );
 
+  // Upload handlers
+  const handleUpload = async (file: Asset) => {
+    const formData = new FormData();
+    const image = {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.fileName || 'image.jpg',
+    };
+    formData.append('file', image);
+    try {
+      await api.post('/api/v1/clothing', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } catch (err: any) {
+      console.error('Upload error:', err.message);
+    }
+  };
 
-  const filteredClothes = useMemo(() => {
-    return clothes.filter(item => {
-      const matchesCategory = selectedCategory === 'all' || item.type === selectedCategory;
-      const low_case_items = item.Tags?.map((tag) => tag.tag.toLowerCase())
-      const matchesSearch = (low_case_items || "").includes(searchQuery.toLowerCase());
-      return matchesCategory && (searchQuery === '' || matchesSearch);
-    });
-  }, [selectedCategory, searchQuery, clothes]);
+  const handleCamera = async () => {
+    const result = await launchCamera({ mediaType: 'photo', quality: 1 });
+    if (result.assets && result.assets[0]) {
+      setLoading(true);
+      check.current = true;
+      await handleUpload(result.assets[0]);
+      setLoading(false);
+      setRefresh(!refresh);
+    }
+  };
 
-  const handleImagePicker = async () => {
+  const handleGallery = async () => {
+    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 5, quality: 1 });
+    if (result.assets) {
+      setLoading(true);
+      check.current = true;
+      const uploads = result.assets.map((f) => handleUpload(f));
+      await Promise.all(uploads);
+      setLoading(false);
+      setRefresh(!refresh);
+    }
+  };
+
+  // iOS action sheet
+  const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: ['Cancel', 'Take Picture', 'Select Picture(s)'],
           cancelButtonIndex: 0,
         },
-        buttonIndex => {
-          if (buttonIndex === 1) {
-            handleCamera();
-          } else if (buttonIndex === 2) {
-            handleGallery();
-          }
-        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) handleCamera();
+          else if (buttonIndex === 2) handleGallery();
+        }
       );
     } else {
-
       setShowImagePickerModal(true);
     }
   };
 
-  const handleUpload = async (file: Asset) => {
-    const formData = new FormData();
-    const image = {
-      uri: file.uri,
-      type: file.type || 'image/jpeg',
-      name: file.fileName || 'image.jpg'
-    }
-    formData.append('file', image);
+  // Deletion
+  const handleDeleteItem = (itemId: string) => {
+    Alert.alert('Delete Item', 'Are you sure you want to delete this item?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setLoading(true);
+            await api.delete(`/api/v1/clothing/${itemId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            setRefresh(!refresh);
+          } catch (error) {
+            console.error('Delete error:', error);
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
+  };
 
-    try {
-      const res = await api.post(
-        '/api/v1/clothing',
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+  // Toggle multi-select filters
+  const toggleFilter = (category: 'type' | 'color', value: string) => {
+    if (category === 'type') {
+      setFilterType((prev) =>
+        prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
       );
-
-
-    } catch (error: any) {
-      console.error('Upload error:', error.message);
-    }
-  }
-
-  const handleCamera = async () => {
-    const result = await launchCamera({
-      mediaType: 'photo',
-      quality: 1,
-    });
-
-    if (result.assets && result.assets[0]) {
-
-
-      setLoading(true)
-      check.current = true
-      await handleUpload(result.assets[0])
-      setLoading(false)
-      setRefresh(!refresh)
+    } else {
+      setFilterColor((prev) =>
+        prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+      );
     }
   };
 
-  const handleGallery = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      selectionLimit: 5,
-      quality: 1,
+  // Filter clothes
+  const filteredClothes = useMemo(() => {
+    return clothes.filter((item) => {
+      const matchesType = filterType.length === 0 || filterType.includes(item.type);
+      const matchesColor = filterColor.length === 0 || filterColor.includes(item.color);
+      return matchesType && matchesColor;
     });
+  }, [clothes, filterType, filterColor]);
 
-    if (result.assets) {
-      setLoading(true)
-      check.current = true
-      const uploadPromises = result.assets.map(file => handleUpload(file));
-      await Promise.all(uploadPromises);
-      setLoading(false)
-      setRefresh(!refresh)
-    }
-  };
-
+  // Render
   const screenWidth = Dimensions.get('window').width;
   const padding = 16;
   const gap = 8;
   const numColumns = 2;
-  const cardWidth = (screenWidth - (padding * 2) - (gap * (numColumns - 1))) / numColumns;
+  const cardWidth = (screenWidth - padding * 2 - gap * (numColumns - 1)) / numColumns;
+  const clothingCount = clothes.length;
+
+  const renderItem = ({ item }: { item: Clothes }) => (
+    <View style={[styles.gridItem, { width: cardWidth }]}>
+      {!item.url ? (
+        <LoadingScreen />
+      ) : (
+        <ClothingCard
+          imageUrl={item.url || ''}
+          onPress={() => navigation.navigate('ClothingDetail', { item })}
+          onLongPress={() => handleDeleteItem(item.ID || '')}
+        />
+      )}
+    </View>
+  );
 
   return (
     <SafeScreen>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <Icon name="hanger" size={24} color="#4A6741" />
-            <Text variant="headlineMedium" style={styles.title}>
-              My Wardrobe
-            </Text>
-          </View>
-          <Icon name="chevron-down" size={24} color="#4A6741" />
-        </View>
-
-        {/* Categories */}
-        <View style={styles.statsContainer}>
-          <Text style={styles.totalCount}>{totalItems}</Text>
-          <Text style={styles.totalLabel}>Total</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesScroll}
-          >
-            {categories.map((category, index) => (
-              <Pressable
-                key={index} // Ensure key is on the Pressable component
-                onPress={() => setSelectedCategory(category.ID)}
-                style={[
-                  styles.categoryBubble,
-                  selectedCategory === category.ID && styles.activeCategory,
-                ]}
-              >
-                <Icon
-                  name={category.Icon}
-                  size={24}
-                  color={selectedCategory === category.ID ? '#4A6741' : '#666'}
-                />
-                <Text
-                  style={[
-                    styles.categoryCount,
-                    selectedCategory === category.ID && styles.activeCategoryText,
-                  ]}
-                >
-                  {categoryCounts[category.ID]}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Searchbar
-            placeholder="Search"
-            onChangeText={(query: string) => {
-              setSearchQuery(query);
-            }}
-            value={searchQuery}
-            style={styles.searchBar}
-            iconColor="#4A6741"
-          />
-          <Pressable style={styles.filterButton}>
-            <Icon name="star-outline" size={24} color="#4A6741" />
-          </Pressable>
-        </View>
-
-        {/* Clothing Grid */}
-        {loading ? (
-          <LoadingScreen />
-        ) : (
-          <FlatList
-          data={filteredClothes}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()} 
-          contentContainerStyle={styles.grid} 
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading}
-              onRefresh={() => {
-                setRefresh(!refresh);
-              }}
-            />
-          }
-          numColumns={2}
-        />
-        )}
-
-        <FAB
-          icon="camera"
-          style={styles.fab}
-          color="#fff"
-          size="medium"
-          onPress={handleImagePicker}
-          customSize={56}
-          disabled={loading}
-        />
-
-        {Platform.OS === 'android' && (
-          <Portal>
-            <Modal
-              visible={showImagePickerModal}
-              onDismiss={() => setShowImagePickerModal(false)}
-              contentContainerStyle={styles.modalContainer}
-            >
-              <Pressable
-                style={styles.modalOption}
-                onPress={() => {
-                  handleCamera();
-                  setShowImagePickerModal(false);
-                }}
-              >
-                <Icon name="camera" size={24} color="#4A6741" />
-                <Text style={styles.modalOptionText}>Take Picture</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.modalOption}
-                onPress={async () => {
-                  await handleGallery();
-                  setShowImagePickerModal(false);
-                }}
-              >
-                <Icon name="image-multiple" size={24} color="#4A6741" />
-                <Text style={styles.modalOptionText}>Select Picture(s)</Text>
-              </Pressable>
-
-              <Pressable
-                style={[styles.modalOption, styles.cancelOption]}
-                onPress={() => setShowImagePickerModal(false)}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-            </Modal>
-          </Portal>
-        )}
+      {/* Tabs */}
+      <View style={styles.topBarContainer}>
+        <Pressable
+          style={[styles.topBarItem, activeTab === 'Pieces' && styles.topBarItemActive]}
+          onPress={() => setActiveTab('Pieces')}
+        >
+          <RNText style={[styles.topBarText, activeTab === 'Pieces' && styles.topBarTextActive]}>
+            Pieces
+          </RNText>
+        </Pressable>
+        <Pressable
+          style={[styles.topBarItem, activeTab === 'Outfits' && styles.topBarItemActive]}
+          onPress={() => setActiveTab('Outfits')}
+        >
+          <RNText style={[styles.topBarText, activeTab === 'Outfits' && styles.topBarTextActive]}>
+            Fits
+          </RNText>
+        </Pressable>
       </View>
+
+      {activeTab === 'Pieces' && (
+        <View style={styles.container}>
+          {/* Filter Row */}
+          <View style={styles.filterRow}>
+            {/* Type Filter */}
+            <View style={styles.dropdownContainer}>
+              <Pressable
+                style={styles.filterButton}
+                onPress={() => setDropdownVisible(dropdownVisible === 'type' ? null : 'type')}
+              >
+                <RNText style={styles.filterButtonText}>
+                  {filterType.length > 0 ? filterType.join(', ') : 'Type'}
+                </RNText>
+              </Pressable>
+              {dropdownVisible === 'type' && (
+                <View style={styles.dropdownList}>
+                  {uniqueTypes.map((option) => (
+                    <Pressable
+                      key={option}
+                      style={[
+                        styles.dropdownItem,
+                        filterType.includes(option) && styles.selectedDropdownItem,
+                      ]}
+                      onPress={() => toggleFilter('type', option)}
+                    >
+                      <RNText style={styles.dropdownItemText}>{option}</RNText>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Color Filter */}
+            <View style={styles.dropdownContainer}>
+              <Pressable
+                style={styles.filterButton}
+                onPress={() => setDropdownVisible(dropdownVisible === 'color' ? null : 'color')}
+              >
+                <RNText style={styles.filterButtonText}>
+                  {filterColor.length > 0 ? filterColor.join(', ') : 'Color'}
+                </RNText>
+              </Pressable>
+              {dropdownVisible === 'color' && (
+                <View style={styles.dropdownList}>
+                  {uniqueColors.map((option) => (
+                    <Pressable
+                      key={option}
+                      style={[
+                        styles.dropdownItem,
+                        filterColor.includes(option) && styles.selectedDropdownItem,
+                      ]}
+                      onPress={() => toggleFilter('color', option)}
+                    >
+                      <RNText style={styles.dropdownItemText}>{option}</RNText>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Clothing Grid */}
+          {loading ? (
+            <LoadingScreen />
+          ) : (
+            <FlatList
+              data={filteredClothes}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={styles.grid}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={loading} onRefresh={() => setRefresh(!refresh)} />
+              }
+              numColumns={2}
+              ListHeaderComponent={
+                clothingCount < 10 ? (
+                  <View style={styles.addPieceContainer}>
+                    <Pressable style={styles.addPieceCard} onPress={handleImagePicker}>
+                      <RNText style={styles.addPieceText}>+ Add Piece</RNText>
+                      <RNText style={styles.addPieceSubText}>
+                        {clothingCount}/10 Free pieces
+                      </RNText>
+                    </Pressable>
+                    <Pressable style={styles.upgradeButton}>
+                      <RNText style={styles.upgradeButtonText}>Upgrade</RNText>
+                    </Pressable>
+                  </View>
+                ) : null
+              }
+            />
+          )}
+
+          {/* Floating Action Button (camera) */}
+          <FAB
+            icon="camera"
+            style={styles.fab}
+            color="#fff"
+            size="medium"
+            onPress={handleImagePicker}
+            customSize={56}
+            disabled={loading}
+          />
+
+          {/* Android Image Picker as a RN Modal (if needed) */}
+          <Modal
+            visible={showImagePickerModal}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowImagePickerModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Pressable
+                  style={styles.modalOption}
+                  onPress={() => {
+                    handleCamera();
+                    setShowImagePickerModal(false);
+                  }}
+                >
+                  <Icon name="camera" size={24} color="#843CA7" />
+                  <RNText style={styles.modalOptionText}>Take Picture</RNText>
+                </Pressable>
+
+                <Pressable
+                  style={styles.modalOption}
+                  onPress={async () => {
+                    await handleGallery();
+                    setShowImagePickerModal(false);
+                  }}
+                >
+                  <Icon name="image-multiple" size={24} color="#843CA7" />
+                  <RNText style={styles.modalOptionText}>Select Picture(s)</RNText>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.modalOption, styles.cancelOption]}
+                  onPress={() => setShowImagePickerModal(false)}
+                >
+                  <RNText style={styles.cancelText}>Cancel</RNText>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+
+      {activeTab === 'Outfits' && (
+        <View style={styles.container}>
+          <MyLooksScreen />
+        </View>
+      )}
     </SafeScreen>
   );
 };
 
+export default WardrobeScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  topBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
     paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e6e6e6',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  title: {
-    color: '#4A6741',
-    fontWeight: 'bold',
-  },
-  statsContainer: {
+  topBarItem: {
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    marginBottom: 16,
   },
-  totalCount: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4A6741',
+  topBarItemActive: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#843CA7',
   },
-  totalLabel: {
+  topBarText: {
     fontSize: 16,
-    color: '#4A6741',
-    marginBottom: 12,
-  },
-  categoriesScroll: {
-    flexDirection: 'row',
-    marginTop: 8,
-  },
-  categoryBubble: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#E8ECE6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activeCategory: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#4A6741',
-  },
-  categoryCount: {
-    fontSize: 12,
     color: '#666',
-    marginTop: 4,
   },
-  searchContainer: {
+  topBarTextActive: {
+    color: '#843CA7',
+    fontWeight: 'bold',
+  },
+  filterRow: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
     paddingHorizontal: 16,
-    gap: 12,
-    marginBottom: 16,
   },
-  searchBar: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
+  dropdownContainer: {
+    position: 'relative',
+    width: '40%',
   },
   filterButton: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#843CA7',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 16,
     alignItems: 'center',
   },
-  demoContainer: {
-    backgroundColor: '#F5F5F5',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  demoTitle: {
-    color: '#4A6741',
-    marginBottom: 8,
-  },
-  demoSubtitle: {
+  filterButtonText: {
+    fontSize: 14,
     color: '#666',
-    textAlign: 'center',
-    marginBottom: 16,
   },
-  demoButton: {
-    backgroundColor: '#4A6741',
-    borderRadius: 24,
+  dropdownList: {
+    position: 'absolute',
+    top: 48,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    maxHeight: 200,
+    overflow: 'hidden',
+    zIndex: 10,
   },
-  gridContainer: {
-    flex: 1,
+  dropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  selectedDropdownItem: {
+    backgroundColor: '#EDE7F6',
   },
   grid: {
-    padding: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   gridItem: {
     marginBottom: 8,
@@ -473,47 +482,80 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 8,
   },
-  activeCategoryText: {
-    color: '#4A6741',
-    fontWeight: 'bold',
+  addPieceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingTop: 16,
+  },
+  addPieceCard: {
+    flex: 1,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#843CA7',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  addPieceText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#843CA7',
+    marginBottom: 4,
+  },
+  addPieceSubText: {
+    fontSize: 12,
+    color: '#843CA7',
+  },
+  upgradeButton: {
+    backgroundColor: '#843CA7',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  upgradeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7',
     borderRadius: 28,
     width: 56,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     padding: 20,
-    margin: 20,
+    width: '80%',
     borderRadius: 8,
   },
   modalOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
   modalOptionText: {
     marginLeft: 16,
     fontSize: 16,
-    color: '#4A6741',
+    color: '#843CA7',
   },
   cancelOption: {
     justifyContent: 'center',
@@ -524,5 +566,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
-export default WardrobeScreen; 

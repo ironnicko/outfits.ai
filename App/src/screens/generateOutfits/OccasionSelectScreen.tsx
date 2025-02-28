@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
-import {StyleSheet, View, ScrollView, Pressable} from 'react-native';
-import {Text, IconButton, TextInput, Icon} from 'react-native-paper';
+import React, { useState } from 'react';
+import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
+import { Text, IconButton, TextInput, Icon } from 'react-native-paper';
 import SafeScreen from '../../components/SafeScreen';
-import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../types/types';
 
 const occasions = [
@@ -32,6 +32,7 @@ const OccasionSelectScreen = () => {
   return (
     <SafeScreen>
       <View style={styles.container}>
+        {/* HEADER */}
         <View style={styles.header}>
           <IconButton
             icon="chevron-left"
@@ -43,30 +44,34 @@ const OccasionSelectScreen = () => {
           </Text>
         </View>
 
-        <View style={styles.chatHint}>
-          <Icon source="diamond-stone" size={24} color="#4A6741" />
-          <Text style={styles.chatHintText}>
-            Chat with the AI to generate the perfect occasion for you
-          </Text>
-        </View>
-
+        {/* OCCASION LIST */}
         <ScrollView style={styles.occasionList}>
           {occasions.map((occasion, index) => (
             <Pressable
               key={index}
-              style={styles.occasionItem}
-              onPress={() => handleSelect(occasion)}>
+              style={({ pressed }) => [
+                styles.occasionItem,
+                pressed && styles.occasionItemPressed,
+              ]}
+              onPress={() => handleSelect(occasion)}
+            >
               <Text style={styles.occasionText}>{occasion}</Text>
             </Pressable>
           ))}
           
+          {/* CUSTOM OCCASION BUTTON */}
           <Pressable
-            style={styles.occasionItem}
-            onPress={() => setShowCustomInput(true)}>
+            style={({ pressed }) => [
+              styles.occasionItem,
+              pressed && styles.occasionItemPressed,
+            ]}
+            onPress={() => setShowCustomInput(true)}
+          >
             <Text style={styles.occasionText}>+ Custom Occasion</Text>
           </Pressable>
         </ScrollView>
 
+        {/* CUSTOM OCCASION INPUT FIELD */}
         {showCustomInput && (
           <View style={styles.customInputContainer}>
             <TextInput
@@ -75,6 +80,8 @@ const OccasionSelectScreen = () => {
               value={customOccasion}
               onChangeText={setCustomOccasion}
               style={styles.customInput}
+              outlineColor="#843CA7"
+              activeOutlineColor="#843CA7"
               right={
                 <TextInput.Icon
                   icon="check"
@@ -83,6 +90,7 @@ const OccasionSelectScreen = () => {
                       handleSelect(customOccasion);
                     }
                   }}
+                  color="#843CA7"
                 />
               }
             />
@@ -93,51 +101,54 @@ const OccasionSelectScreen = () => {
   );
 };
 
+/* 📌 STYLING UPDATES */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',  // Updated Background Color
   },
+
+  /* HEADER */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    
   },
   title: {
-    color: '#4A6741',
+    color: '#843CA7',
     flex: 1,
     textAlign: 'center',
-    marginRight: 48,
+    fontSize: 20,
+    fontWeight: '600',
+    marginRight: 48, // Ensures title is centered
   },
-  chatHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E8ECE6',
-    padding: 16,
-    margin: 16,
-    borderRadius: 12,
-    gap: 8,
-  },
-  chatHintText: {
-    color: '#4A6741',
-    flex: 1,
-  },
+
+  /* OCCASION LIST */
   occasionList: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    marginTop: 10,
   },
   occasionItem: {
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
+  occasionItemPressed: {
+    backgroundColor: '#E9D3F5', // Subtle highlight effect
+  },
   occasionText: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#000',
   },
+
+  /* CUSTOM OCCASION INPUT */
   customInputContainer: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
@@ -146,4 +157,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OccasionSelectScreen; 
+export default OccasionSelectScreen;

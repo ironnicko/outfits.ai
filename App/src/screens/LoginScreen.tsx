@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
-import { Text, TextInput, Button } from 'react-native-paper';
+import { Text, TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../components/SafeScreen';
 import { useNavigation } from '@react-navigation/native';
@@ -13,29 +13,27 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secureTextEntry, setSecureTextEntry] = useState(true);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation<NavigationProp>();
 
   const setTokenState = useAuthStore((state: AuthState) => state.setToken);
 
-  
   const handleSignIn = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-       await supabase.auth.signInWithPassword({
+      await supabase.auth.signInWithPassword({
         email: email,
         password: password,
-      })
+      });
     } catch (err: any) {
       console.error(err);
-      // Handle errors (e.g., show a message to the user)
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSocialSignIn = async (provider: 'google' | 'apple') => {
-    setLoading(true)
+    setLoading(true);
     try {
       console.log(`Signing in with ${provider}`);
       const res = await api.post(`/api/v1/user/login/${provider}`, {
@@ -50,9 +48,8 @@ const LoginScreen = () => {
       });
     } catch (err: any) {
       console.error(err);
-      // Handle errors (e.g., show a message to the user)
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,8 +68,8 @@ const LoginScreen = () => {
             disabled={loading}
             mode="outlined"
             style={styles.input}
-            outlineColor="#4A6741"
-            activeOutlineColor="#4A6741"
+            outlineColor="#843CA7"
+            activeOutlineColor="#843CA7"
             autoCapitalize="none"
           />
           <TextInput
@@ -83,8 +80,8 @@ const LoginScreen = () => {
             secureTextEntry={secureTextEntry}
             mode="outlined"
             style={styles.input}
-            outlineColor="#4A6741"
-            activeOutlineColor="#4A6741"
+            outlineColor="#843CA7"
+            activeOutlineColor="#843CA7"
             right={
               <TextInput.Icon
                 icon={secureTextEntry ? 'eye-off' : 'eye'}
@@ -92,13 +89,11 @@ const LoginScreen = () => {
               />
             }
           />
-          <Button
-            mode="contained"
-            style={styles.signInButton}
-              disabled={loading}
-            onPress={handleSignIn}>
-            Sign In
-          </Button>
+          
+          {/* Entire button is pressable now */}
+          <Pressable style={styles.signInButton} disabled={loading} onPress={handleSignIn}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          </Pressable>
         </View>
 
         <View style={styles.dividerContainer}>
@@ -110,14 +105,16 @@ const LoginScreen = () => {
         <View style={styles.socialButtons}>
           <Pressable
             style={[styles.socialButton, styles.googleButton]}
-            onPress={() => handleSocialSignIn('google')}>
+            onPress={() => handleSocialSignIn('google')}
+          >
             <Icon name="google" size={24} color="#000" />
             <Text style={styles.socialButtonText}>Sign in with Google</Text>
           </Pressable>
 
           <Pressable
             style={[styles.socialButton, styles.appleButton]}
-            onPress={() => handleSocialSignIn('apple')}>
+            onPress={() => handleSocialSignIn('apple')}
+          >
             <Icon name="apple" size={24} color="#000" />
             <Text style={styles.socialButtonText}>Sign in with Apple</Text>
           </Pressable>
@@ -136,18 +133,15 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA', // Updated background color
     padding: 16,
-  },
-  backButton: {
-    marginTop: 8,
-    marginBottom: 16,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
+    color: '#843CA7', // Accent color
   },
   inputContainer: {
     gap: 16,
@@ -157,9 +151,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   signInButton: {
-    backgroundColor: '#4A6741',
-    paddingVertical: 8,
-    marginTop: 8,
+    backgroundColor: '#843CA7', // Updated accent color
+    paddingVertical: 12,
+    borderRadius: 32, // Large rounded button
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3, // Shadow for Android
+    width: '100%', // Make sure the entire button area is pressable
+  },
+  signInButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -168,12 +175,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
+    height: 1.5,
+    backgroundColor: '#D3D3D3',
   },
   orText: {
     marginHorizontal: 16,
     color: '#666',
+    fontWeight: '600',
   },
   socialButtons: {
     gap: 16,
@@ -182,11 +190,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    padding: 14,
+    borderRadius: 32, // Large rounded buttons
+    borderWidth: 1.5,
+    borderColor: '#D3D3D3',
     gap: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
   },
   googleButton: {
     backgroundColor: '#fff',
@@ -197,18 +210,20 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontSize: 16,
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   termsText: {
     textAlign: 'center',
     color: '#666',
     marginTop: 'auto',
     marginBottom: 16,
+    fontSize: 14,
   },
   link: {
-    color: '#4A6741',
+    color: '#843CA7', // Updated accent color
     textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 });
 
-export default LoginScreen; 
+export default LoginScreen;

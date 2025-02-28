@@ -16,7 +16,7 @@ const SignupScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignup = async () => {
@@ -24,50 +24,44 @@ const SignupScreen = () => {
       setError('Passwords do not match');
       return;
     }
-    setError("")
-    setLoading(true)
-    
+    setError('');
+    setLoading(true);
+
     try {
-      const {data: {user, session}, error} = await supabase.auth.signUp({
+      const { data: { user, session }, error } = await supabase.auth.signUp({
         email: email,
         password: password,
-        options:{
-          data:{
-            username
-          }
-        }
-      })
+        options: {
+          data: {
+            username,
+          },
+        },
+      });
+
       await api.post('/api/v1/user', {
-        id : user?.id,
+        id: user?.id,
         username,
         email,
         password,
       });
 
-
       if (error) {
-        Alert.alert(error.message)
-        throw error
+        Alert.alert(error.message);
+        throw error;
       }
-      if (!session) Alert.alert('Please check your inbox for email verification!')
-
+      if (!session) Alert.alert('Please check your inbox for email verification!');
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleSocialSignIn = (provider: string) => {
-    // Implement social sign-in logic
-    console.log(`${provider} sign-in`);
   };
 
   return (
     <SafeScreen>
       <View style={styles.container}>
         <Text style={styles.title}>Create Account</Text>
-        
+
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <TextInput
@@ -130,16 +124,12 @@ const SignupScreen = () => {
         <Text style={styles.orText}>or</Text>
 
         <View style={styles.socialButtons}>
-          <Pressable
-            style={[styles.socialButton, styles.googleButton]}
-            onPress={() => handleSocialSignIn('google')}>
+          <Pressable style={[styles.socialButton, styles.googleButton]}>
             <Icon name="google" size={24} color="#000" />
             <Text style={styles.socialButtonText}>Sign up with Google</Text>
           </Pressable>
 
-          <Pressable
-            style={[styles.socialButton, styles.appleButton]}
-            onPress={() => handleSocialSignIn('apple')}>
+          <Pressable style={[styles.socialButton, styles.appleButton]}>
             <Icon name="apple" size={24} color="#000" />
             <Text style={styles.socialButtonText}>Sign up with Apple</Text>
           </Pressable>
@@ -164,6 +154,7 @@ const SignupScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAFA', // Updated background color
     padding: 16,
     justifyContent: 'center',
   },
@@ -172,9 +163,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
+    color: '#843CA7', // Accent color
   },
   input: {
     marginBottom: 16,
+    backgroundColor: '#fff',
   },
   error: {
     color: 'red',
@@ -182,21 +175,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   signupButton: {
-    backgroundColor: '#4A6741',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#843CA7', // Accent color
+    paddingVertical: 12,
+    borderRadius: 32, // Large rounded button
     alignItems: 'center',
-    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3, // Shadow for Android
   },
   signupButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   orText: {
     textAlign: 'center',
     marginVertical: 16,
     color: '#666',
+    fontWeight: '600',
   },
   socialButtons: {
     gap: 16,
@@ -204,13 +202,18 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 8,
+    padding: 14,
+    borderRadius: 32, // Large rounded buttons
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 1.5,
+    borderColor: '#D3D3D3',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
   },
   googleButton: {
     backgroundColor: '#fff',
@@ -221,20 +224,24 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontSize: 16,
     color: '#000',
+    fontWeight: '600',
   },
   termsText: {
     textAlign: 'center',
     color: '#666',
     marginBottom: 16,
+    fontSize: 14,
   },
   link: {
-    color: '#4A6741',
+    color: '#843CA7', // Updated accent color
     textDecorationLine: 'underline',
+    fontWeight: '600',
   },
   switchText: {
     textAlign: 'center',
     color: '#666',
+    fontSize: 14,
   },
 });
 
-export default SignupScreen; 
+export default SignupScreen;

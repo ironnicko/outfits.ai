@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'react-native-url-polyfill/auto';
-
-import TabNavigator from './TabNavigator';
 import OutfitCheckScreen from '../screens/outfitCheck/OutfitCheckScreen';
 import { RootStackParamList } from '../types/types';
 import ClothingDetailScreen from '../screens/ClothingDetailScreen';
@@ -19,12 +17,16 @@ import { clearTokenLocal, clearUsernameLocal } from '../utils/auth';
 import { useAuthStore } from '../store/authStore';
 import { useClothingStore } from '../store/clothingStore';
 import { useOutfitStore } from '../store/outfitStore';
-import { api } from '../utils/api';
 import { Session } from '@supabase/supabase-js';
 import { LoadingScreen } from '../components/LoadingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
+import ColorTheoryScreen from '../screens/colourTheory/ColorTherapy';
+import InstructionsScreen from '../screens/colourTheory/InstructionScreen';
+import MainNavigator from './mainNavigator';
+import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -32,7 +34,6 @@ const RootNavigator = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Zustand store actions
   const {
     clearToken,
     clearUsername,
@@ -156,7 +157,7 @@ const RootNavigator = () => {
 
         ) : (
           <>
-            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen name="MainTabs" component={MainNavigator} />
             <Stack.Screen name="OutfitCheck" component={OutfitCheckScreen} />
             <Stack.Screen name="GenerateOutfits" component={GenerateOutfitsScreen} />
             <Stack.Screen name="OccasionSelect" component={OccasionSelectScreen} />
@@ -167,6 +168,10 @@ const RootNavigator = () => {
             <Stack.Screen name="ClothingDetail" component={ClothingDetailScreen} />
             <Stack.Screen name="OutfitCheckResult" component={OutfitCheckResultScreen} />
             <Stack.Screen name="MixAndMatchResult" component={MixAndMatchResultScreen} />
+            <Stack.Screen name="Profile" component={SettingsScreen} />
+            <Stack.Screen name="ColorTheory" component={ColorTheoryScreen} />
+            <Stack.Screen name="InstructionsScreen" component={InstructionsScreen} />
+            <Stack.Screen name="ColorTherapyLanding" component={SelfieAnalysisScreen} />
           </>
         )}
       </Stack.Navigator>

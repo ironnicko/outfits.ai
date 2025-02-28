@@ -134,11 +134,9 @@ const handleUpload = async (file: Asset) => {
       <View style={styles.container}>
         {/* Header with back button */}
         <View style={styles.header}>
-          <IconButton
-            icon="chevron-left"
-            size={24}
-            onPress={() => navigation.goBack()}
-          />
+        {navigation.canGoBack() && (
+    <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
+  )}
           <Text variant="headlineMedium" style={styles.headerTitle}>
             Outfit Check
           </Text>
@@ -208,7 +206,7 @@ const handleUpload = async (file: Asset) => {
                 openCamera();
                 setShowImagePickerModal(false);
               }}>
-              <Icon name="camera" size={24} color="#4A6741" />
+              <Icon name="camera" size={24} color="#843CA7" />
               <Text style={styles.modalOptionText}>Take Picture</Text>
             </Pressable>
             
@@ -218,7 +216,7 @@ const handleUpload = async (file: Asset) => {
                 openGallery();
                 setShowImagePickerModal(false);
               }}>
-              <Icon name="image-multiple" size={24} color="#4A6741" />
+              <Icon name="image-multiple" size={24} color="#843CA7" />
               <Text style={styles.modalOptionText}>Select Picture</Text>
             </Pressable>
             
@@ -237,7 +235,7 @@ const handleUpload = async (file: Asset) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '##FAFAFA',
   },
   header: {
     flexDirection: 'row',
@@ -248,7 +246,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    color: '#4A6741',
+    color: '#843CA7',
     fontWeight: 'bold',
     marginRight: 48, // To offset the back button and center the title
   },
@@ -259,7 +257,7 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    color: '#4A6741',
+    color: '#843CA7',
     marginVertical: 32,
     lineHeight: 32,
   },
@@ -309,12 +307,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   tipText: {
-    color: '#4A6741',
+    color: '#843CA7',
   },
   uploadButton: {
     margin: 16,
     borderRadius: 32,
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7',
   },
   uploadButtonContent: {
     paddingVertical: 8,
@@ -335,7 +333,7 @@ const styles = StyleSheet.create({
   modalOptionText: {
     marginLeft: 16,
     fontSize: 16,
-    color: '#4A6741',
+    color: '#843CA7',
   },
   cancelOption: {
     justifyContent: 'center',

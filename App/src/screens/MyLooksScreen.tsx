@@ -78,9 +78,7 @@ const MyLooksScreen = () => {
 
   return (
     <SafeScreen>
-      <View 
-        style={styles.container}>
-      <Text style={styles.title}>My Looks</Text>
+      <View style={styles.container}>
       {(outfits || []).length === 0 ? (
         <View style={styles.emptyState}>
           <Text>No saved outfits yet</Text>
@@ -103,13 +101,13 @@ const MyLooksScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
   },
   title: {
     fontSize: 24,
     fontWeight: '600',
     padding: 16,
-    color: '#4A6741',
+    color: '#843CA7',
   },
   outfitCard: {
     backgroundColor: '#fff',
@@ -124,7 +122,7 @@ const styles = StyleSheet.create({
   },
   occasionText: {
     fontSize: 16,
-    color: '#4A6741',
+    color: '#843CA7',
     padding: 16,
     paddingBottom: 8,
   },

@@ -38,6 +38,9 @@ export type RootStackParamList = {
   SelectClothingItem: { type: string; onSelect: (clothing: SelectedClothing) => void };
   OccasionSelect: { onSelect: (occasion: string) => void }
   MixAndMatch: undefined;
+  Profile: undefined;
+  ColorTheory: { imageUri: string };  
+  InstructionsScreen: undefined;
   MixAndMatchResult:
   {
     data: MixMatchItems
@@ -55,12 +58,13 @@ export type RootStackParamList = {
     };
     imageUri: string | undefined;
   };
+  ColorTherapyLanding: undefined;
 
 };
 
 export type MainTabParamList = {
   Home: undefined;
-  MyLooks: undefined;
+  OutfitCheck: undefined;
+  GenerateOutfits: undefined;
   Wardrobe: undefined;
-  Settings: undefined;
 }; 

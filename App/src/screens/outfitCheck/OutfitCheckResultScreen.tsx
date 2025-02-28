@@ -21,7 +21,7 @@ const OutfitCheckResultScreen = () => {
             key={star}
             name={star <= rating ? 'star' : 'star-outline'}
             size={32}
-            color="#4A6741"
+            color="#843CA7"
           />
         ))}
       </View>
@@ -44,17 +44,19 @@ const OutfitCheckResultScreen = () => {
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
         >
-          <Image 
-            source={{ uri: imageUri }} 
-            style={styles.outfitImage} 
-            resizeMode="contain"
-          />
+          <View style={styles.imageContainer}>
+            <Image 
+              source={{ uri: imageUri }} 
+              style={styles.outfitImage} 
+              resizeMode="contain"
+            />
+          </View>
 
           {renderStars(result.Score)}
 
           <View style={styles.feedbackContainer}>
             <View style={styles.feedbackSection}>
-              <Icon name="check-circle" size={24} color="#4A6741" />
+              <Icon name="check-circle" size={24} color="#843CA7" />
               <Text style={styles.feedbackTitle}>Doing Well</Text>
               <Text style={styles.feedbackText}>{result.DoingWell}</Text>
             </View>
@@ -66,7 +68,7 @@ const OutfitCheckResultScreen = () => {
             </View>
 
             <View style={styles.feedbackSection}>
-              <Icon name="lightbulb" size={24} color="#4A6741" />
+              <Icon name="lightbulb" size={24} color="#843CA7" />
               <Text style={styles.feedbackTitle}>Suggestions</Text>
               <Text style={styles.feedbackText}>{result.Improvements}</Text>
             </View>
@@ -89,7 +91,7 @@ const OutfitCheckResultScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA', // Updated Background Color
   },
   header: {
     flexDirection: 'row',
@@ -99,18 +101,38 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+
+  // Outfit Image with Shadow and Rounded Borders
+  imageContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    borderRadius: 16,
+    backgroundColor: '#FFF',
+    overflow: 'hidden',
+    marginBottom: 24,
+
+    // Shadow effect
+    elevation: 5, // Android shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
   outfitImage: {
     width: '100%',
     height: 400,
-    marginBottom: 24,
-    borderRadius: 8,
+    borderRadius: 16, // Rounded borders applied
   },
+
+  // Star Ratings
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 24,
     paddingHorizontal: 16,
   },
+
+  // Feedback Sections
   feedbackContainer: {
     gap: 24,
     marginBottom: 32,
@@ -119,8 +141,13 @@ const styles = StyleSheet.create({
   feedbackSection: {
     backgroundColor: '#F5F5F5',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     gap: 8,
+    elevation: 2, // Subtle shadow for feedback sections
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
   },
   feedbackTitle: {
     fontSize: 18,
@@ -132,15 +159,22 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 24,
   },
+
+  // Button Styling
   buttonContainer: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
   },
   uploadButton: {
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 32, // More rounded button for better aesthetics
     alignItems: 'center',
+    elevation: 3, // Shadow effect for button
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   buttonText: {
     color: '#fff',
@@ -149,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OutfitCheckResultScreen; 
+export default OutfitCheckResultScreen;

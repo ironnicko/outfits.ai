@@ -20,7 +20,7 @@ const OnboardingScreen = () => {
             style={[
               styles.progressBar,
               {
-                backgroundColor: step <= currentStep ? '#4A6741' : '#E0E0E0',
+                backgroundColor: step <= currentStep ? '#843CA7' : '#E0E0E0', // Updated accent color
                 width: (width - 48) / 5 - 4,
               },
             ]}
@@ -37,7 +37,7 @@ const OnboardingScreen = () => {
 
         <View style={styles.contentContainer}>
           <Text style={styles.title}>
-            AI analyses and catalogues your clothes
+            AI analyzes and catalogs your clothes
           </Text>
 
           <View style={styles.imageContainer}>
@@ -86,7 +86,7 @@ const OnboardingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA', // Updated background color
     padding: 16,
   },
   progressContainer: {
@@ -95,18 +95,19 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   progressBar: {
-    height: 4,
-    borderRadius: 2,
+    height: 6, // Increased thickness
+    borderRadius: 3,
   },
   contentContainer: {
     flex: 1,
     alignItems: 'center',
   },
   title: {
-    fontSize: 36,
-    fontWeight: '600',
+    fontSize: 32, // Adjusted for better readability
+    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 48,
+    color: '#333', // Slightly darker text for better contrast
   },
   imageContainer: {
     width: '100%',
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7', // Updated accent color
     marginRight: 8,
   },
   tagText: {
@@ -143,28 +144,33 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   getStartedButton: {
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7', // Updated accent color
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 32,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3, // Shadow for Android
   },
   getStartedText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   loginButton: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 32,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#000',
+    borderWidth: 1.5,
+    borderColor: '#843CA7', // Updated accent color
   },
   loginText: {
-    color: '#000',
+    color: '#843CA7', // Updated accent color
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
 
-export default OnboardingScreen; 
+export default OnboardingScreen;

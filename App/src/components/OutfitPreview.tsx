@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 600,
     position: 'relative',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FAFAFA',
     borderRadius: 16,
   },
   itemContainer: {

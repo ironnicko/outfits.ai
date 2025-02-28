@@ -1,148 +1,279 @@
 import React, { useEffect } from 'react';
-import {StyleSheet, View, Dimensions} from 'react-native';
-import {Card, Text, useTheme} from 'react-native-paper';
+import { StyleSheet, View, Pressable, Image } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import SafeScreen from '../components/SafeScreen';
 import { useClothingStore } from '../store/clothingStore';
 import { AuthState, useAuthStore } from '../store/authStore';
 import { supabase } from '../store/supabase';
 import { NavigationProp } from '../types/types';
 
-
-
-
-const {width} = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2; // 48 = padding (16) * 2 + gap between cards (16)
-
-
-
-const FeatureCard = ({title, subtitle, icon, onPress} : any) => {
-  const theme = useTheme();
-
-  return (
-    <Card
-      style={[styles.card, {width: CARD_WIDTH}]}
-      mode="elevated"
-      onPress={onPress}>
-      <Card.Content style={styles.cardContent}>
-        <View style={styles.iconContainer}>
-          <Icon name={icon} size={32} color={theme.colors.primary} />
-        </View>
-        <Text variant="titleMedium" style={styles.title}>
-          {title}
-        </Text>
-        <Text variant="bodySmall" style={styles.subtitle}>
-          {subtitle}
-        </Text>
-      </Card.Content>
-    </Card>
-  );
-};
-
-const HomeScreen = () => {
+const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const setClothes = useClothingStore((state) => state.fetch)
-  
-  const token = useAuthStore((state: AuthState) => state.token);
-  const fetchClothes = async () => {
-    const session = (await supabase.auth.getSession())
-    const session_token = session.data.session?.access_token || ""
 
+  // Fetch clothing items on mount
+  const setClothes = useClothingStore((state) => state.fetch);
+  const token = useAuthStore((state: AuthState) => state.token);
+
+  const fetchClothes = async () => {
+    const session = await supabase.auth.getSession();
+    const session_token = session.data.session?.access_token || '';
     setClothes(token || session_token);
   };
 
   useEffect(() => {
-      fetchClothes()
-  }, [])
+    fetchClothes();
+  }, []);
+
+  const theme = useTheme();
+
   return (
-    <SafeScreen>
-      <View style={styles.container}>
-        <View style={styles.logoContainer}>
-          <Text variant="headlineMedium" style={styles.logoText}>
-            Outfits.AI
-          </Text>
-        </View>
-        <View style={styles.grid}>
-        <FeatureCard
-            title="Create Outfits"
-            subtitle="Let our AI generate outfits for you"
-            icon="auto-fix"
+    <SafeScreen style={styles.screenContainer}>
+      {/* HEADER */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.logoText}>Outfits.ai</Text>
+        <Pressable
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('Profile')}
+        >
+          <Icon name="account-circle" size={32} color={theme.colors.primary} />
+        </Pressable>
+      </View>
+
+      {/* PROMOTIONAL BANNER */}
+      <View style={styles.bannerContainer}>
+        <Pressable style={styles.bannerBox}>
+          <Text style={styles.bannerText}>Promotional Banner</Text>
+        </Pressable>
+      </View>
+
+      {/* BODY SECTION */}
+      <View style={styles.bodyContainer}>
+        {/* Row with Create Outfit on the left, Check Outfit + Mix & Match on the right */}
+        <View style={styles.row}>
+          {/* CREATE OUTFIT (Left) */}
+          <Pressable
+            style={styles.createOutfitBox}
             onPress={() => navigation.navigate('GenerateOutfits')}
+          >
+            <Text style={styles.boxTitle}>Create Outfit</Text>
+            <Image
+              source={require('../assets/outfitgenerator.png')} // Replace with actual image path
+              style={styles.CreatOutfitImage}
             />
-          <FeatureCard
-            title="Mix & Match"
-            subtitle="Upload a picture for outfit advice"
-            icon="camera"
-            onPress={() => navigation.navigate('MixAndMatch')}
-          />
-          <FeatureCard
-            title="Outfit Check"
-            subtitle="Get feedback on your outfit"
-            icon="star-outline"
-            onPress={() => navigation.navigate('OutfitCheck')}
-          />
-          <FeatureCard
-            title="Color Therapy"
-            subtitle="Discover your perfect color palette"
-            icon="palette"
-            onPress={() => console.log('Color Therapy')}
-          />
+          </Pressable>
+
+          {/* Right Column: Check Outfit (top), Mix & Match (bottom) */}
+          <View style={styles.rightColumn}>
+            <Pressable
+              style={styles.checkOutfitBox}
+              onPress={() => navigation.navigate('OutfitCheck')}
+            >
+              <Text style={styles.boxTitle}>Check Outfit</Text>
+              <Image
+                source={require('../assets/outfitCheck.png')} // Replace with actual image path
+                style={styles.CheckOutfitImage}
+              />
+            </Pressable>
+
+            <Pressable
+              style={styles.mixMatchBox}
+              onPress={() => navigation.navigate('MixAndMatch')}
+            >
+              <Text style={styles.boxTitle}>Mix & Match</Text>
+              <Image
+                source={require('../assets/MnM.png')} // Replace with actual image path
+                style={styles.MixandMatchImage}
+              />
+            </Pressable>
+          </View>
         </View>
+
+        {/* COLOUR ANALYSIS (Full Width at Bottom) */}
+        <Pressable
+          style={styles.colourAnalysisBox}
+          onPress={() => navigation.navigate('ColorTherapyLanding')}
+        >
+          <Text style={styles.boxTitle}>Colour Analysis</Text>
+          <Image
+            source={require('../assets/colorAnalysis.png')} // Replace with actual image path
+            style={styles.ColourAnalysisImage}
+          />
+        </Pressable>
       </View>
     </SafeScreen>
   );
 };
 
+export default HomeScreen;
+
 const styles = StyleSheet.create({
-  container: {
+  screenContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FAFAFA',
   },
-  logoContainer: {
+
+  // HEADER
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   logoText: {
-    color: '#4A6741',
+    color: '#843CA7',
     fontWeight: 'bold',
+    fontSize: 24,
   },
-  grid: {
-    padding: 16,
+  profileButton: {
+    padding: 4,
+  },
+
+  // BANNER
+  bannerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  bannerBox: {
+    width: '100%',
+    height: 250,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  },
+  bannerText: {
+    fontSize: 18,
+    color: '#333',
+  },
+
+  // BODY
+  bodyContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'center',
+    marginBottom: 16,
   },
-  card: {
-    borderRadius: 16,
-    backgroundColor: 'white',
-  },
-  cardContent: {
-    alignItems: 'center',
-    padding: 16,
-    height: 180, // Fixed height for consistent card sizes
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#f0f0f0',
+
+  // LEFT BOX: CREATE OUTFIT
+  createOutfitBox: {
+    flex: 1,
+    marginRight: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    height: 255,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    position: 'relative',
+    overflow: 'hidden', // Allow cropping
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
+
+  // RIGHT COLUMN
+  rightColumn: {
+    flex: 1,
+    marginLeft: 8,
+    justifyContent: 'space-between',
+  },
+  checkOutfitBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    height: 125,
     marginBottom: 8,
-    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
   },
-  subtitle: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 12,
+  mixMatchBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    height: 125,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  },
+
+  // FULL-WIDTH: COLOUR ANALYSIS
+  colourAnalysisBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowRadius: 5,
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+
+  },
+
+  // TEXT INSIDE BOXES
+  boxTitle: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+    position: 'absolute',
+    top: 7,
+    left: 15,
+  },
+
+  // IMAGE STYLING
+  CreatOutfitImage: {
+    position: 'absolute',
+    bottom: 5,
+    right: 3,
+    width: 125, // Adjust based on need
+    height: 100, // Adjust based on need
+    resizeMode: 'contain',
+  },
+  CheckOutfitImage: {
+    position: 'absolute',
+    bottom: -1,
+    right: -3,
+    width: 90, // Adjust based on need
+    height:85, // Adjust based on need
+    resizeMode: 'contain',
+  },
+  MixandMatchImage: {
+    position: 'absolute',
+    bottom: -1,
+    right: -3,
+    width: 90, // Adjust based on need
+    height:85, // Adjust based on need
+    resizeMode: 'contain',
+  },
+  ColourAnalysisImage: {
+    position: 'absolute',
+    bottom: -3,
+    right: -5,
+    width: 100, // Adjust based on need
+    height:100, // Adjust based on need
+    resizeMode: 'contain',
   },
 });
-
-export default HomeScreen; 

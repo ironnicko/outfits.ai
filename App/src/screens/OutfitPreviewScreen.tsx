@@ -14,60 +14,54 @@ type RouteProps = RouteProp<RootStackParamList, 'OutfitPreviewScreen'>;
 
 const OutfitPreviewScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute<RouteProps>()
-//   this is for when we are selecting a particular article and want to generate/ or want to select items and just show outfit
-  var {occasion, outfits, saveToLooks} = route.params;   
+  const route = useRoute<RouteProps>();
+  var { occasion, outfits, saveToLooks } = route.params;
   const [activeIndex, setActiveIndex] = useState(0);
   const width = Dimensions.get('window').width;
-  const setOutfits = useOutfitStore((state) => state.fetch)
+  const setOutfits = useOutfitStore((state) => state.fetch);
   const token = useAuthStore((state: AuthState) => state.token);
-  const [save, setSave] = useState(false)
+  const [save, setSave] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const maintainOutfitSaved = useRef<Set<number>>(new Set<number>())
+  const maintainOutfitSaved = useRef<Set<number>>(new Set<number>());
 
   const handleSaveAll = async () => {
-      const upload = outfits.map(async (_, index)=>{  
-        handleSave(index)
-      })
-      await Promise.all(upload)
+    const upload = outfits.map(async (_, index) => {
+      handleSave(index);
+    });
+    await Promise.all(upload);
 
-      setSave(true)
-    console.log("Uploaded Successfully!")
+    setSave(true);
+    console.log('Uploaded Successfully!');
   };
 
   const handleSave = async (index: number) => {
-
     const outfit = outfits[index];
-    const finalItem: SavedOutfit = (!isSavedOutfit(outfit) ? convertClothes(outfit) : convertSavedOutfitUpload(outfit))
-    finalItem.occasion = occasion
+    const finalItem: SavedOutfit = !isSavedOutfit(outfit)
+      ? convertClothes(outfit)
+      : convertSavedOutfitUpload(outfit);
+    finalItem.occasion = occasion;
     try {
-      const res = await api.post(
-        'api/v1/outfit',
-        finalItem,
-        {
-          headers: {
-            'Authorization' : `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      if (res.status == 202){
-        await setOutfits(token || "")
-        maintainOutfitSaved.current.add(index)
-        setRefresh(!refresh)
-
-      } else{
-        throw Error("Upload wasn't successful")
+      const res = await api.post('api/v1/outfit', finalItem, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (res.status == 202) {
+        await setOutfits(token || '');
+        maintainOutfitSaved.current.add(index);
+        setRefresh(!refresh);
+      } else {
+        throw Error("Upload wasn't successful");
       }
     } catch (error: any) {
       console.error('Upload error:', error.response?.data || error.message);
-    } finally{
     }
-  }
+  };
 
   const checkSaved = () => {
-    return maintainOutfitSaved.current.has(activeIndex)
-  }
+    return maintainOutfitSaved.current.has(activeIndex);
+  };
 
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
@@ -79,13 +73,7 @@ const OutfitPreviewScreen = () => {
     return (
       <View style={styles.indicatorContainer}>
         {outfits.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              index === activeIndex && styles.indicatorActive,
-            ]}
-          />
+          <View key={index} style={[styles.indicator, index === activeIndex && styles.indicatorActive]} />
         ))}
       </View>
     );
@@ -95,16 +83,15 @@ const OutfitPreviewScreen = () => {
     <SafeScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <IconButton
-            icon="chevron-left"
-            size={24}
-            onPress={() => navigation.goBack()}
-            />
+          <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
           <IconButton
             icon="information"
             size={24}
-            onPress={() => console.log(isSavedOutfit(outfits[activeIndex]) ? (outfits[activeIndex].description) : "")}
-            />
+            iconColor="#843CA7" // Accent Color Applied
+            onPress={() =>
+              console.log(isSavedOutfit(outfits[activeIndex]) ? outfits[activeIndex].description : '')
+            }
+          />
         </View>
 
         <View style={styles.previewContainer}>
@@ -113,51 +100,40 @@ const OutfitPreviewScreen = () => {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={handleScroll}
-            scrollEventThrottle={16}
-          >
+            scrollEventThrottle={16}>
             {outfits.map((item, index) => (
               <View key={index} style={[styles.slide, { width }]}>
                 <OutfitPreview items={item} occasion={occasion} />
               </View>
             ))}
           </ScrollView>
-          {/* <View style={styles.actionButtons}>
-            <Pressable style={styles.ratingButton}>
-                <Icon name="thumb-up-outline" size={24} color="#000" />
-            </Pressable>
-            <Pressable style={styles.ratingButton}>
-                <Icon name="thumb-down-outline" size={24} color="#000" />
-            </Pressable>
-          </View> */}
-          {(outfits.length > 1? renderCarouselIndicators() : <></>)}
-          </View>
+          {outfits.length > 1 ? renderCarouselIndicators() : <></>}
         </View>
+      </View>
 
-        <View style={styles.bottomButtons}>
-    {saveToLooks ? (
-        <>
+      <View style={styles.bottomButtons}>
+        {saveToLooks ? (
+          <>
             <Pressable
-                style={styles.saveButton}
-                onPress={handleSaveAll}
-                disabled={(maintainOutfitSaved.current.size === outfits.length) || save}
-            >
-                <Icon name="dots-horizontal" size={20} color="#fff" />
-                <Text style={styles.saveButtonText}>
-                    {(maintainOutfitSaved.current.size === outfits.length) || save ? "Saved" : "Save All"}
-                </Text>
+              style={styles.saveButton}
+              onPress={handleSaveAll}
+              disabled={maintainOutfitSaved.current.size === outfits.length || save}>
+              <Icon name="dots-horizontal" size={20} color="#fff" />
+              <Text style={styles.saveButtonText}>
+                {maintainOutfitSaved.current.size === outfits.length || save ? 'Saved' : 'Save All'}
+              </Text>
             </Pressable>
             <Pressable
-                style={styles.exportButton}
-                onPress={() => handleSave(activeIndex)}
-                disabled={(checkSaved() || save)}
-            >
-                <Text style={styles.exportButtonText}>
-                    {(checkSaved() || save) ? "Saved" : "Save"}
-                </Text>
+              style={styles.exportButton}
+              onPress={() => handleSave(activeIndex)}
+              disabled={checkSaved() || save}>
+              <Text style={styles.exportButtonText}>
+                {checkSaved() || save ? 'Saved' : 'Save'}
+              </Text>
             </Pressable>
-        </>
-    ) : null}
-</View>
+          </>
+        ) : null}
+      </View>
     </SafeScreen>
   );
 };
@@ -165,7 +141,7 @@ const OutfitPreviewScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FAFAFA', // Updated Background
   },
   header: {
     flexDirection: 'row',
@@ -198,15 +174,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     gap: 16,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 4,
+    elevation: 4, // Shadow Effect Added
   },
   saveButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7', // Accent Color
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 32, // Large Rounded Buttons
     gap: 8,
   },
   saveButtonText: {
@@ -221,11 +203,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 32, // Large Rounded Buttons
+    borderWidth: 1.5,
+    borderColor: '#843CA7', // Accent Color for Border
     gap: 8,
   },
   exportButtonText: {
-    color: '#000',
+    color: '#843CA7', // Accent Color for Text
     fontSize: 16,
     fontWeight: '600',
   },
@@ -246,7 +230,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   indicatorActive: {
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7', // Accent Color for Active Indicator
     width: 12,
     height: 12,
     borderRadius: 6,
@@ -259,4 +243,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OutfitPreviewScreen; 
+export default OutfitPreviewScreen;

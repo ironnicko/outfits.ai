@@ -98,7 +98,7 @@ const GenerateOutfitsScreen = () => {
         ]}>
         {loading ? 
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="4A6741" />
+          <ActivityIndicator size="large" color="#fff" />
         </View>
         :(hasURL ? (
           <View style={styles.selectedItemContent}>
@@ -114,7 +114,7 @@ const GenerateOutfitsScreen = () => {
           <Icon
             name={item.Icon || ""}
             size={item.Size}
-            color={isSelected ? '#fff' : '#4A6741'}
+            color={isSelected ? '#fff' : '#843CA7'}
           />
         ))}
       </Pressable>
@@ -179,28 +179,27 @@ const GenerateOutfitsScreen = () => {
     <SafeScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <IconButton
-            icon="chevron-left"
-            size={24}
-            onPress={() => navigation.goBack()}
-          />
+            {navigation.canGoBack() && (
+        <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
+      )}          
           <Text style={styles.headerText}>Long press to remove clothing items</Text>
         </View>
 
-        <View style={styles.clothingContainer}>
-          {clothingItems.map(renderClothingItem)}
-        </View>
+        <View style={styles.clothingContainer}>{clothingItems.map(renderClothingItem)}</View>
 
-        <Pressable 
+        <Pressable
           style={styles.occasionButton}
           disabled={loading}
-          onPress={() => navigation.navigate('OccasionSelect', {
-            onSelect: (occasion: string) => setSelectedOccasion(occasion)
-          })}>
+          onPress={() =>
+            navigation.navigate('OccasionSelect', {
+              onSelect: (occasion: string) => setSelectedOccasion(occasion),
+            })
+          }
+        >
           <Text variant="titleLarge" style={styles.occasionText}>
             {selectedOccasion}
           </Text>
-          <Icon name="calendar" size={24} color="#4A6741" />
+          <Icon name="calendar" size={24} color="#843CA7" />
         </Pressable>
 
         <View style={styles.buttonContainer}>
@@ -246,20 +245,24 @@ const GenerateOutfitsScreen = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
+    marginBottom: 16,
   },
   headerText: {
     color: '#666',
     fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+    textAlign: 'center',
   },
   clothingContainer: {
     flex: 1,
@@ -271,46 +274,69 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#E8ECE6',
+    backgroundColor: '#E9D3F5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   selectedItem: {
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7',
+  },
+  wardrobeItem: {
+    backgroundColor: '#843CA7',
   },
   occasionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 16,
+    paddingVertical: 16,
   },
   occasionText: {
-    color: '#4A6741',
+    color: '#843CA7',
+    fontSize: 18,
+    fontWeight: '600',
   },
-  generateButton: {
-    margin: 16,
-    marginBottom: 32,
-    borderRadius: 32,
-    backgroundColor: '#4A6741',
-  },
-  generateButtonContent: {
+  buttonContainer: {
     flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 30,
+    paddingTop: 16,
+  },
+  button: {
+    flex: 1,
+    borderRadius: 32,
+    backgroundColor: '#843CA7',
+    minHeight: 70,
+  },
+  buttonContent: {
+    flexDirection: 'column',
     alignItems: 'center',
-    paddingVertical: 8,
-    gap: 8,
+    justifyContent: 'center',
+    height: 70,
+  },
+  buttonLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
   buttonIcon: {
-    marginLeft: 8,
+    marginTop: 4,
   },
-  weatherText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#4A6741',
-    marginTop: 16,
+  buttonDisabled: {
+    opacity: 0.5,
   },
-  wardrobeItem: {
-    backgroundColor: '#4A6741',
+  buttonLabelDisabled: {
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+  checkmark: {
+    position: 'absolute',
+    right: 4,
+    top: 4,
+    backgroundColor: '#843CA7',
+    borderRadius: 8,
+    padding: 4,
   },
   selectedItemContent: {
     width: '100%',
@@ -323,48 +349,6 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     resizeMode: 'cover',
   },
-  checkmark: {
-    position: 'absolute',
-    right: 4,
-    top: 4,
-    backgroundColor: '#4A6741',
-    borderRadius: 8,
-    padding: 4,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 30,
-    paddingTop: 16,
-  },
-  button: {
-    flex: 1,
-    borderRadius: 32,
-    backgroundColor: '#4A6741',
-    minHeight: 56,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: -10,
-    height: 56,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    marginRight: 4,
-  },
-  buttonDisabled: {
-    backgroundColor: '#4A6741',
-    opacity: 0.5,
-  },
-  buttonLabelDisabled: {
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
 });
 
-export default GenerateOutfitsScreen; 
+export default GenerateOutfitsScreen;

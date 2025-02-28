@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, Dimensions, FlatList, ScrollView } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NavigationProp, RootStackParamList } from '../../types/types';
@@ -41,7 +41,7 @@ const MixAndMatchResultScreen = () => {
             key={star}
             name={star <= rating ? 'star' : 'star-outline'}
             size={32}
-            color="#FFD700"
+            color="#843CA7"
           />
         ))}
       </View>
@@ -51,41 +51,46 @@ const MixAndMatchResultScreen = () => {
   return (
     <SafeScreen>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity 
-          style={styles.closeButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="close" size={24} color="#4A6741" />
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <IconButton 
+            icon="chevron-left" 
+            size={24} 
+            iconColor="#843CA7"
+            onPress={() => navigation.goBack()} 
+          />
+        </View>
 
-        <Image 
-          source={{ uri: imageURI }}
-          style={styles.itemImage} 
-          resizeMode="contain"
-        />
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: imageURI }}
+            style={styles.itemImage} 
+            resizeMode="contain"
+          />
+        </View>
 
         {renderStars(data.rating)}
 
-        <Text style={styles.title}>Purchase recommendation</Text>
+        <Text style={styles.title}>Purchase Recommendation</Text>
 
         <View style={styles.recommendationContainer}>
           <Icon 
-            name={data.rating > 3 ? "thumb-up" : (data.rating == 3 ? "dots-horizontal":"thumb-down")} 
+            name={data.rating > 3 ? "thumb-up" : "thumb-down"} 
             size={48} 
-            color="#000" 
+            color={data.rating > 3 ? "#4CAF50" : "#D32F2F"} 
           />
           <Text style={styles.whyText}>Why?</Text>
         </View>
 
-        <Text style={styles.title}>Goes along with :</Text>
+        <Text style={styles.title}>Goes Along With:</Text>
         <FlatList
-            data={data.clothes}
-            renderItem={renderItem}
-            keyExtractor={(_, index) => index.toString()} 
-            contentContainerStyle={styles.grid} 
-            showsHorizontalScrollIndicator={false}
-            horizontal={true}
-              />
+          data={data.clothes}
+          renderItem={renderItem}
+          keyExtractor={(_, index) => index.toString()} 
+          contentContainerStyle={styles.grid} 
+          showsHorizontalScrollIndicator={false}
+          horizontal={true}
+        />
+
         <Text style={styles.explanation}>
           {data.explanation}
         </Text>
@@ -97,32 +102,50 @@ const MixAndMatchResultScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
     padding: 16,
-    // alignItems: 'center',
   },
-  closeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    zIndex: 1,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 8,
+  },
+
+  // Outfit Image with Shadow and Rounded Borders
+  imageContainer: {
+    alignSelf: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 24,
+
+    // Shadow effect
+    elevation: 5, // Android shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   itemImage: {
     width: 300,
-    height: 300,
-    borderRadius: 150,
-    marginTop: 48,
-    marginBottom: 24,
+    height: 300, 
+    borderRadius: 16,
+    alignSelf: 'center',
   },
+
+  // Star Ratings
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 24,
   },
+
+  // Recommendation Section
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '600',
-    marginBottom: 24,
+    color: '#843CA7',
+    marginBottom: 16,
     textAlign: 'center',
   },
   recommendationContainer: {
@@ -130,23 +153,21 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   whyText: {
-    fontSize: 20,
+    fontSize: 18,
     marginTop: 8,
+    color: '#333',
   },
+
+  // Explanation Text
   explanation: {
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 16,
+    color: '#333',
   },
-  similarItemLink: {
-    flexDirection: 'row',
-  },
-  linkText: {
-    color: '#4A6741',
-    textDecorationLine: 'underline',
-    fontSize: 16,
-  },
+
+  // Grid for Clothes
   grid: {
     padding: 16,
     flexDirection: 'row',
@@ -158,11 +179,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     aspectRatio: 1,
     borderRadius: 12,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFF',
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+
+    // Shadow effect for grid items
+    elevation: 3, // Android shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
 });
 
-export default MixAndMatchResultScreen; 
+export default MixAndMatchResultScreen;

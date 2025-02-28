@@ -1,74 +1,80 @@
 import React from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTheme } from 'react-native-paper';
+import useNavigationStore from '../store/useNavigationStore';
+
 import HomeScreen from '../screens/HomeScreen';
+import InstructionsScreen from '../screens/colourTheory/InstructionScreen';
 import WardrobeScreen from '../screens/WardrobeScreen';
-import {useTheme} from 'react-native-paper';
-import SettingsScreen from '../screens/settings/SettingsScreen';
-import MyLooksScreen from '../screens/MyLooksScreen';
 
-const Tab = createBottomTabNavigator();
+const MainTab = createBottomTabNavigator();
 
-// Placeholder components for other tabs
-const MyLooks = () => null;
-const Settings = () => null;
-
-const TabNavigator = () => {
+const MainTabNavigator: React.FC = () => {
   const theme = useTheme();
+  const setActiveNavigator = useNavigationStore((state) => state.setActiveNavigator);
 
   return (
-    <Tab.Navigator
+    <MainTab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#843CA7', // Selected icon color
+        tabBarInactiveTintColor: 'gray', // Default inactive icon color
         tabBarStyle: {
-          paddingBottom: 8,
-          height: 60,
+          backgroundColor: '#FFFFFF', // White background for tab bar
+          paddingBottom: 20, // Increased padding to align icons correctly
+          height: 65, // Increased height
+          borderTopWidth: 0, // Remove default border for cleaner look
+          shadowColor: '#000', // Shadow settings for iOS
+          shadowOpacity: 0.1,
+          shadowOffset: { width: 0, height: -5 },
+          shadowRadius: 4,
+          elevation: 5, // Shadow for Android
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 12, // Slightly larger for better visibility
           marginTop: -8,
         },
-      }}>
-      <Tab.Screen
-        name="AI Tools"
+      }}
+    >
+      <MainTab.Screen
+        name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({color, size}) => (
-            <Icon name="auto-fix" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
         }}
       />
-      <Tab.Screen
-        name="My Looks"
-        component={MyLooksScreen}
+      <MainTab.Screen
+        name="AiTools"
+        component={HomeScreen} // Placeholder
         options={{
-          tabBarIcon: ({color, size}) => (
-            <Icon name="dots-grid" size={size} color={color} />
-          ),
+          title: 'AI Tools',
+          tabBarIcon: ({ color, size }) => <Icon name="robot" size={size} color={color} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            setActiveNavigator('AiTools');
+          },
         }}
       />
-      <Tab.Screen
-        name="Wardrobe"
-        component={WardrobeScreen}
+      <MainTab.Screen
+        name="Closet"
+        component={WardrobeScreen} // Placeholder
         options={{
-          tabBarIcon: ({color, size}) => (
-            <Icon name="hanger" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Icon name="hanger" size={size} color={color} />,
         }}
       />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
+      <MainTab.Screen
+        name="ColorAnalysis"
+        component={InstructionsScreen}
         options={{
-          tabBarIcon: ({color, size}) => (
-            <Icon name="account" size={size} color={color} />
-          ),
+          title: 'Color Analysis',
+          tabBarIcon: ({ color, size }) => <Icon name="palette" size={size} color={color} />,
         }}
       />
-    </Tab.Navigator>
+    </MainTab.Navigator>
   );
 };
 
-export default TabNavigator; 
+export default MainTabNavigator;

@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, Platform, ActionSheetIOS, Dimensions} from 'react-native';
-import {Text, Button, IconButton} from 'react-native-paper';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ScrollView, Platform, ActionSheetIOS } from 'react-native';
+import { Text, Button, IconButton } from 'react-native-paper';
 import SafeScreen from '../../components/SafeScreen';
-import {useNavigation} from '@react-navigation/native';
-import {Asset, CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import { Asset, CameraOptions, ImageLibraryOptions, launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { AuthState } from '../../store/authStore';
 import { useAuthStore } from '../../store/authStore';
-import {  useClothingStore } from '../../store/clothingStore';
+import { useClothingStore } from '../../store/clothingStore';
 import { MixMatchItems, NavigationProp } from '../../types/types';
 import { api } from '../../utils/api';
 import { LoadingScreen } from '../../components/LoadingScreen';
@@ -14,19 +14,18 @@ import { LoadingScreen } from '../../components/LoadingScreen';
 
 const MixAndMatchScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const setClothes = useClothingStore((state) => state.fetch)
+  const setClothes = useClothingStore((state) => state.fetch);
   const [loading, setLoading] = useState(true);
-  const token = useAuthStore((state: AuthState) => state.token)
+  const token = useAuthStore((state: AuthState) => state.token);
 
-  
   const fetchClothes = async () => {
     setClothes(token || "");
-    setLoading(false)
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchClothes()
-  }, [])
+    fetchClothes();
+  }, []);
 
   const handleImagePicker = () => {
     if (Platform.OS === 'ios') {
@@ -46,37 +45,37 @@ const MixAndMatchScreen = () => {
     }
   };
 
-const handleUpload = async (file: Asset) => {
+  const handleUpload = async (file: Asset) => {
     const formData = new FormData();
     const image = {
       uri: file.uri,
       type: file.type || 'image/jpeg',
       name: file.fileName || 'image.jpg'
-    }
+    };
     formData.append('file', image);
-    setLoading(true)
-    try {
-        const res = await api.post<MixMatchItems>(
-          '/api/v1/outfit/mixandmatch',
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-type': 'multipart/form-data',
-            },
-          }
-        );
-        if (res.status != 200){
-          throw Error(res.statusText)
-        }
-        navigation.navigate("MixAndMatchResult", {data : res.data, imageURI : file.uri || ""})
+    setLoading(true);
 
+    try {
+      const res = await api.post<MixMatchItems>(
+        '/api/v1/outfit/mixandmatch',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-type': 'multipart/form-data',
+          },
+        }
+      );
+      if (res.status !== 200) {
+        throw Error(res.statusText);
+      }
+      navigation.navigate("MixAndMatchResult", { data: res.data, imageURI: file.uri || "" });
     } catch (error: any) {
       console.error('Upload error:', error.response?.data || error.message);
-    } finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
-}
+  };
 
   const openGallery = async () => {
     const options: ImageLibraryOptions = {
@@ -96,7 +95,6 @@ const handleUpload = async (file: Asset) => {
         console.log('ImagePicker Error: ', response.errorMessage);
       } else if (response.assets && response.assets[0]) {
         await handleUpload(response.assets[0]);
-
       }
     } catch (error) {
       console.log('Error picking image: ', error);
@@ -104,7 +102,7 @@ const handleUpload = async (file: Asset) => {
   };
 
   const openCamera = async () => {
-    const options:CameraOptions = {
+    const options: CameraOptions = {
       mediaType: 'photo',
       includeBase64: false,
       maxHeight: 2000,
@@ -131,17 +129,14 @@ const handleUpload = async (file: Asset) => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <IconButton
-            icon="chevron-left"
-            size={24}
-            onPress={() => navigation.goBack()}
-          />
+          {navigation.canGoBack() && (
+              <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
+            )}
         </View>
 
         {/* Main Content */}
         <ScrollView style={styles.content}>
-          
-            <Text style={styles.title}>
+          <Text style={styles.title}>
             Unsure about your next purchase?
           </Text>
 
@@ -150,29 +145,21 @@ const handleUpload = async (file: Asset) => {
           </Text>
 
           <View style={styles.featureList}>
-            <Text style={styles.featureItem}>
-              -Analyze your wardrobe
-            </Text>
-            <Text style={styles.featureItem}>
-              -Let you know if it's a good buy
-            </Text>
-            <Text style={styles.featureItem}>
-              -Suggest matching pieces
-            </Text>
+            <Text style={styles.featureItem}>- Analyze your wardrobe</Text>
+            <Text style={styles.featureItem}>- Let you know if it's a good buy</Text>
+            <Text style={styles.featureItem}>- Suggest matching pieces</Text>
           </View>
 
-
-          {loading?<LoadingScreen/>:(
-            <>
-          <Button
-            mode="contained"
-            style={styles.uploadButton}
-            contentStyle={styles.uploadButtonContent}
-            onPress={handleImagePicker}>
-            Upload now
-          </Button>
-              </>
-            )}
+          {loading ? <LoadingScreen /> : (
+            <Button
+              mode="contained"
+              style={styles.uploadButton}
+              contentStyle={styles.uploadButtonContent}
+              onPress={handleImagePicker}
+            >
+              Upload Now
+            </Button>
+          )}
         </ScrollView>
       </View>
     </SafeScreen>
@@ -182,17 +169,12 @@ const handleUpload = async (file: Asset) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8ECE6',
+    backgroundColor: '#FAFAFA',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-  },
-  logo: {
-    height: 32,
-    width: 120,
-    marginLeft: 8,
   },
   content: {
     flex: 1,
@@ -201,94 +183,34 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#843CA7',
     marginBottom: 24,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#000',
+    color: '#843CA7',
     marginBottom: 16,
+    textAlign: 'center',
   },
   featureList: {
     marginBottom: 32,
   },
   featureItem: {
     fontSize: 16,
-    color: '#000',
+    color: '#333',
     marginBottom: 8,
+    textAlign: 'center',
   },
   uploadButton: {
-    backgroundColor: '#4A6741',
+    backgroundColor: '#843CA7',
     borderRadius: 32,
     marginBottom: 32,
   },
   uploadButtonContent: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     height: 56,
-  },
-  exampleCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-  },
-  exampleTitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 16,
-  },
-  recommendationContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
-  },
-  exampleImage: {
-    width: 120,
-    height: 160,
-    borderRadius: 8,
-  },
-  recommendationContent: {
-    flex: 1,
-  },
-  recommendationTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  recommendationText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
-  matchTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  matchingItems: {
-    height: 120,
-  },
-  grid: {
-    padding: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'space-between',
-  },
-  gridItem: {
-    marginBottom: 8,
-    aspectRatio: 1,
-    borderRadius: 12,
-    backgroundColor: '#f5f5f5',
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 
-export default MixAndMatchScreen; 
+export default MixAndMatchScreen;
