@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, Image, StyleSheet, Pressable, Platform, ActionSheetIOS, Modal 
+  View, Text, Image, StyleSheet, Pressable, Platform, ActionSheetIOS, Modal, ActivityIndicator 
 } from 'react-native';
-import { launchCamera, launchImageLibrary, ImageLibraryOptions,CameraOptions } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { api } from "../../utils/api";
 import { Asset } from "react-native-image-picker";
 import { AuthState, useAuthStore } from "../../store/authStore";
 import { NavigationProp } from '../../types/types';
 import { useNavigation } from '@react-navigation/native';
-
-
-
+import { useColorAnalysisStore } from "../../store/colorAnalysisStore";
 
 const InstructionScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const token = useAuthStore((state: AuthState) => state.token);
-  
 
   const openCamera = async () => {
     const options: CameraOptions = {
@@ -27,7 +24,7 @@ const InstructionScreen = () => {
       saveToPhotos: true,
       cameraType: "front",
     };
-  
+
     try {
       const response = await launchCamera(options);
       if (response.didCancel) {
@@ -35,39 +32,38 @@ const InstructionScreen = () => {
       } else if (response.errorCode) {
         console.log("Camera Error: ", response.errorMessage);
       } else if (response.assets && response.assets[0]) {
-        await handleSumbit(response.assets[0]);
+        await handleSubmit(response.assets[0]);
       }
     } catch (error) {
       console.log("Error using camera: ", error);
     }
   };
-  
-  
+
   const openGallery = async () => {
-      const options: ImageLibraryOptions = {
-        mediaType: 'photo',
-        includeBase64: false,
-        maxHeight: 2000,
-        maxWidth: 2000,
-        selectionLimit: 1,
-        quality: 1,
-      };
-  
-      try {
-        const response = await launchImageLibrary(options);
-        if (response.didCancel) {
-          console.log('User cancelled image picker');
-        } else if (response.errorCode) {
-          console.log('ImagePicker Error: ', response.errorMessage);
-        } else if (response.assets && response.assets[0]) {
-          await handleSumbit(response.assets[0]);
-        }
-      } catch (error) {
-        console.log('Error picking image: ', error);
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+      selectionLimit: 1,
+      quality: 1,
+    };
+
+    try {
+      const response = await launchImageLibrary(options);
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets[0]) {
+        await handleSubmit(response.assets[0]);
       }
+    } catch (error) {
+      console.log('Error picking image: ', error);
     }
-;
-  const handleSumbit = async (file: Asset) => {
+  };
+
+  const handleSubmit = async (file: Asset) => {
     const formData = new FormData();
     const image = {
       uri: file.uri,
@@ -75,7 +71,7 @@ const InstructionScreen = () => {
       name: file.fileName || 'image.jpg'
     };
     formData.append('file', image);
-    setLoading(true);
+    setLoading(true); // Show loader
 
     try {
       const res = await api.post(
@@ -88,47 +84,45 @@ const InstructionScreen = () => {
           },
         }
       );
-      // if (res.status !== 200) {
-      //   throw Error(res.statusText);
-      // }
-      console.log(res.data)
-      navigation.navigate("ColorAnalysisResult", { data: res.data});
+      console.log(res.data);
+      navigation.navigate("ColorAnalysisResult", { data: res.data });
     } catch (error: any) {
       console.error('Upload error:', error.message);
     } finally {
-      setLoading(false);
+      setLoading(false); // Hide loader
     }
   };
 
-  
-
-  // Handle button click based on platform
   const handleScanFacePress = () => {
     if (Platform.OS === 'ios') {
-          ActionSheetIOS.showActionSheetWithOptions(
-            {
-              options: ['Cancel', 'Take Picture', 'Select Picture(s)'],
-              cancelButtonIndex: 0,
-            },
-            buttonIndex => {
-              if (buttonIndex === 1) {
-                openCamera();
-              } else if (buttonIndex === 2) {
-                openGallery();
-              }
-            },
-          );
-        }
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Picture', 'Select Picture(s)'],
+          cancelButtonIndex: 0,
+        },
+        buttonIndex => {
+          if (buttonIndex === 1) {
+            openCamera();
+          } else if (buttonIndex === 2) {
+            openGallery();
+          }
+        },
+      );
+    } else {
+      setModalVisible(true);
+    }
   };
 
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={24} color="#000" />
-      </Pressable>
+      
 
       {/* Title and Description */}
+      
+      <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="chevron-left" size={24} color="#000" />
+      </Pressable>
       <Text style={styles.title}>Take a selfie</Text>
       <Text style={styles.description}>
         ⚠ Please follow the instructions - especially regarding lighting - to ensure the analysis is as accurate as possible.
@@ -148,9 +142,13 @@ const InstructionScreen = () => {
         Take off your glasses. Keep your face relaxed, without smiling or squinting.
       </Text>
 
-      {/* Scan Button */}
-      <Pressable style={styles.button} onPress={handleScanFacePress}>
-        <Text style={styles.buttonText}>SCAN YOUR FACE</Text>
+      {/* Scan Button with Loader */}
+      <Pressable style={[styles.button, loading && styles.buttonDisabled]} onPress={handleScanFacePress} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator size="small" color="#FFF" />
+        ) : (
+          <Text style={styles.buttonText}>SCAN YOUR FACE</Text>
+        )}
       </Pressable>
 
       {/* Android Modal for Camera/Gallery Selection */}
@@ -229,20 +227,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#843CA7',
     paddingVertical: 16,
     paddingHorizontal: 40,
-    borderRadius: 32, // Rounded button
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
     width: '90%',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  // Modal Styles
-  modalOverlay: {
+   // Modal Styles
+   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
