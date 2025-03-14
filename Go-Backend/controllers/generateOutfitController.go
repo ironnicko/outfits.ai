@@ -21,7 +21,7 @@ var response struct {
 func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, userID uuid.UUID) ([]models.Clothing, error) {
 	var clothings []models.Clothing
 
-	subquery := db.Table("vectors").
+	subquery := db.Model(&models.Vector{}).
 		Select("clothing_id, 1 - (embedding <=> ?::vector) AS cos_sim", embedding).
 		Joins("JOIN clothings ON clothings.id = vectors.clothing_id").
 		Where("clothings.clothing_type IN (?)", clothingTypes).

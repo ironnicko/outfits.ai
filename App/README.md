@@ -2,7 +2,23 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+To Make an API call, simply import "api" from api.ts
+
+then perform api.<HTTP VERB>()
+
+ex:
+await api.get(
+'/api/v1/user/onboard',
+{
+headers: {
+Authorization: `Bearer ${token}`,
+},
+}
+);
+
+Don't forget to provide the Bearer Token!
+
+> **Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
 
 ## Step 1: Start the Metro Server
 

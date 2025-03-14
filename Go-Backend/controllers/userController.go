@@ -90,13 +90,25 @@ func LogoutUser(c *fiber.Ctx) error {
 	})
 }
 
+func OnBoardingCompleted(c *fiber.Ctx) error {
+	db := configs.DB.Db
+	userObj := c.Locals("user").(types.UserResponse)
+
+	db.Model(&models.User{}).Where("id = ?", userObj.ID).Update("is_on_boarding_completed", "true")
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"status":  true,
+		"message": "User Information",
+		"result":  "Success",
+	})
+}
+
 // // To extract user information from the token
 
 func UserInfo(c *fiber.Ctx) error {
 	userObj := c.Locals("user").(types.UserResponse)
 	db := configs.DB.Db
 	user := make(map[string]interface{})
-	db.Table("users").Where("id = ?", userObj.ID.String()).Select("id, username").Find(&user)
+	db.Model(&models.User{}).Where("id = ?", userObj.ID.String()).Select("id, username").Find(&user)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  true,
 		"message": "User Information",

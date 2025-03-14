@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, TouchableOpacity, Dimensions, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, View, Image, Dimensions, FlatList, ScrollView } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';

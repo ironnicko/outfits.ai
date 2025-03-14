@@ -10,7 +10,7 @@ type Clothing struct {
 	gorm.Model
 	ClothingColor string    `gorm:"size:255" json:"color"`
 	ClothingType  string    `gorm:"size:255" json:"type" validate:"required,min=3,max=50"`
-	UserID        uuid.UUID `json:"user_id"`
+	UserID        uuid.UUID `gorm:"type:uuid" json:"user_id"`
 	User          User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 	ClothingURL   string    `gorm:"size:300" json:"url"`
 	Tags          []Tags    `gorm:"constraint:OnDelete:CASCADE"`
