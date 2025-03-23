@@ -108,7 +108,7 @@ func UserInfo(c *fiber.Ctx) error {
 	userObj := c.Locals("user").(types.UserResponse)
 	db := configs.DB.Db
 	user := make(map[string]interface{})
-	db.Model(&models.User{}).Where("id = ?", userObj.ID.String()).Select("id, username").Find(&user)
+	db.Model(&models.User{}).Where("id = ?", userObj.ID.String()).Find(&user)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  true,
 		"message": "User Information",
