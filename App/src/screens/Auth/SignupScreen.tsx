@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Pressable, Alert } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import SafeScreen from '../../components/SafeScreen';
+import { api } from '../../utils/api';
+import { NavigationProp } from '../../types/types';
+import { supabase } from '../../store/supabase';
+import { useAuthStore } from "../../store/authStore"; 
 import { useNavigation } from '@react-navigation/native';
-import SafeScreen from '../components/SafeScreen';
-import { api } from '../utils/api';
-import { NavigationProp } from '../types/types';
-import { supabase } from '../store/supabase';
+import { CommonActions } from '@react-navigation/native';
 
 const SignupScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -21,42 +23,62 @@ const SignupScreen = () => {
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+        setError("Passwords do not match");
+        return;
     }
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const { data: { user, session }, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            username,
-          },
-        },
-      });
+        const { data: { user, session }, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { username } },
+        });
 
-      await api.post('/api/v1/user', {
-        id: user?.id,
-        username,
-        email,
-        password,
-      });
+        if (error) {
+            Alert.alert(error.message);
+            throw error;
+        }
 
-      if (error) {
-        Alert.alert(error.message);
-        throw error;
-      }
-      if (!session) Alert.alert('Please check your inbox for email verification!');
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+        if (!session) {
+            Alert.alert("Please check your inbox for email verification!");
+            return;
+        }
+
+        // ✅ Store user in DB
+        await api.post("/api/v1/user", { 
+            id: user?.id, 
+            username, 
+            email, 
+            password,
+            isonboardingcompleted: false // ✅ Ensure onboarding is false by default
+        });
+
+        // ✅ Store token in Zustand
+        await useAuthStore.getState().setToken(session.access_token);
+
+        // ✅ Fetch user data
+        const response = await api.get(`/api/v1/user`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+
+        if (response.data?.result) {
+            const userData = response.data.result;
+            useAuthStore.setState({
+                username: userData.username,
+                isOnboardingComplete: userData.isonboardingcompleted,
+            });
+
+        }
+        console.log('onboarding', useAuthStore.getState().isOnboardingComplete);
+
+    } catch (err) {
+        setError(err.message || "Something went wrong");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+};
   return (
     <SafeScreen>
       <View style={styles.container}>

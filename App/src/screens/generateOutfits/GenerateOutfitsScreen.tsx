@@ -177,10 +177,7 @@ const GenerateOutfitsScreen = () => {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        <View style={styles.header}>
-            {navigation.canGoBack() && (
-        <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
-      )}          
+        <View style={styles.header}>          
           <Text style={styles.headerText}>Long press to remove clothing items</Text>
         </View>
 
@@ -248,9 +245,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
-    padding: 16,
   },
   header: {
+    justifyContent: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
@@ -316,7 +313,7 @@ const styles = StyleSheet.create({
     height: 70,
   },
   buttonLabel: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
     letterSpacing: 0.5,
     textAlign: 'center',

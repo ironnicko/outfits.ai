@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 
-type NavigatorType = 'Main' | 'AiTools';
+type NavigatorType = 'Main' | 'Market' | 'AiTools';
 
 interface NavigationState {
   activeNavigator: NavigatorType;

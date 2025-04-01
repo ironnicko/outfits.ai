@@ -9,7 +9,8 @@ import OutfitCheckScreen from '../screens/outfitCheck/OutfitCheckScreen';
 import MixAndMatchScreen from '../screens/mixAndMatch/MixAndMatchScreen';
 
 import useNavigationStore from '../store/useNavigationStore';
-import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
+import WardrobeScreen from '../screens/Wardrobe/WardrobeScreen';
+import HomeScreen from '../screens/HomeScreen';
 
 const AiTab = createBottomTabNavigator();
 
@@ -20,6 +21,7 @@ const AiToolsTabNavigator: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
       <AiTab.Navigator
+        initialRouteName="Wardrobe"
         screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#843CA7', // Selected icon color
@@ -39,12 +41,13 @@ const AiToolsTabNavigator: React.FC = () => {
           fontSize: 12, // Slightly larger for better visibility
           marginTop: -8,
         },
+
       }}
       >
         {/* Back Button */}
         <AiTab.Screen
           name="Home"
-          component={GenerateOutfitsScreen} // Placeholder; screen component is not used
+          component={WardrobeScreen} // Placeholder; screen component is not used
           options={{
             title: 'Home',
             tabBarIcon: ({ color, size }) => <Icon name="arrow-left" size={size} color={color} />,
@@ -58,6 +61,14 @@ const AiToolsTabNavigator: React.FC = () => {
         />
 
         {/* Other AI Tools Tabs */}
+        <AiTab.Screen
+          name="Wardrobe"
+          component={WardrobeScreen} // Placeholder
+          options={{
+            title: 'Warbrobe',
+            tabBarIcon: ({ color, size }) => <Icon name="wardrobe" size={size} color={color} />,
+          } as BottomTabNavigationOptions}
+        />
         <AiTab.Screen
           name="GenerateOutfits"
           component={GenerateOutfitsScreen}
@@ -80,14 +91,6 @@ const AiToolsTabNavigator: React.FC = () => {
           options={{
             title: 'Mix & Match',
             tabBarIcon: ({ color, size }) => <Icon name="shuffle" size={size} color={color} />,
-          } as BottomTabNavigationOptions}
-        />
-        <AiTab.Screen
-          name="Color Analysis"
-          component={SelfieAnalysisScreen}
-          options={{
-            title: 'Color Analysis',
-            tabBarIcon: ({ color, size }) => <Icon name="palette" size={size} color={color} />,
           } as BottomTabNavigationOptions}
         />
       </AiTab.Navigator>

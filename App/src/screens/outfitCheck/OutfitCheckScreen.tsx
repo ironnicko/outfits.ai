@@ -132,11 +132,7 @@ const handleUpload = async (file: Asset) => {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        {/* Header with back button */}
         <View style={styles.header}>
-        {navigation.canGoBack() && (
-    <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
-  )}
           <Text variant="headlineMedium" style={styles.headerTitle}>
             Outfit Check
           </Text>
@@ -236,19 +232,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '##FAFAFA',
+    
   },
   header: {
+    justifyContent: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 8,
+    marginBottom: 8,
+    alignContent:'center'
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     color: '#843CA7',
     fontWeight: 'bold',
-    marginRight: 48, // To offset the back button and center the title
   },
   content: {
     flex: 1,

@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, FlatList, Pressable, RefreshControl, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
-import SafeScreen from '../components/SafeScreen';
-import OutfitPreview from '../components/OutfitPreview';
+import SafeScreen from '../../components/SafeScreen';
+import OutfitPreview from '../../components/OutfitPreview';
 import { useNavigation } from '@react-navigation/native';
-import { SavedOutfit, useOutfitStore } from "../store/outfitStore"
-import { AuthState, useAuthStore } from '../store/authStore';
-import { api } from '../utils/api';
-import { LoadingScreen } from '../components/LoadingScreen';
-import { NavigationProp } from '../types/types';
+import { SavedOutfit, useOutfitStore } from "../../store/outfitStore"
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { api } from '../../utils/api';
+import { LoadingScreen } from '../../components/LoadingScreen';
+import { NavigationProp } from '../../types/types';
 
 const MyLooksScreen = () => {
   const navigation = useNavigation<NavigationProp>();

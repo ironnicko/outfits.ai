@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Pressable, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import SafeScreen from '../components/SafeScreen';
-import { NavigationProp } from '../types/types';
+import SafeScreen from '../../components/SafeScreen';
+import { NavigationProp } from '../../types/types';
 
 const { width } = Dimensions.get('window');
 
-const OnboardingScreen = () => {
+const WelcomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [currentStep] = useState(1);
 
@@ -173,4 +173,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingScreen;
+export default WelcomeScreen;

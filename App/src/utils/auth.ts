@@ -1,13 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const setTokenLocal = async (token: string) => {
-    try {
-        await AsyncStorage.setItem('user', token);
-    } catch (error) {
-        console.error('Error setting token:', error);
-    }
-};
-
 const getUsernameLocal = async (): Promise<string | null> => {
     try {
         const token = await AsyncStorage.getItem('name');
@@ -33,10 +25,21 @@ const setUsernameLocal = async (name: string) => {
     }
 };
 
+const setTokenLocal = async (token: string | null) => {
+    if (!token) {
+        console.warn('Attempting to set an undefined/null token.');
+        return;
+    }
+    try {
+        await AsyncStorage.setItem('user', token);
+    } catch (error) {
+        console.error('Error setting token:', error);
+    }
+};
+
 const getTokenLocal = async (): Promise<string | null> => {
     try {
-        const token = await AsyncStorage.getItem('user');
-        return token;
+        return await AsyncStorage.getItem('user');
     } catch (error) {
         console.error('Error getting token:', error);
         return null;
@@ -50,6 +53,5 @@ const clearTokenLocal = async () => {
         console.error('Error clearing token:', error);
     }
 };
-
 
 export { clearTokenLocal, getTokenLocal, setTokenLocal, clearUsernameLocal, getUsernameLocal, setUsernameLocal };

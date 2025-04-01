@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import SafeScreen from '../components/SafeScreen';
+import SafeScreen from '../../components/SafeScreen';
 import { useNavigation } from '@react-navigation/native';
-import { api } from '../utils/api';
-import { AuthState, useAuthStore } from '../store/authStore';
-import { supabase } from '../store/supabase';
-import { NavigationProp } from '../types/types';
+import { api } from '../../utils/api';
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { supabase } from '../../store/supabase';
+import { NavigationProp } from '../../types/types';
+import { CommonActions } from '@react-navigation/native';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -21,16 +22,44 @@ const LoginScreen = () => {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-    } catch (err: any) {
-      console.error(err);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) {
+            console.error("Login error:", error);
+            return;
+        }
+
+        if (data.session) {
+            const token = data.session.access_token;
+          
+            // ✅ Fetch user data & onboarding status
+            const response = await api.get(`/api/v1/user`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.data?.result) {
+                const userData = response.data.result;
+                useAuthStore.setState({
+                    username: userData.username,
+                    isOnboardingComplete: userData.is_on_boarding_completed,
+                });
+
+            } else {
+                console.error("User data is missing from response:", response.data);
+            }
+            console.log('onboarding', response.data.result.is_on_boarding_completed);
+            
+            await useAuthStore.getState().setToken(token);
+        }
+    } catch (err) {
+        console.error("Sign in error:", err);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const handleSocialSignIn = async (provider: 'google' | 'apple') => {
     setLoading(true);

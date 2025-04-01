@@ -5,9 +5,7 @@ import { useTheme } from 'react-native-paper';
 import useNavigationStore from '../store/useNavigationStore';
 
 import HomeScreen from '../screens/HomeScreen';
-import InstructionsScreen from '../screens/colourTheory/InstructionScreen';
-import WardrobeScreen from '../screens/WardrobeScreen';
-import SelfieAnalysisScreen from '../screens/colourTheory/selfieScreen';
+import WardrobeScreen from '../screens/Wardrobe/WardrobeScreen';
 
 const MainTab = createBottomTabNavigator();
 
@@ -17,6 +15,7 @@ const MainTabNavigator: React.FC = () => {
 
   return (
     <MainTab.Navigator
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#843CA7', // Selected icon color
@@ -39,6 +38,20 @@ const MainTabNavigator: React.FC = () => {
       }}
     >
       <MainTab.Screen
+        name="Marketplace"
+        component={HomeScreen} // Placeholder
+        options={{
+          title: 'Marketplace',
+          tabBarIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            setActiveNavigator('Market');
+          },
+        }}
+      />
+      <MainTab.Screen
         name="Home"
         component={HomeScreen}
         options={{
@@ -46,32 +59,17 @@ const MainTabNavigator: React.FC = () => {
         }}
       />
       <MainTab.Screen
-        name="AiTools"
-        component={HomeScreen} // Placeholder
+        name="AI + Wardrobe"
+        component={WardrobeScreen} // Placeholder
         options={{
-          title: 'AI Tools',
-          tabBarIcon: ({ color, size }) => <Icon name="robot" size={size} color={color} />,
+          title: 'AI + Wardrobe',
+          tabBarIcon: ({ color, size }) => <Icon name="wardrobe" size={size} color={color} />,
         }}
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
             setActiveNavigator('AiTools');
           },
-        }}
-      />
-      <MainTab.Screen
-        name="Closet"
-        component={WardrobeScreen} // Placeholder
-        options={{
-          tabBarIcon: ({ color, size }) => <Icon name="hanger" size={size} color={color} />,
-        }}
-      />
-      <MainTab.Screen
-        name="ColorAnalysis"
-        component={SelfieAnalysisScreen}
-        options={{
-          title: 'Color Analysis',
-          tabBarIcon: ({ color, size }) => <Icon name="palette" size={size} color={color} />,
         }}
       />
     </MainTab.Navigator>

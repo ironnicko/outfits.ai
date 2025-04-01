@@ -15,15 +15,15 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { FAB } from 'react-native-paper'; // Remove if you don't use react-native-paper
-import SafeScreen from '../components/SafeScreen';
-import ClothingCard from '../components/ClothingCard';
+import SafeScreen from '../../components/SafeScreen';
+import ClothingCard from '../../components/ClothingCard';
 import { Asset, launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { api } from '../utils/api';
-import { AuthState, useAuthStore } from '../store/authStore';
-import { Clothes, useClothingStore } from '../store/clothingStore';
+import { api } from '../../utils/api';
+import { AuthState, useAuthStore } from '../../store/authStore';
+import { Clothes, useClothingStore } from '../../store/clothingStore';
 import { useNavigation } from '@react-navigation/native';
-import { LoadingScreen } from '../components/LoadingScreen';
-import { NavigationProp } from '../types/types';
+import { LoadingScreen } from '../../components/LoadingScreen';
+import { NavigationProp } from '../../types/types';
 import MyLooksScreen from './MyLooksScreen';
 
 const WardrobeScreen = () => {

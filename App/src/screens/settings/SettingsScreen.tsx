@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {StyleSheet, View, Pressable, Alert} from 'react-native';
 import {Text, Divider} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import SafeScreen from '../../components/SafeScreen';
+import SafeScreen from '../../../src/components/SafeScreen';
 import {useNavigation} from '@react-navigation/native';
-import {  getUsernameLocal } from '../../utils/auth';
-import {  useAuthStore } from '../../store/authStore';
+import {  getUsernameLocal } from '../../../src/utils/auth';
+import {  useAuthStore } from '../../../src/store/authStore';
 
-import { supabase } from '../../store/supabase';
-import { NavigationProp } from '../../types/types';
+import { supabase } from '../../../src/store/supabase';
+import { NavigationProp } from '../../../src/types/types';
 
 const SettingItem = ({icon, title, onPress} : any) => (
   <Pressable style={styles.settingItem} onPress={onPress}>
@@ -44,21 +44,36 @@ const SettingsScreen =  () => {
       'Sign Out',
       'Are you sure you want to sign out?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Sign Out',
           onPress: async () => {
-            await supabase.auth.signOut()
+            try {
+              await supabase.auth.signOut();
+  
+              // ✅ Update Zustand store
+              useAuthStore.setState({
+                token: null,
+                username: null,
+                isOnboardingComplete: false,
+              });
+  
+              // ✅ Navigate to the splash/login screen
+              // navigation.reset({
+              //   index: 0,
+              //   routes: [{ name: 'WelcomeScreen' }],
+              // });
+            } catch (error) {
+              console.error("Logout error:", error);
+            }
           },
           style: 'destructive',
         },
       ],
-      {cancelable: true},
+      { cancelable: true }
     );
   };
+  
 
   return (
     <SafeScreen>

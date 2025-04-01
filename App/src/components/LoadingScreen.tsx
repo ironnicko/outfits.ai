@@ -12,7 +12,7 @@ export const LoadingScreen = () =>(
   >
     <ActivityIndicator 
       size="large" 
-      color="#4A6741" 
+      color="#843CA7" 
     />
   </View>
 )
