@@ -24,13 +24,14 @@ const InstructionScreen = () => {
       const token = useAuthStore.getState().token;
       if (!token) return;
   
+      useAuthStore.setState({ isOnboardingComplete: true });
+
       // ✅ Update the backend
       await api.post('/api/v1/user/onboard', { isonboardingcompleted: true }, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
       // ✅ Update Zustand state (so RootNavigator refreshes)
-      useAuthStore.setState({ isOnboardingComplete: true });
   
       console.log("Onboarding completed successfully! Navigating to MainTabs...");
   

@@ -12,6 +12,7 @@ import { useCartStore } from "../../store/cartStore";
 import CartItemCard from "../../components/marketplace/cart/CartItemCard";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const CartScreen: React.FC = () => {
   const { cart, removeFromCart } = useCartStore();
@@ -36,6 +37,7 @@ const CartScreen: React.FC = () => {
 
   return (
     <SafeScreen>
+      <GestureHandlerRootView>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -104,6 +106,7 @@ const CartScreen: React.FC = () => {
           </View>
         </>
       )}
+      </GestureHandlerRootView>
     </SafeScreen>
   );
 };

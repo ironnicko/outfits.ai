@@ -105,7 +105,13 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}
-      initialRouteName={isAuthenticated ? "MainTabs" : "WelcomeScreen"}>
+    initialRouteName={
+      isAuthenticated
+        ? isOnboardingComplete
+          ? "MainTabs"
+          : "newUserOnboarding"
+        : "WelcomeScreen"
+    }>
       {!isAuthenticated ? (
         <>
           <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />

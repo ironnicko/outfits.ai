@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useOnboardingStore } from "../../store/useOnBoardingStore";
 import ProgressIndicator from "../../components/Onboarding/progressIndicator";
 import OnboardingQuestion from "../../components/Onboarding/questionComp";
@@ -73,15 +73,15 @@ export const onboardingQuestions = [
     text: "Which body type best characterizes your shape?",
     type: "single-select",
     options: [
-      { label: "Hourglass", value: "hourglass", image: require("../../assets/colorAnalysis.png") },
-      { label: "Triangle", value: "triangle", image: require("../../assets/colorAnalysis.png") },
-      { label: "Inverted Triangle", value: "inverted_triangle", image: require("../../assets/colorAnalysis.png") },
-      { label: "Rectangle", value: "rectangle", image: require("../../assets/colorAnalysis.png") },
+      { label: "Hourglass", value: "hourglass", image: require("../../assets/Hourglass.jpeg") },
+      { label: "Triangle", value: "triangle", image: require("../../assets/triangle.jpeg") },
+      { label: "Inverted Triangle", value: "inverted_triangle", image: require("../../assets/inverted_triangle.jpeg") },
+      { label: "Rectangle", value: "rectangle", image: require("../../assets/Rectangle.jpeg") },
     ],
   },
   {
     id: "photos",
-    text: "Add a minimum of 3 full-body single photos",
+    text: "Add 3 full-body single photos",
     type: "photo-upload",
     minRequired: 3,
   },
@@ -92,26 +92,57 @@ const OnboardingScreen = () => {
 
   useEffect(() => {
     setTotalSteps(onboardingQuestions.length + 1);
-  }, [setTotalSteps]); // Ensure Zustand updates
+  }, [setTotalSteps]);
 
   const currentQuestion = onboardingQuestions[step];
 
+  const isFinalStep = step === onboardingQuestions.length;
+
   return (
     <SafeScreen>
-    <View style={{ flex: 1, padding: 20, justifyContent: "center" }}>
-      <ProgressIndicator totalSteps={onboardingQuestions.length + 1} currentStep={step} />
+      <View style={styles.container}>
+        <View style={styles.topContainer}>
+          <ProgressIndicator
+            totalSteps={onboardingQuestions.length + 1}
+            currentStep={step}
+          />
 
-      {step === onboardingQuestions.length ? (
-        <SelfieAnalysisScreen />
-      ) : (
-        <>
-          <OnboardingQuestion question={currentQuestion} />
-          <NextButton />
-        </>
-      )}
-    </View>
+          {!isFinalStep && (
+            <OnboardingQuestion question={currentQuestion} />
+          )}
+        </View>
+
+        {isFinalStep ? (
+          <View style={styles.fullFlex}>
+            <SelfieAnalysisScreen />
+          </View>
+        ) : (
+          <View style={styles.bottomContainer}>
+            <NextButton />
+          </View>
+        )}
+      </View>
     </SafeScreen>
   );
 };
 
 export default OnboardingScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+    justifyContent: "space-between",
+  },
+  topContainer: {
+    padding: 20,
+  },
+  bottomContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  fullFlex: {
+    flex: 1,
+    padding: 20,
+  },
+});

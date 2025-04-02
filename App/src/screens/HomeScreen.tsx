@@ -30,21 +30,6 @@ const HomeScreen: React.FC = () => {
     fetchClothes();
   }, []);
 
-
-
-  const [checklistItems, setChecklistItems] = useState([
-    { id: "add_articles", label: "Add 3 articles", completedCount: 0, totalCount: 2, completed: false },
-    { id: "create_outfits", label: "Create Outfits", completedCount: 0, totalCount: 2, completed: false },
-  ]);
-
-  const handleToggleItem = (id: string) => {
-    setChecklistItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
-    );
-  };
-
   const carouselData = [
     {
       title: "Create Now",
@@ -71,7 +56,7 @@ const HomeScreen: React.FC = () => {
         </View>
         {/* ✅ Hide vertical scroll indicator */}
         <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-          <Checklist items={checklistItems} onToggleItem={handleToggleItem} />
+          <Checklist />
           <Carousel data={carouselData} />
           <ColorAnalysisReport />
           <CuratedPicks />

@@ -11,6 +11,9 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { convertClothes, convertSavedOutfitUpload, isSavedOutfit, SavedOutfit, useOutfitStore } from '../../store/outfitStore';
 import { AuthState, useAuthStore } from '../../store/authStore';
 import { api } from '../../utils/api';
+import { Animated, Easing } from 'react-native';
+
+
 
 type RouteProps = RouteProp<RootStackParamList, 'OutfitPreviewScreen'>;
 
@@ -41,6 +44,15 @@ const OutfitPreviewScreen = () => {
   const [activeTimers, setActiveTimers] = useState<{ [index: number]: boolean }>({});
   const [isLoadingTryOn, setIsLoadingTryOn] = useState(true);
   const [countdown, setCountdown] = useState(60); // 60 seconds initially
+  const [progressAnims, setProgressAnims] = useState<{ [key: number]: Animated.Value }>({});
+  const [fadeAnims, setFadeAnims] = useState<{ [key: number]: Animated.Value }>({});
+  const [messageIndices, setMessageIndices] = useState<{ [key: number]: number }>({});
+    const messages = [
+    "Analyzing outfit colors…",
+    "Matching style preferences…",
+    "Preparing virtual model…",
+    "Finalizing your look!"
+  ];
 
   useEffect(() => {
     if (isLoadingTryOn && countdown > 0) {
@@ -128,75 +140,135 @@ const OutfitPreviewScreen = () => {
     if (activeTimers[index]) return;
   
     const outfit = outfits[index];
-    setActiveTimers(prev => ({ ...prev, [index]: true }));
-    setTimers(prev => ({ ...prev, [index]: 60 }));
   
+    // Extract top and bottom
     const top = Array.isArray(outfit)
-      ? outfit.find(i => i.type?.toLowerCase() === 'top')
+      ? outfit.find((i) => i.type?.toLowerCase() === "top")
       : outfit.OutfitTop;
   
     const bottom = Array.isArray(outfit)
-      ? outfit.find(i => i.type?.toLowerCase() === 'bottom')
+      ? outfit.find((i) => i.type?.toLowerCase() === "bottom")
       : outfit.OutfitBottom;
   
-    const modelImageUrl = 'https://photos.peopleimages.com/picture/202304/2797874-a-fashion-portrait-and-woman-with-hands-in-pocket-with-happy-confidence.-full-body-beauty-and-weekend-style-lifestyle-model-standing-in-studio-with-casual-smile-on-face-isolated-on-a-png-background-fit_400_400.jpg';
-
+    // Set dynamic duration
+    const duration = top && bottom ? 120000 : 60000; // in ms
+    const durationInSeconds = duration / 1000;
+  
+    // Mark as loading
+    setActiveTimers((prev) => ({ ...prev, [index]: true }));
+    setTimers((prev) => ({ ...prev, [index]: durationInSeconds }));
+  
+    // Initialize Animated values and message index
+    const newProgressAnim = new Animated.Value(0);
+    const newFadeAnim = new Animated.Value(1);
+  
+    setProgressAnims((prev) => ({ ...prev, [index]: newProgressAnim }));
+    setFadeAnims((prev) => ({ ...prev, [index]: newFadeAnim }));
+    setMessageIndices((prev) => ({ ...prev, [index]: 0 }));
+  
+    // Start progress animation
+    Animated.timing(newProgressAnim, {
+      toValue: 1,
+      duration,
+      useNativeDriver: false,
+      easing: Easing.linear,
+    }).start();
+  
+    // Begin fading animated message cycle
+    const localFadeAnim = newFadeAnim;
+    let step = 0;
+    const showNextMessage = () => {
+      if (step >= messages.length) return;
+  
+      Animated.sequence([
+        Animated.timing(localFadeAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(localFadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setMessageIndices((prev) => ({ ...prev, [index]: step }));
+        step += 1;
+        setTimeout(showNextMessage, duration / messages.length); // divide message time
+      });
+    };
+    showNextMessage();
+  
+    const modelImageUrl =
+      "https://photos.peopleimages.com/picture/202304/2797874-a-fashion-portrait-and-woman-with-hands-in-pocket-with-happy-confidence.-full-body-beauty-and-weekend-style-lifestyle-model-standing-in-studio-with-casual-smile-on-face-isolated-on-a-png-background-fit_400_400.jpg";
+  
     try {
-      // 🟩 Top only
+      // TOP ONLY
       if (top && !bottom) {
         const result = await requestVirtualTryOn({
-          cloth_type: 'top',
+          cloth_type: "top",
           model_image_url: modelImageUrl,
           cloth_image_url: top.url,
         });
   
         if (result) {
-          setTryOnImages(prev => ({ ...prev, [index]: `data:image/png;base64,${result}` }));
-          setShowTryOn(prev => ({ ...prev, [index]: true }));
+          setTryOnImages((prev) => ({
+            ...prev,
+            [index]: `data:image/png;base64,${result}`,
+          }));
+          setShowTryOn((prev) => ({ ...prev, [index]: true }));
+          setTimers((prev) => ({ ...prev, [index]: 0 })); // ⬅️ End timer early
         }
       }
   
-      // 🟦 Bottom only
+      // BOTTOM ONLY
       else if (!top && bottom) {
         const result = await requestVirtualTryOn({
-          cloth_type: 'bottoms',
+          cloth_type: "bottoms",
           model_image_url: modelImageUrl,
           cloth_image_url: bottom.url,
         });
   
         if (result) {
-          setTryOnImages(prev => ({ ...prev, [index]: `data:image/png;base64,${result}` }));
-          setShowTryOn(prev => ({ ...prev, [index]: true }));
+          setTryOnImages((prev) => ({
+            ...prev,
+            [index]: `data:image/png;base64,${result}`,
+          }));
+          setShowTryOn((prev) => ({ ...prev, [index]: true }));
+          setTimers((prev) => ({ ...prev, [index]: 0 })); // ⬅️ End timer early
         }
       }
   
-      // 🟨 Top + Bottom (two-stage)
+      // TOP + BOTTOM
       else if (top && bottom) {
         const topResult = await requestVirtualTryOn({
-          cloth_type: 'top',
+          cloth_type: "top",
           model_image_url: modelImageUrl,
           cloth_image_url: top.url,
         });
   
-        if (!topResult) throw new Error('Top try-on failed');
+        if (!topResult) throw new Error("Top try-on failed");
   
         const bottomResult = await requestVirtualTryOn({
-          cloth_type: 'bottoms',
+          cloth_type: "bottoms",
           model_image_base64: topResult,
           cloth_image_url: bottom.url,
         });
   
         if (bottomResult) {
-          setTryOnImages(prev => ({ ...prev, [index]: `data:image/png;base64,${bottomResult}` }));
-          setShowTryOn(prev => ({ ...prev, [index]: true }));
+          setTryOnImages((prev) => ({
+            ...prev,
+            [index]: `data:image/png;base64,${bottomResult}`,
+          }));
+          setShowTryOn((prev) => ({ ...prev, [index]: true }));
+          setTimers((prev) => ({ ...prev, [index]: 0 })); // ⬅️ End timer early
         }
       }
     } catch (err) {
-      console.error('Virtual Try-On failed:', err);
-    } finally {
-      // setTimers(prev => ({ ...prev, [index]: 0 }));
+      console.error("Virtual Try-On failed:", err);
     }
   };
+  
   
   return (
     <SafeScreen>
@@ -226,19 +298,6 @@ const OutfitPreviewScreen = () => {
             scrollEventThrottle={16}>
               {outfits.map((item, index) => {
               const isTryOnDone = timers[index] === 0 && tryOnImages[index];
-              const getItemByType = (outfit: any, type: 'shoe' | 'hat') => {
-                if (!outfit) return null;
-              
-                if (type === 'shoe' && outfit.OutfitShoe?.url) {
-                  return { image: outfit.OutfitShoe.url };
-                }
-              
-                if (type === 'hat' && outfit.OutfitHat?.url) {
-                  return { image: outfit.OutfitHat.url };
-                }
-              
-                return null;
-              };
               return (
                 <View key={index} style={[styles.slide, { width }]}>
                   {showTryOn[index] && isTryOnDone ? (
@@ -254,12 +313,30 @@ const OutfitPreviewScreen = () => {
                     <OutfitPreview items={item} occasion={occasion} />
                   )}
 
-                  {/* Circular Timer */}
-                  {activeTimers[index] && timers[index] > 0 && (
-                    <View style={styles.circularContainer}>
-                      <CircularProgress progress={(60 - timers[index]) / 60} />
+                  {/* progress bar */}
+                  {progressAnims[index] && fadeAnims[index] && (
+                    <View style={styles.loaderContainer}>
+                      <Animated.View style={{ opacity: fadeAnims[index], marginBottom: 8 }}>
+                        <Text style={styles.loaderText}>
+                          {messages[messageIndices[index] || 0]}
+                        </Text>
+                      </Animated.View>
+                      <View style={styles.progressBarBackground}>
+                        <Animated.View
+                          style={[
+                            styles.progressBarFill,
+                            {
+                              width: progressAnims[index].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0%', '100%']
+                              }),
+                            },
+                          ]}
+                        />
+                      </View>
                     </View>
                   )}
+
 
                   {/* Small Preview after try-on */}
                   {isTryOnDone && (
@@ -351,6 +428,7 @@ const styles = StyleSheet.create({
   previewContainer: {
     flex: 1,
     position: 'relative',
+    paddingBottom: 10,
   },
   bottomButtons: {
     flexDirection: 'row',
@@ -574,7 +652,34 @@ const styles = StyleSheet.create({
     height: '90%',
     borderRadius: 8,
   },
-      
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 10, // ⬅️ keeps it above the buttons (adjust as needed)
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },  
+  progressBarBackground: {
+    height: 10,
+    width: '100%',
+    backgroundColor: '#E0E0E0',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#843CA7',
+    borderRadius: 8,
+  },
+  loaderText: {
+    fontSize: 14,
+    color: '#843CA7',
+    fontWeight: '500',
+    opacity: 0.9,
+  },
+        
 });
 
 export default OutfitPreviewScreen;

@@ -13,6 +13,7 @@ import SafeScreen from "../../components/SafeScreen";
 import { useWishlistStore } from "../../store/WishlistStore";
 import WishlistItemCard from "../../components/marketplace/wishlist/WishlistItem";
 import { useNavigation } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const WishlistScreen = () => {
   const navigation = useNavigation();
@@ -27,6 +28,7 @@ const WishlistScreen = () => {
 
   return (
     <SafeScreen>
+      <GestureHandlerRootView>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="black" />
@@ -81,6 +83,7 @@ const WishlistScreen = () => {
           contentContainerStyle={styles.list}
         />
       )}
+      </GestureHandlerRootView>
     </SafeScreen>
   );
 };
