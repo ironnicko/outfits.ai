@@ -70,7 +70,7 @@ yarn install
 ## Install backend dependencies
 
 ```
-cd ./Go-Backend
+cd ./backend
 go mod download
 
 cd ../Segment
@@ -100,7 +100,7 @@ docker-compose up --build
 - ## Backend:
 
   ```
-  cd ./Go-Backend
+  cd ./backend
   go run .
   ```
 
@@ -128,7 +128,7 @@ outfits.ai/
 │
 ├── App/ # React-Native TypeScript Application
 │
-├── Go-Backend/ # Golang Fiber Backend
+├── backend/ # Golang Fiber Backend
 │
 ├── Terraform/ # Terraform & Ansible Configs
 │ ├── terraform/

@@ -1,24 +1,22 @@
 version: 2
 updates:
-  - package-ecosystem: "pip" 
-    directory: "/Segment/" 
+  - package-ecosystem: "pip"
+    directory: "/Segment/"
     schedule:
-      interval: "weekly" 
+      interval: "weekly"
     commit-message:
-      prefix: "fix" 
+      prefix: "fix"
 
-  
-  - package-ecosystem: "npm" 
-    directory: "/App" 
+  - package-ecosystem: "npm"
+    directory: "/App"
     schedule:
-      interval: "weekly" 
+      interval: "weekly"
     commit-message:
-      prefix: "fix" 
+      prefix: "fix"
 
-  
-  - package-ecosystem: "gomod" 
-    directory: "/Go-Backend" 
+  - package-ecosystem: "gomod"
+    directory: "/backend"
     schedule:
-      interval: "weekly" 
+      interval: "weekly"
     commit-message:
-      prefix: "fix" 
+      prefix: "fix"
