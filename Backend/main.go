@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	config "outfits/config"
 
 	"outfits/routes"
@@ -14,9 +13,9 @@ import (
 )
 
 func main() {
-	prod := os.Getenv("PRODUCTION")
-	fmt.Println(prod)
-	if prod != "prod" {
+	config.ReadConfigs()
+	fmt.Println(config.PROD)
+	if config.PROD != "PROD" {
 		err := godotenv.Load(".env.local")
 		if err != nil {
 			log.Fatalf("Error loading .env file")
@@ -24,9 +23,10 @@ func main() {
 	}
 
 	config.ConnectDb()
+	config.S3Init()
 	app := fiber.New()
 
-	// When going prod don't forget to change Origins problem
+	// When going PROD don't forget to change Origins problem
 
 	app.Use(cors.New(cors.Config{
 		AllowOriginsFunc: func(origin string) bool {
@@ -41,7 +41,7 @@ func main() {
 	routes.SetUpUserRoutes(api)
 	routes.SetUpClothingRoutes(api)
 	routes.SetUpOutfitRoutes(api)
-	port := os.Getenv("PORT")
-	app.Listen(":" + port)
+
+	app.Listen(":" + config.PORT)
 
 }

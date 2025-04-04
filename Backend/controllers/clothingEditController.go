@@ -2,16 +2,20 @@ package controllers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
-	configs "outfits/config"
+	config "outfits/config"
 	"outfits/models"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -42,13 +46,13 @@ func ForwardRequest(c *fiber.Ctx, url string) ([]byte, error) {
 }
 
 func GetColor(c *fiber.Ctx) error {
-	url := os.Getenv("SEGMENT_URL") + ":8001/clothing/color"
+	url := config.SEGMENT_URL + ":8001/clothing/color"
 	_, req := ForwardRequest(c, url)
 	return req
 }
 
 func DeleteClothing(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := config.Db
 
 	clothingID := c.Params("clothing_id")
 
@@ -78,17 +82,7 @@ func DeleteClothing(c *fiber.Ctx) error {
 }
 
 func DeleteS3Object(bucketName, objectKey string) error {
-
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("ap-south-2"),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create session: %v", err)
-	}
-
-	svc := s3.New(sess)
-
-	_, err = svc.DeleteObject(&s3.DeleteObjectInput{
+	_, err := config.S3Client.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
@@ -96,14 +90,35 @@ func DeleteS3Object(bucketName, objectKey string) error {
 		return fmt.Errorf("failed to delete object: %v", err)
 	}
 
-	err = svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+	err = config.S3Client.WaitUntilObjectNotExists(&s3.HeadObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to wait for object deletion: %v", err)
 	}
-
 	fmt.Printf("Deleted %s from %s\n", objectKey, bucketName)
 	return nil
+}
+
+func UploadObject(bucketName string, objectKey string, file multipart.File) (string, error) {
+	// Create an S3 uploader
+	uploader := s3manager.NewUploader(config.AwsSEss)
+
+	// Upload the file to S3
+	result, err := uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+		Body:   file,
+	})
+	if err != nil {
+		var noBucket *types.NoSuchBucket
+		if errors.As(err, &noBucket) {
+			log.Printf("Bucket %s does not exist.\n", bucketName)
+			return "", noBucket
+		}
+		return "", err
+	}
+
+	return result.Location, nil // Return the URL of the uploaded object
 }

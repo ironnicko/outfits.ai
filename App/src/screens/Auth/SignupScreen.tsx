@@ -8,7 +8,7 @@ import { NavigationProp } from '../../types/types';
 import { supabase } from '../../store/supabase';
 import { useAuthStore } from "../../store/authStore"; 
 import { useNavigation } from '@react-navigation/native';
-import { CommonActions } from '@react-navigation/native';
+
 
 const SignupScreen = () => {
   const navigation = useNavigation<NavigationProp>();

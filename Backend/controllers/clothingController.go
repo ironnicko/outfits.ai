@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	configs "outfits/config"
+	config "outfits/config"
 	"outfits/models"
 	"strconv"
 	"strings"
@@ -69,7 +69,7 @@ func SendRequest(url string, body *bytes.Buffer, writer *multipart.Writer) ([]by
 
 func CreateClothing(c *fiber.Ctx) error {
 	user := c.Locals("user").(types.UserResponse)
-	db := configs.DB.Db
+	db := config.Db
 	clothing := models.Clothing{}
 
 	if err := c.BodyParser(&clothing); err != nil {
@@ -115,7 +115,7 @@ func CreateClothing(c *fiber.Ctx) error {
 		}
 
 		// Send the POST request to the FastAPI server
-		url := os.Getenv("SEGMENT_URL") + ":8001/clothing/upload"
+		url := config.SEGMENT_URL + ":8001/clothing/upload"
 		respBody, err := SendRequest(url, body, writer)
 		if err != nil {
 			return ErrorRollBack(nil, db, clothing.ID, err.Error())
@@ -165,7 +165,7 @@ func CreateClothing(c *fiber.Ctx) error {
 }
 
 func GetClothings(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := config.Db
 	user := c.Locals("user").(types.UserResponse)
 	clothings := []models.Clothing{}
 	db.Where("user_id = ?", user.ID.String()).Preload("Tags").Find(&clothings)
@@ -174,7 +174,7 @@ func GetClothings(c *fiber.Ctx) error {
 }
 
 func GetClothing(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := config.Db
 	clothing_id := c.Params("clothing_id")
 	clothing := models.Clothing{}
 	db.Where("id = ?", clothing_id).Preload("Tags").Find(&clothing)

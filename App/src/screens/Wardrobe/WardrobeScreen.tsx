@@ -120,7 +120,7 @@ const WardrobeScreen = () => {
       setLoading(true);
       check.current = true;
       const uploads = result.assets.map((f) => handleUpload(f));
-      await Promise.all(uploads);
+      await Promise.allSettled(uploads);
       setLoading(false);
       setRefresh(!refresh);
     }

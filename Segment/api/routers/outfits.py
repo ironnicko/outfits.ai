@@ -16,7 +16,7 @@ async def generate_outfits(
     pairWithArticles: str = Form(...)
 ):
 
-    part1 = """
+    prompt = """
     Given lastly are the properties of clothing articles, and you need to make multiple combinations of outfits using the same.
 
     Ensure to use the color property to match them properly as per latest trends.
@@ -37,7 +37,7 @@ async def generate_outfits(
     },
     ...]
     make sure you don't exceed more than 10 combinations, no repetition.
-    only use the given clothing articles, meaning, ID must be from the given only.
+    only use the given clothes. Do not make up ID's, use only clothing ID's from
     use the tags given as well in your outfit combinations.
     given articles will be JSON, and you will output in JSON as well.
     if there's no clothing article for a particular type, you may enter a '-1' in there.
@@ -45,16 +45,16 @@ async def generate_outfits(
     OUTPUT must be only an array of JSON.
     if some clothing doesn't match well based on the occasion you can skip it. Ex: pants can't be worn for working out.
     Try not to give single clothing outfit recommendations if possible.
-    Here's the clothing articles:
 
     """
-    part2 = clothes
-    part3 = "\n\nHere's clothing articles that will remain fixed:\n"
-    part3 += pairWithArticles
-    part4 = "\n\nThis is the occasion:"
-    part4 += occasion
+    body = "\n\nHere's the clothing articles:\n"
+    body += clothes
+    body += "\n\nHere's clothing articles that will remain fixed:\n"
+    body += pairWithArticles
+    body += "\n\nThis is the occasion:"
+    body += occasion
 
-    output = await create_combinations(**LLM, prompt=part1 + part2 + part3 + part4)
+    output = await create_combinations(**LLM, prompt=prompt, body=body)
 
     dictionary = {}
     for element in output:
@@ -69,7 +69,7 @@ async def get_opinion(
     clothing: str = Form(...),
     clothes: str = Form(...)
 ):
-    part1 = """
+    prompt = """
         Given are some clothes and their properties to which the given clothing is similar to,
         You are required to give a description as to why the clothing will go along with the given clothes.
         Also provide a rating from 0 - 5 which describes if the clothing will be a good purchase or not.
@@ -81,12 +81,12 @@ async def get_opinion(
         } 
         Ensure that the description is mainly relevant to the given clothes, try not to be highly generic.
     """
-    part2 = "Here's the clothes:\n"
-    part2 += clothes
-    part3 = "Here's the clothing:\n"
-    part3 += clothing
+    body = "Here's the clothes:\n"
+    body += clothes
+    body = "Here's the clothing:\n"
+    body += clothing
 
-    response: dict = await gpt_request(**LLM, prompt=part1 + part2 + part3, img=None, filename=None)
+    response: dict = await gpt_request(**LLM, prompt=prompt, body=body, img=None, filename=None)
 
     return response
 

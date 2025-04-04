@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"mime/multipart"
-	"os"
-	configs "outfits/config"
+	config "outfits/config"
 	"outfits/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -38,7 +37,7 @@ func GetSimilarClothings(db *gorm.DB, embedding string, clothingTypes []string, 
 }
 
 func GenerateOutfit(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := config.Db
 	user := c.Locals("user").(types.UserResponse)
 
 	var reqBody struct {
@@ -66,7 +65,7 @@ func GenerateOutfit(c *fiber.Ctx) error {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	url := os.Getenv("SEGMENT_URL") + ":8001/clothing/embedding"
+	url := config.SEGMENT_URL + ":8001/clothing/embedding"
 
 	embedding, err := SendRequest(url, body, writer)
 	if err != nil {
@@ -99,7 +98,7 @@ func GenerateOutfit(c *fiber.Ctx) error {
 
 func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles []models.Clothing, occasion string) error {
 	body := &bytes.Buffer{}
-	db := configs.DB.Db
+	db := config.Db
 	writer := multipart.NewWriter(body)
 
 	clothesJSON, err := json.Marshal(clothes)
@@ -127,7 +126,7 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles 
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/generate-outfits"
+	url := config.SEGMENT_URL + ":8001/outfit/generate-outfits"
 
 	responses, err := SendRequest(url, body, writer)
 	if err != nil {

@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"mime/multipart"
-	"os"
-	configs "outfits/config"
+	config "outfits/config"
 	"outfits/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +15,7 @@ import (
 func CreateOutfit(c *fiber.Ctx) error {
 	outfit := models.Outfit{}
 	user := c.Locals("user").(types.UserResponse)
-	db := configs.DB.Db
+	db := config.Db
 	if err := c.BodyParser(&outfit); err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
@@ -32,8 +31,8 @@ func CreateOutfit(c *fiber.Ctx) error {
 }
 
 func ColorTherapyController(c *fiber.Ctx) error {
-	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/colortherapy"
-	db := configs.DB.Db
+	url := config.SEGMENT_URL + ":8001/outfit/colortherapy"
+	db := config.Db
 	user := c.Locals("user").(types.UserResponse)
 
 	Data := []models.Clothing{}
@@ -85,14 +84,14 @@ func ColorTherapyController(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusAccepted).Send(responseBody)
 }
 func OutfitCheck(c *fiber.Ctx) error {
-	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/outfitcheck"
+	url := config.SEGMENT_URL + ":8001/outfit/outfitcheck"
 	_, req := ForwardRequest(c, url)
 	return req
 }
 
 func GetOutfits(c *fiber.Ctx) error {
 	var outfits []models.Outfit
-	db := configs.DB.Db
+	db := config.Db
 	user := c.Locals("user").(types.UserResponse)
 
 	if err := db.Preload("OutfitTop").Preload("OutfitBottom").Preload("OutfitShoe").Preload("OutfitHat").
@@ -105,7 +104,7 @@ func GetOutfits(c *fiber.Ctx) error {
 
 func DeleteOutfit(c *fiber.Ctx) error {
 	outfit := models.Outfit{}
-	db := configs.DB.Db
+	db := config.Db
 	outfitID := c.Params("outfit_id")
 
 	if err := db.First(&outfit, outfitID).Error; err != nil {

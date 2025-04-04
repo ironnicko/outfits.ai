@@ -26,7 +26,7 @@ export const onboardingQuestions = [
     type: "date",
   },
   {
-    id: "style",
+    id: "styles",
     text: "How would you describe your personal style?",
     type: "multi-select",
     options: [

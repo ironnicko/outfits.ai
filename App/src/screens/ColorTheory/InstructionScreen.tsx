@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, Image, StyleSheet, Pressable, Platform, ActionSheetIOS, Modal, ActivityIndicator 
+import {
+  View, Text, Image, StyleSheet, Pressable, Platform, ActionSheetIOS, Modal, ActivityIndicator
 } from "react-native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -11,35 +11,52 @@ import { useColorAnalysisStore } from "../../store/ColorAnalysisStore";// Import
 import { useNavigation } from "@react-navigation/native";
 import { supabase } from "../../store/supabase";
 import { NavigationProp } from "../../types/types";
+import { useOnboardingStore } from "../../store/useOnBoardingStore";
 
 const InstructionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const token = useAuthStore((state) => state.token);
+  const answers = useOnboardingStore((state) => state.answers);
   const setColorAnalysisResults = useColorAnalysisStore((state) => state.setColorAnalysisResults); // Zustand Setter
 
   const finishOnboarding = async () => {
     try {
       const token = useAuthStore.getState().token;
       if (!token) return;
-  
+
       useAuthStore.setState({ isOnboardingComplete: true });
 
-      // ✅ Update the backend
-      await api.post('/api/v1/user/onboard', { isonboardingcompleted: true }, {
-        headers: { Authorization: `Bearer ${token}` },
+      console.log(answers)
+
+      const formData = new FormData();
+
+      answers.photos.forEach((photoUri: any) => {
+        const file = {
+          uri: photoUri,
+          type: 'image/png', 
+          name: photoUri.split('/').pop(),
+        };
+        formData.append('photos', file);
       });
-  
-      // ✅ Update Zustand state (so RootNavigator refreshes)
-  
+      
+      const requests = [api.post('/api/v1/user/onboard', answers, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      api.post('/api/v1/user/onboardimgs', formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]
+    await Promise.allSettled(requests)
+
       console.log("Onboarding completed successfully! Navigating to MainTabs...");
-  
+
     } catch (error) {
       console.error("Error updating onboarding status:", error);
     }
   };
-  
+
   const openCamera = async () => {
     const options = {
       mediaType: "photo",
@@ -146,9 +163,9 @@ const InstructionScreen = () => {
       </Text>
 
       {/* Scan Button with Loader */}
-      <Pressable 
-        style={[styles.button, loading && styles.buttonDisabled]} 
-        onPress={handleScanFacePress} 
+      <Pressable
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleScanFacePress}
         disabled={loading}
       >
         {loading ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.buttonText}>SCAN YOUR FACE</Text>}

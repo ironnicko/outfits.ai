@@ -2,7 +2,6 @@ package configs
 
 import (
 	"log"
-	"os"
 	"outfits/models"
 
 	"github.com/supabase-community/auth-go"
@@ -10,15 +9,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-// Declare a structure it will be a pointer which will hold the database connection instance
-type Dbinstance struct {
-	Db *gorm.DB
-}
-
-// Global Variable It will hold database instance throughout the application
-var DB Dbinstance
-var SupabaseClient auth.Client
 
 func CreateUsersTable(db *gorm.DB) error {
 	return db.Exec(`
@@ -33,13 +23,8 @@ func CreateUsersTable(db *gorm.DB) error {
 }
 
 func ConnectDb() {
-	user := os.Getenv("DB_USERNAME")
-	passw := os.Getenv("DB_PASSWORD")
-	port := os.Getenv("DB_PORT")
-	dbname := os.Getenv("DB_NAME")
-	host := os.Getenv("DB_HOST")
 
-	dsn := "postgresql://" + user + ":" + passw + "@" + host + ":" + port + "/" + dbname
+	dsn := "postgresql://" + DB_USERNAME + ":" + DB_PASSWORD + "@" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
@@ -62,10 +47,9 @@ func ConnectDb() {
 	db.Exec(`ALTER TABLE clothings DROP CONSTRAINT IF EXISTS fk_clothings_user`)
 	err = db.AutoMigrate(&models.Vector{}, &models.Tags{}, &models.Clothing{}, &models.User{}, &models.Outfit{})
 
-	DB = Dbinstance{
-		Db: db,
-	}
-	SupabaseClient = auth.New(os.Getenv("URL"), os.Getenv("ANON"))
+	Db = db
+
+	SupabaseClient = auth.New(SUPABASE_URL, SUPABASE_ANNON)
 	if err != nil {
 		log.Printf("Failed to automigrate")
 	}

@@ -33,9 +33,9 @@ const LoginScreen = () => {
         }
 
         if (data.session) {
+          console.log("Hi")
             const token = data.session.access_token;
           
-            // ✅ Fetch user data & onboarding status
             const response = await api.get(`/api/v1/user`, {
                 headers: { Authorization: `Bearer ${token}` },
             });

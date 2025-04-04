@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+	"os"
 	configs "outfits/config"
 	"outfits/models"
 
@@ -11,7 +13,7 @@ import (
 )
 
 func CreateUser(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := configs.Db
 	user := models.User{}
 
 	if err := c.BodyParser(&user); err != nil {
@@ -70,9 +72,7 @@ func LoginUser(c *fiber.Ctx) error {
 			"result": err.Error(),
 		})
 	}
-	// configs.SupabaseClient.Authorize(types.AuthorizeRequest{
-	// 	Provider: "google",
-	// })
+
 	user.ID = userAuth.User.ID
 	return c.JSON(fiber.Map{
 		"status": true,
@@ -91,13 +91,76 @@ func LogoutUser(c *fiber.Ctx) error {
 }
 
 func OnBoardingCompleted(c *fiber.Ctx) error {
-	db := configs.DB.Db
+	db := configs.Db
 	userObj := c.Locals("user").(types.UserResponse)
 
-	db.Model(&models.User{}).Where("id = ?", userObj.ID).Update("is_on_boarding_completed", "true")
+	body := models.User{}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": false,
+			"result": err.Error(),
+		})
+	}
+
+	body.IsOnBoardingCompleted = true
+
+	fmt.Println(body)
+
+	db.Model(&models.User{}).Where("id = ?", userObj.ID).Updates(body)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
 		"status":  true,
 		"message": "User Information",
+		"result":  "Success",
+	})
+}
+
+func OnBoardingImages(c *fiber.Ctx) error {
+
+	db := configs.Db
+	userObj := c.Locals("user").(types.UserResponse)
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status": false,
+			"result": "Failed to retrieve multipart form",
+		})
+	}
+
+	files := form.File["photos"]
+	var uploadedFileURLs []string
+
+	for _, file := range files {
+		fileReader, err := file.Open()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"status": false,
+				"result": "Failed to open file",
+			})
+		}
+		defer fileReader.Close()
+
+		objectKey := "body/" + userObj.ID.String() + "/" + file.Filename
+		fileURL, err := UploadObject(os.Getenv("BUCKET_NAME"), objectKey, fileReader)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"status": false,
+				"result": "Failed to upload file to S3",
+			})
+		}
+
+		uploadedFileURLs = append(uploadedFileURLs, fileURL)
+	}
+
+	body := models.User{
+
+		BodyImages: uploadedFileURLs,
+	}
+
+	db.Model(&models.User{}).Where("id = ?", userObj.ID).Updates(body)
+
+	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{
+		"status":  true,
+		"message": "User  Information",
 		"result":  "Success",
 	})
 }
@@ -106,7 +169,8 @@ func OnBoardingCompleted(c *fiber.Ctx) error {
 
 func UserInfo(c *fiber.Ctx) error {
 	userObj := c.Locals("user").(types.UserResponse)
-	db := configs.DB.Db
+
+	db := configs.Db
 	user := make(map[string]interface{})
 	db.Model(&models.User{}).Where("id = ?", userObj.ID.String()).Find(&user)
 	return c.Status(fiber.StatusAccepted).JSON(fiber.Map{

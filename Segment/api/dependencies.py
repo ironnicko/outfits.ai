@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
         'sentence-transformers/all-MiniLM-L6-v2')
 
     EMBED["model"].to(device)
-    LLM["client"] = g4f.AsyncClient(provider=g4f.Provider.OIVSCode)
+    LLM["client"] = g4f.AsyncClient(provider=g4f.Provider.Blackbox)
     yield
     # During Shut-Down
     EMBED.clear()

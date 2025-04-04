@@ -39,7 +39,6 @@ const RootNavigator = () => {
   const { clear: clearOutfits } = useOutfitStore();
   const [loading, setLoading] = useState(true);
 
-  // ✅ Now, React will re-render when Zustand state changes
   const isAuthenticated = !!token;
 
   useEffect(() => {
@@ -69,7 +68,6 @@ const RootNavigator = () => {
       try {
         const token = session.access_token;
   
-        // ✅ Fetch user data from API
         const response = await api.get(`/api/v1/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -89,7 +87,7 @@ const RootNavigator = () => {
 
   const handleSignOut = async () => {
     try {
-      await Promise.all([clearUsernameLocal(), clearTokenLocal()]);
+      await Promise.allSettled([clearUsernameLocal(), clearTokenLocal()]);
       clearUsername();
       clearToken();
       clearClothes();

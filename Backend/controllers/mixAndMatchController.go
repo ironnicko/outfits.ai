@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"mime/multipart"
-	"os"
-	configs "outfits/config"
+	config "outfits/config"
 	"outfits/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,9 +14,9 @@ import (
 func MixAndMatchController(c *fiber.Ctx) error {
 
 	user := c.Locals("user").(types.UserResponse)
-	db := configs.DB.Db
+	db := config.Db
 
-	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/mixandmatch"
+	url := config.SEGMENT_URL + ":8001/outfit/mixandmatch"
 	respBody, _ := ForwardRequest(c, url)
 
 	var fastAPIResponse struct {
@@ -78,7 +77,7 @@ func GetDescription(c *fiber.Ctx, clothes []models.Clothing, clothing models.Clo
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 
-	url := os.Getenv("SEGMENT_URL") + ":8001/outfit/get-opinion"
+	url := config.SEGMENT_URL + ":8001/outfit/get-opinion"
 
 	responses, err := SendRequest(url, body, writer)
 	if err != nil {
