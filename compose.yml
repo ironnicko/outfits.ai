@@ -55,7 +55,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - PRODUCTION=prod
+      - PRODUCTION=PROD
     networks:
       - outfits-ai-network
     ports:

@@ -13,13 +13,14 @@ import (
 )
 
 func main() {
-	config.ReadConfigs()
 	fmt.Println(config.PROD)
 	if config.PROD != "PROD" {
 		err := godotenv.Load(".env.local")
+		config.ReadConfigs()
 		if err != nil {
 			log.Fatalf("Error loading .env file")
 		}
+		fmt.Println(config.SEGMENT_URL)
 	}
 
 	config.ConnectDb()

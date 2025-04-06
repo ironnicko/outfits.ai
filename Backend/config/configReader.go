@@ -43,4 +43,5 @@ func ReadConfigs() {
 	SUPABASE_URL = os.Getenv("URL")
 	SUPABASE_ANNON = os.Getenv("ANON")
 	SEGMENT_URL = os.Getenv("SEGMENT_URL")
+
 }
