@@ -31,7 +31,9 @@ import OutfitCheckResultScreen from '../screens/outfitCheck/OutfitCheckResultScr
 import MixAndMatchResultScreen from '../screens/mixAndMatch/MixAndMatchResultScreen';
 import SelectClothingItem from '../screens/generateOutfits/SelectClothingItem';
 
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
 
 const RootNavigator = () => {
   const { token, isOnboardingComplete, setToken, setUsername, clearToken, clearUsername } = useAuthStore();
@@ -46,9 +48,11 @@ const RootNavigator = () => {
       try {
         setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
+        
         if (session) {
           await handleSignIn(session);
-        } 
+        }
+        
       } catch (error) {
         console.error('Initial session check error:', error);
       } finally {
@@ -56,12 +60,30 @@ const RootNavigator = () => {
       }
     };
 
-    checkInitialSession();
-  }, []);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth State Change Event:', event);
 
-  useEffect(() => {
-    console.log("Auth state changed, re-rendering RootNavigator.");
-  }, [token, isOnboardingComplete]); // ✅ Re-render when Zustand state updates
+        switch (event) {
+          case 'SIGNED_IN':
+            await handleSignIn(session);
+            break;
+          case 'SIGNED_OUT':
+            handleSignOut();
+            break;
+          case 'TOKEN_REFRESHED':
+            await handleSignIn(session);
+            break;
+        }
+      }
+    );
+
+    checkInitialSession();
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleSignIn = async (session: Session | null) => {
     if (session?.access_token) {
