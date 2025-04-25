@@ -15,7 +15,7 @@ var SupabaseClient auth.Client
 var Db *gorm.DB
 var S3Client *s3.S3
 var AwsSEss *session.Session
-var BUCKETNAME, PROD, PORT, DB_USERNAME, SEGMENT_URL, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, SUPABASE_URL, SUPABASE_ANNON string
+var BUCKETNAME, PRODUCTION, PORT, DB_USERNAME, SEGMENT_URL, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, SUPABASE_URL, SUPABASE_ANNON string
 
 func S3Init() error {
 
@@ -33,7 +33,7 @@ func S3Init() error {
 
 func ReadConfigs() {
 	BUCKETNAME = os.Getenv("BUCKET_NAME")
-	PROD = os.Getenv("PRODUCTION")
+	PRODUCTION = os.Getenv("PRODUCTION")
 	PORT = os.Getenv("PORT")
 	DB_USERNAME = os.Getenv("DB_USERNAME")
 	DB_PASSWORD = os.Getenv("DB_PASSWORD")
