@@ -13,8 +13,9 @@ import (
 )
 
 func main() {
-	fmt.Println(config.PROD)
-	if config.PROD != "PROD" {
+	config.ReadConfigs()
+	fmt.Println(config.PRODUCTION)
+	if config.PRODUCTION != "PROD" {
 		err := godotenv.Load(".env.local")
 		config.ReadConfigs()
 		if err != nil {

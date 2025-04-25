@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import JSONResponse
-import g4f
+from openai import AsyncOpenAI
 from sentence_transformers import SentenceTransformer
 import torch
 
@@ -12,7 +12,7 @@ LLM = {}
 
 prompt = """
 Provided below is the image of clothing article, you need to give me the color, type, and tags in the following format as plain-text:
-{\"color\" : <the color of the clothing>, \"clothingType\": <the type of the clothing>, \"Tags\": {<generate an array of tags describing the clothing article along with the occasion of the clothing article>}}
+{\"color\" : <the color of the clothing>, \"clothingType\": <the type of the clothing>, \"Tags\": [<generate an array of tags describing the clothing article along with the occasion of the clothing article>]}
 The 'type' must fall under the following categories:
 top, bottom, shoe, hat, others
 
@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI):
         'sentence-transformers/all-MiniLM-L6-v2')
 
     EMBED["model"].to(device)
-    LLM["client"] = g4f.AsyncClient(provider=g4f.Provider.OIVSCode)
+    LLM["client"] = AsyncOpenAI()
     yield
     # During Shut-Down
     EMBED.clear()
