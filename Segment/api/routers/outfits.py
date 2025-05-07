@@ -13,9 +13,13 @@ router = APIRouter(
 async def generate_outfits(
     clothes: str = Form(...),
     occasion: str = Form(...),
-    pairWithArticles: str = Form(...)
+    pairWithArticles: str = Form(...),
+    userInfo: str = Form(...)
 ):
-
+    clothes = str(json.loads(clothes))
+    userInfo = str(json.loads(userInfo))
+    pairWithArticles = str(json.loads(pairWithArticles))
+    print(userInfo)
     prompt = """
     Given lastly are the properties of clothing articles, and you need to make multiple combinations of outfits using the same.
 
@@ -47,7 +51,9 @@ async def generate_outfits(
     Try not to give single clothing outfit recommendations if possible.
 
     """
-    body = "\n\nHere's the clothing articles:\n"
+    body = "\n\nHere's the preferences and attributes about the user:"
+    body += userInfo
+    body += "\n\nHere's the clothing articles:\n"
     body += clothes
     body += "\n\nHere's clothing articles that will remain fixed:\n"
     body += pairWithArticles
@@ -69,6 +75,8 @@ async def get_opinion(
     clothing: str = Form(...),
     clothes: str = Form(...)
 ):
+    clothes = str(json.loads(clothes))
+    clothing = str(json.loads(clothing))
     prompt = """
         Given are some clothes and their properties to which the given clothing is similar to,
         You are required to give a description as to why the clothing will go along with the given clothes.

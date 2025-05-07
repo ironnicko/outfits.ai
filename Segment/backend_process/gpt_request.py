@@ -28,7 +28,7 @@ async def gpt_request(client, img: bytes, filename: str, prompt: str, body: str 
         })
 
     response = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1-mini",
         messages=messages,
     )
 

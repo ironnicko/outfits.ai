@@ -43,8 +43,8 @@ func ConnectDb() {
 	}
 
 	// Auto Migration Of Models
-	db.Exec(`ALTER TABLE vectors DROP CONSTRAINT IF EXISTS fk_vectors_user`)
-	db.Exec(`ALTER TABLE clothings DROP CONSTRAINT IF EXISTS fk_clothings_user`)
+	// db.Exec(`ALTER TABLE vectors DROP CONSTRAINT IF EXISTS fk_vectors_user`)
+	// db.Exec(`ALTER TABLE clothings DROP CONSTRAINT IF EXISTS fk_clothings_user`)
 	err = db.AutoMigrate(&models.Vector{}, &models.Tags{}, &models.Clothing{}, &models.User{}, &models.Outfit{})
 
 	Db = db

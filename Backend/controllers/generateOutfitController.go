@@ -101,6 +101,13 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles 
 	db := config.Db
 	writer := multipart.NewWriter(body)
 
+	user := make(map[string]interface{})
+	userObj := c.Locals("user").(types.UserResponse)
+	db.Model(&models.User{}).Select(
+		"gender", "body_shape", "dressing_challenges",
+		"colors", "styles", "skin_tone", "under_tone", "hair_color",
+		"eye_color").Where("id = ?", userObj.ID.String()).Find(&user)
+
 	clothesJSON, err := json.Marshal(clothes)
 	if err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
@@ -112,6 +119,13 @@ func GeneratePairings(c *fiber.Ctx, clothes []models.Clothing, pairWithArticles 
 
 	pairWithArticlesJSON, err := json.Marshal(pairWithArticles)
 	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+	userInfoJSON, err := json.Marshal(user)
+	if err != nil {
+		return ErrorRollBack(c, nil, 0, err.Error())
+	}
+	if err := writer.WriteField("userInfo", string(userInfoJSON)); err != nil {
 		return ErrorRollBack(c, nil, 0, err.Error())
 	}
 

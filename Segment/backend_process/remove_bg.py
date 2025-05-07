@@ -1,18 +1,9 @@
 import io
 import json
 import aiohttp
-from dotenv import dotenv_values
-from os import listdir, environ
 from PIL import Image
 from io import BytesIO
-
-check_local = ".env.local" in listdir()
-
-config = {
-    **environ,
-    **dotenv_values(".env" + ["", ".local"][check_local]),
-}
-
+from config import config
 
 async def get_color(file, x, y):
     file_bytes = await file.read()

@@ -14,6 +14,7 @@ type Outfit struct {
 	Bottom       *int64    `json:"bottom"`
 	OutfitBottom *Clothing `gorm:"foreignKey:Bottom;constraint:OnDelete:CASCADE;"`
 	Shoe         *int64    `json:"shoe"`
+	TryOnImage  string    `json:"try_on_image"`
 	OutfitShoe   *Clothing `gorm:"foreignKey:Shoe;constraint:OnDelete:CASCADE;"`
 	Hat          *int64    `json:"hat"`
 	OutfitHat    *Clothing `gorm:"foreignKey:Hat;constraint:OnDelete:CASCADE;"`
