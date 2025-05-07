@@ -127,13 +127,6 @@ const MixAndMatchScreen = () => {
   return (
     <SafeScreen>
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          {navigation.canGoBack() && (
-              <IconButton icon="chevron-left" size={24} onPress={() => navigation.goBack()} />
-            )}
-        </View>
-
         {/* Main Content */}
         <ScrollView style={styles.content}>
           <Text style={styles.title}>

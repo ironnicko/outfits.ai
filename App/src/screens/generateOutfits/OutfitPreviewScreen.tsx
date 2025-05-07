@@ -113,7 +113,7 @@ const OutfitPreviewScreen = () => {
 
   const requestVirtualTryOn = async (payload: any): Promise<string | null> => {
     try {
-      const res = await fetch('https://0mksma7zq2syj7-5000.proxy.runpod.net/inference', {
+      const res = await fetch('https://3767oumfea53rw-5000.proxy.runpod.net/inference', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,7 +200,7 @@ const OutfitPreviewScreen = () => {
     showNextMessage();
   
     const modelImageUrl =
-      "https://photos.peopleimages.com/picture/202304/2797874-a-fashion-portrait-and-woman-with-hands-in-pocket-with-happy-confidence.-full-body-beauty-and-weekend-style-lifestyle-model-standing-in-studio-with-casual-smile-on-face-isolated-on-a-png-background-fit_400_400.jpg";
+      "https://levihsu-ootdiffusion.hf.space/file=/tmp/gradio/06fa5f096fc3d2acfbb16f891601ff08d370b246/051918_0.jpg";
   
     try {
       // TOP ONLY

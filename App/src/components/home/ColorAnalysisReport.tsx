@@ -26,7 +26,7 @@ const ColorAnalysisReport = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Report</Text>
+      <Text style={styles.title}>Your Color Analysis Report</Text>
       <View style={styles.card}>
         {colorAnalysisResults.map((result, index) => (
           <View key={index} style={styles.resultItem}>

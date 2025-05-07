@@ -11,7 +11,8 @@ import { NavigationProp } from '../types/types';
 import Checklist from '../components/home/Checklist';
 import Carousel from '../components/home/CarouselList';
 import ColorAnalysisReport from '../components/home/ColorAnalysisReport';
-import CuratedPicks from '../components/home/CuratedPicks';
+import { useOutfitStore } from '../store/outfitStore';
+import OutfitPreview from '../components/OutfitPreview';
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -29,6 +30,17 @@ const HomeScreen: React.FC = () => {
   useEffect(() => {
     fetchClothes();
   }, []);
+
+  const [refresh, setRefresh] = useState(false);
+  const outfits = useOutfitStore((state) => state.outfits)
+  const setOutfits = useOutfitStore((state) => state.fetch)
+  const fetchOutfits = async () => {
+    await setOutfits(token|| "")
+  };
+  
+  useEffect(() => {
+    fetchOutfits()
+  }, [refresh])
 
   const carouselData = [
     {
@@ -59,7 +71,33 @@ const HomeScreen: React.FC = () => {
           <Checklist />
           <Carousel data={carouselData} />
           <ColorAnalysisReport />
-          <CuratedPicks />
+          <View style={{ marginTop: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#843CA7', marginLeft: 16 }}>
+              Your Previous Looks
+            </Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.outfitsContainer}
+            >
+              {outfits
+              .slice(-3, outfits.length)
+              .reverse()
+              .map((item, index) => (
+                <Pressable 
+                  key={index}
+                  style={styles.outfitCard}
+                  onLongPress={() =>{}}
+                  onPress={() => navigation.navigate('OutfitPreviewScreen', {
+                    outfits: [item],
+                    occasion: item.occasion,
+                    saveToLooks: false,
+                  })}>
+                  <OutfitPreview items={item} occasion={item.occasion} />
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
         </ScrollView>
     </SafeScreen>
   );
@@ -88,5 +126,20 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     padding: 4,
+  },
+  outfitsContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  outfitCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginRight: 16,
+    width: 200, // Add fixed width for horizontal cards
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 });

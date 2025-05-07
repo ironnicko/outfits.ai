@@ -6,6 +6,8 @@ import useNavigationStore from '../store/useNavigationStore';
 
 import HomeScreen from '../screens/HomeScreen';
 import WardrobeScreen from '../screens/Wardrobe/WardrobeScreen';
+import GenerateOutfitsScreen from '../screens/generateOutfits/GenerateOutfitsScreen';
+
 
 const MainTab = createBottomTabNavigator();
 
@@ -38,17 +40,11 @@ const MainTabNavigator: React.FC = () => {
       }}
     >
       <MainTab.Screen
-        name="Marketplace"
-        component={HomeScreen} // Placeholder
+        name="Wardrobe"
+        component={WardrobeScreen} // Placeholder
         options={{
-          title: 'Marketplace',
-          tabBarIcon: ({ color, size }) => <Icon name="home" size={size} color={color} />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            setActiveNavigator('Market');
-          },
+          title: 'Wardrobe',
+          tabBarIcon: ({ color, size }) => <Icon name="wardrobe" size={size} color={color} />,
         }}
       />
       <MainTab.Screen
@@ -59,11 +55,11 @@ const MainTabNavigator: React.FC = () => {
         }}
       />
       <MainTab.Screen
-        name="AI + Wardrobe"
-        component={WardrobeScreen} // Placeholder
+        name="AI Tools"
+        component={GenerateOutfitsScreen} // Placeholder
         options={{
-          title: 'AI + Wardrobe',
-          tabBarIcon: ({ color, size }) => <Icon name="wardrobe" size={size} color={color} />,
+          title: 'AI Tools',
+          tabBarIcon: ({ color, size }) => <Icon name="robot" size={size} color={color} />,
         }}
         listeners={{
           tabPress: (e) => {

@@ -21,7 +21,7 @@ const AiToolsTabNavigator: React.FC = () => {
   return (
     <View style={{ flex: 1 }}>
       <AiTab.Navigator
-        initialRouteName="Wardrobe"
+        initialRouteName="GenerateOutfits"
         screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#843CA7', // Selected icon color
@@ -47,7 +47,7 @@ const AiToolsTabNavigator: React.FC = () => {
         {/* Back Button */}
         <AiTab.Screen
           name="Home"
-          component={WardrobeScreen} // Placeholder; screen component is not used
+          component={HomeScreen} // Placeholder; screen component is not used
           options={{
             title: 'Home',
             tabBarIcon: ({ color, size }) => <Icon name="arrow-left" size={size} color={color} />,
@@ -61,14 +61,6 @@ const AiToolsTabNavigator: React.FC = () => {
         />
 
         {/* Other AI Tools Tabs */}
-        <AiTab.Screen
-          name="Wardrobe"
-          component={WardrobeScreen} // Placeholder
-          options={{
-            title: 'Warbrobe',
-            tabBarIcon: ({ color, size }) => <Icon name="wardrobe" size={size} color={color} />,
-          } as BottomTabNavigationOptions}
-        />
         <AiTab.Screen
           name="GenerateOutfits"
           component={GenerateOutfitsScreen}
@@ -107,7 +99,7 @@ const styles = StyleSheet.create({
   separator: {
     position: 'absolute',
     bottom: 15, // Adjust to match tab bar height
-    left: '18%', // Place between Back button and first AI tool tab
+    left: '22%', // Place between Back button and first AI tool tab
     width: 2, // Width of the separator
     height: '5%', // Match tab height proportionally
     backgroundColor: '#D3D3D3', // Light gray for subtle separation

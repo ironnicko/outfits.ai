@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   outfitContainer: {
     width: '100%',
-    height: 600,
+    height: 500,
     position: 'relative',
     backgroundColor: '#FAFAFA',
     borderRadius: 16,
