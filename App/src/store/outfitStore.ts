@@ -14,6 +14,7 @@ export interface SavedOutfit {
   shoe?: string | null;
   hat?: string | null;
   description?: string | null;
+  try_on_image?: string | null;
   occasion?: string;
   CreatedAt?: string;
 }

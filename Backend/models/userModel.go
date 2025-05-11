@@ -23,7 +23,7 @@ type User struct {
 	Styles                pq.StringArray `gorm:"type:text[];" json:"styles"`
 	SkinTone              string         `gorm:"size:255" json:"skin_tone"`
 	UnderTone             string         `gorm:"size:255" json:"under_tone"`
-	BodyImages            pq.StringArray `gorm:"type:text[];" json:"photos"`
+	BodyImage             string         `gorm:"" json:"photos"`
 	DOB                   string         `gorm:"type:DATE" json:"dob"`
 }
 

@@ -36,7 +36,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 
 const RootNavigator = () => {
-  const { token, isOnboardingComplete, setToken, setUsername, clearToken, clearUsername } = useAuthStore();
+  const { token, isOnboardingComplete, setToken, setAllData, setUsername, clearToken, clearUsername } = useAuthStore();
   const { clear: clearClothes } = useClothingStore();
   const { clear: clearOutfits } = useOutfitStore();
   const [loading, setLoading] = useState(true);
@@ -97,6 +97,7 @@ const RootNavigator = () => {
         if (response.data?.result) {
           const userData = response.data.result;
           setUsername(userData.username);
+          setAllData(userData)
           useAuthStore.setState({ isOnboardingComplete: userData.is_on_boarding_completed });
         }
         setToken(token);

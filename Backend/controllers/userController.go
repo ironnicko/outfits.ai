@@ -153,7 +153,7 @@ func OnBoardingImages(c *fiber.Ctx) error {
 
 	body := models.User{
 
-		BodyImages: uploadedFileURLs,
+		BodyImage: uploadedFileURLs[0],
 	}
 
 	db.Model(&models.User{}).Where("id = ?", userObj.ID).Updates(body)

@@ -7,11 +7,13 @@ export interface AuthState {
     token: string | null;
     username: string | null;
     isOnboardingComplete: boolean;
+    all_data: any,
     setToken: (token: string) => Promise<void>;
     setUsername: (username: string) => Promise<void>;
     setOnboardingComplete: (status: boolean) => void;
     clearToken: () => void;
     clearUsername: () => void;
+    setAllData: (all_data: any) => void;
   }
   
   export const useAuthStore = create<AuthState>()(
@@ -20,7 +22,10 @@ export interface AuthState {
         token: null,
         username: null,
         isOnboardingComplete: false,
-  
+        all_data: {},
+        setAllData: async(all_data: any)=> {
+          set({ all_data })
+        },
         setToken: async (token: string) => {
           await setTokenLocal(token);
           set({ token });
