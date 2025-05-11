@@ -51,7 +51,7 @@
     "@react-native-community/cli-platform-ios": "^15.0.0",
     "@react-native/babel-preset": "0.76.5",
     "@react-native/eslint-config": "0.76.5",
-    "@react-native/metro-config": "0.76.6",
+    "@react-native/metro-config": "0.79.2",
     "@react-native/typescript-config": "0.76.5",
     "@types/react": "^18.3.18",
     "@types/react-native-dotenv": "^0.2.2",
