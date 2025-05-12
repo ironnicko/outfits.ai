@@ -1,40 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import {StyleSheet, View, Pressable, Alert} from 'react-native';
-import {Text, Divider} from 'react-native-paper';
+import { StyleSheet, View, Pressable, Alert } from 'react-native';
+import { Text, Divider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SafeScreen from '../../../src/components/SafeScreen';
-import {useNavigation} from '@react-navigation/native';
-import {  getUsernameLocal } from '../../../src/utils/auth';
-import {  useAuthStore } from '../../../src/store/authStore';
-
+import { useNavigation } from '@react-navigation/native';
+import { getUsernameLocal } from '../../../src/utils/auth';
+import { useAuthStore } from '../../../src/store/authStore';
 import { supabase } from '../../../src/store/supabase';
 import { NavigationProp } from '../../../src/types/types';
 
-const SettingItem = ({icon, title, onPress} : any) => (
+const SettingItem = ({ icon, title, onPress }: any) => (
   <Pressable style={styles.settingItem} onPress={onPress}>
     <View style={styles.settingContent}>
-      <Icon name={icon} size={24} color="#4A6741" />
-      <Text variant="titleMedium" style={styles.settingText}>
-        {title}
-      </Text>
+      <Icon name={icon} size={22} color="#843CA7" />
+      <Text style={styles.settingText}>{title}</Text>
     </View>
-    <Icon name="chevron-right" size={24} color="#666" />
+    <Icon name="chevron-right" size={22} color="#A3A3A3" />
   </Pressable>
 );
 
-const SettingsScreen =  () => {
+const SettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  
-
   const [username, setUsername] = useState("");
 
   useEffect(() => {
     const fetchUsername = async () => {
       const localUsername = await getUsernameLocal();
-      setUsername(localUsername || " ");
-      const authUsername =  useAuthStore((state) => state.username);
+      const authUsername = useAuthStore.getState().username;
       setUsername(authUsername || localUsername || " ");
-
     };
     fetchUsername();
   }, []);
@@ -50,19 +43,11 @@ const SettingsScreen =  () => {
           onPress: async () => {
             try {
               await supabase.auth.signOut();
-  
-              // ✅ Update Zustand store
               useAuthStore.setState({
                 token: null,
                 username: null,
                 isOnboardingComplete: false,
               });
-  
-              // ✅ Navigate to the splash/login screen
-              // navigation.reset({
-              //   index: 0,
-              //   routes: [{ name: 'WelcomeScreen' }],
-              // });
             } catch (error) {
               console.error("Logout error:", error);
             }
@@ -73,25 +58,18 @@ const SettingsScreen =  () => {
       { cancelable: true }
     );
   };
-  
 
   return (
     <SafeScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Icon name="account" size={24} color="#4A6741" />
-          <Text variant="headlineMedium" style={styles.title}>
-            Settings
-          </Text>
+          <Icon name="account" size={24} color="#843CA7" />
+          <Text style={styles.title}>Settings</Text>
         </View>
 
         <View style={styles.section}>
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Signed in as
-          </Text>
-          <Text variant="headlineSmall" style={styles.email}>
-            { username  }
-          </Text>
+          <Text style={styles.sectionTitle}>Signed in as</Text>
+          <Text style={styles.email}>{username}</Text>
         </View>
 
         <Divider style={styles.divider} />
@@ -102,72 +80,69 @@ const SettingsScreen =  () => {
           onPress={() => navigation.navigate('Notifications')}
         />
         <SettingItem
-          icon="school"
-          title="Outfits.AI Tutorials"
-          onPress={() => navigation.navigate('Tutorials')}
-        />
-        <SettingItem
-          icon="message-text-outline"
+          icon="message-outline"
           title="Support & Feedback"
           onPress={() => navigation.navigate('Support')}
         />
         <SettingItem
-          icon="information"
+          icon="information-outline"
           title="About"
           onPress={() => navigation.navigate('About')}
         />
 
-        <Pressable
-          style={styles.logoutButton}
-          onPress={handleLogout}>
-          <Icon name="logout" size={24} color="#666" />
-          <Text variant="titleMedium" style={styles.logoutText}>
-            Logout
-          </Text>
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <Icon name="logout" size={22} color="#B00020" />
+          <Text style={styles.logoutText}>Logout</Text>
         </Pressable>
 
-        <Text style={styles.version}>Outfits.AI 0.1.0</Text>
+        <Text style={styles.version}>Outfits.ai v0.1.0</Text>
       </View>
     </SafeScreen>
   );
 };
 
+export default SettingsScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAFAFA',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 8,
+    padding: 20,
+    gap: 10,
   },
   title: {
-    color: '#4A6741',
+    color: '#843CA7',
+    fontSize: 22,
     fontWeight: 'bold',
   },
   section: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
   sectionTitle: {
     color: '#666',
-    marginBottom: 8,
+    fontSize: 14,
+    marginBottom: 4,
   },
   email: {
-    color: '#000',
+    fontSize: 16,
     fontWeight: '600',
+    color: '#222',
   },
   divider: {
-    backgroundColor: '#E0E0E0',
-    marginVertical: 8,
+    marginVertical: 10,
+    backgroundColor: '#E2E2E2',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: '#fff',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
   },
   settingContent: {
     flexDirection: 'row',
@@ -175,24 +150,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   settingText: {
-    color: '#4A6741',
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     marginTop: 'auto',
   },
   logoutText: {
-    color: '#666',
+    fontSize: 16,
+    color: '#B00020',
+    fontWeight: '500',
+    marginLeft: 12,
   },
   version: {
     textAlign: 'center',
-    color: '#666',
+    fontSize: 13,
+    color: '#999',
     padding: 16,
-    fontSize: 14,
   },
 });
-
-export default SettingsScreen; 
